@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Agriculture &amp; Nutrition Grade 9 — MTP Digital</title>
+    <meta name="description" content="Interactive Agriculture and Nutrition Grade 9 learning platform by Mountain Publishers.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body data-theme="liquid">
+
+    <!-- Ambient animated background -->
+    <div class="app-ambient" aria-hidden="true">
+      <div class="bokeh b1"></div>
+      <div class="bokeh b2"></div>
+      <div class="bokeh b3"></div>
+      <div class="bokeh b4"></div>
+      <div class="bokeh b5"></div>
+      <div class="leaf-particle lp1">🌿</div>
+      <div class="leaf-particle lp2">🍃</div>
+      <div class="leaf-particle lp3">🌱</div>
+      <div class="leaf-particle lp4">🍃</div>
+    </div>
+
+    <!-- Loading splash -->
+    <div class="app-loader" id="appLoader" aria-label="Loading">
+      <div class="loader-inner">
+        <div class="loader-logo">
+          <img src="mtplogo.png" alt="MTP" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <svg viewBox="0 0 72 72" role="img" aria-hidden="true" style="display:none">
+            <rect x="8" y="8" width="56" height="56" rx="13" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+            <path d="M21 46c13-2 23-12 25-29 11 10 13 25 5 39-9 0-20-3-30-10Z" fill="rgba(255,255,255,0.6)"/>
+            <text x="36" y="42" text-anchor="middle" fill="white" font-size="13" font-weight="900">MTP</text>
+          </svg>
+        </div>
+        <p class="loader-title">Agriculture &amp; Nutrition</p>
+        <p class="loader-sub">Grade 9 — MTP Digital</p>
+        <div class="loader-bar"><span id="loaderBarFill"></span></div>
+      </div>
+    </div>
+
+    <div class="app-shell">
+      <!-- Sidebar -->
+      <aside class="side-panel" aria-label="Book modules">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <img src="mtplogo.png" alt="MTP Logo" class="brand-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="brand-logo-fallback" style="display:none">
+              <svg viewBox="0 0 72 72" role="img">
+                <rect x="8" y="8" width="56" height="56" rx="13"></rect>
+                <path d="M21 46c13-2 23-12 25-29 11 10 13 25 5 39-9 0-20-3-30-10Z"></path>
+                <text x="36" y="42" text-anchor="middle">MTP</text>
+              </svg>
+            </div>
+          </div>
+          <div class="brand-text">
+            <p class="eyebrow">MTP Digital</p>
+            <h1>Agri-Nutrition<br><span>Grade 9</span></h1>
+          </div>
+        </div>
+
+        <div class="progress-card">
+          <div class="progress-header">
+            <span class="small-label">Course progress</span>
+            <strong id="courseProgressText">0%</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <span id="courseProgressBar"></span>
+          </div>
+          <p class="progress-hint" id="progressHint">Start a module to begin</p>
+        </div>
+
+        <nav id="moduleList" class="module-list" aria-label="Learning modules"></nav>
+
+        <div class="sidebar-footer">
+          <span class="small-label">Mountain Publishers &copy; 2025</span>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="main-stage">
+        <header class="top-bar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m16.5 16.5 4 4"></path>
+            </svg>
+            <input id="globalSearch" type="search" placeholder="Search the textbook…" autocomplete="off">
+          </div>
+          <div class="top-actions">
+            <div class="theme-toggle" role="group" aria-label="Theme mode">
+              <button class="theme-button active" data-theme-choice="liquid" title="Liquid Glass theme">
+                <span class="theme-icon">🫧</span>Glass
+              </button>
+              <button class="theme-button" data-theme-choice="light" title="Light theme">
+                <span class="theme-icon">☀️</span>Light
+              </button>
+              <button class="theme-button" data-theme-choice="dark" title="Dark theme">
+                <span class="theme-icon">🌙</span>Dark
+              </button>
+            </div>
+            <button class="icon-button" id="openPdfButton" title="Open textbook PDF" aria-label="Open textbook PDF">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 2h9l5 5v15H6z"></path>
+                <path d="M14 2v6h6"></path>
+                <path d="M9 14h6"></path>
+                <path d="M9 18h4"></path>
+              </svg>
+            </button>
+            <button class="icon-button" id="resetProgressButton" title="Reset all progress" aria-label="Reset all progress">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+                <path d="M3 4v6h6"></path>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <section class="module-hero" id="moduleHero" aria-live="polite"></section>
+
+        <div class="tab-row" role="tablist" aria-label="Learning views">
+          <button class="tab-button active" data-view="learn" role="tab" aria-selected="true">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2L2 7l8 5 8-5-8-5zM2 12l8 5 8-5M2 17l8 5 8-5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Learn
+          </button>
+          <button class="tab-button" data-view="play" role="tab" aria-selected="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><polygon points="5,3 19,10 5,17" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/></svg>
+            Simulate
+          </button>
+          <button class="tab-button" data-view="quiz" role="tab" aria-selected="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M10 7v3l2 2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+            Quiz
+          </button>
+          <button class="tab-button" data-view="reader" role="tab" aria-selected="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M7 7h6M7 11h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Book
+          </button>
+          <button class="tab-button" data-view="journal" role="tab" aria-selected="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4h12v14H4z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M8 4V2M12 4V2M7 9h6M7 13h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Notes
+          </button>
+        </div>
+
+        <section id="viewHost" class="view-host" aria-live="polite"></section>
+      </main>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer" aria-live="assertive"></div>
+
+    <script src="book-data.js"></script>
+    <script>
+      window.__mtpThreeModule = { exports: {} };
+      window.exports = window.__mtpThreeModule.exports;
+      window.module = window.__mtpThreeModule;
+    </script>
+    <script src="assets/three.cjs"></script>
+    <script>
+      window.THREE = window.__mtpThreeModule.exports;
+      delete window.exports;
+      delete window.module;
+      delete window.__mtpThreeModule;
+    </script>
+    <script src="three-scenes.js"></script>
+    <script src="app.js"></script>
+    <script>
+      // Dismiss loader after app initializes
+      window.addEventListener("load", () => {
+        const loader = document.getElementById("appLoader");
+        const fill = document.getElementById("loaderBarFill");
+        let w = 0;
+        const interval = setInterval(() => {
+          w = Math.min(w + Math.random() * 18 + 8, 98);
+          fill.style.width = w + "%";
+        }, 80);
+        setTimeout(() => {
+          clearInterval(interval);
+          fill.style.width = "100%";
+          setTimeout(() => loader.classList.add("loaded"), 180);
+          setTimeout(() => loader.remove(), 900);
+        }, 600);
+      });
+    </script>
+  </body>
+</html>
