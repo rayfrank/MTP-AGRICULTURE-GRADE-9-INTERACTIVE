@@ -59,6 +59,58 @@ function triggerCelebration(mount) {
 
 /* ── End UI Utilities ─────────────────────────────────────────── */
 
+/* ── Effects System ──────────────────────────────────────────── */
+
+function spawnFloatingScore(screenX, screenY, text, color = "#ffd700") {
+  const el = document.createElement("div");
+  el.className = "float-score-el";
+  el.textContent = text;
+  el.style.left = `${screenX}px`;
+  el.style.top  = `${screenY}px`;
+  el.style.color = color;
+  document.body.appendChild(el);
+  el.addEventListener("animationend", () => el.remove(), { once: true });
+}
+
+function shakeElement(el) {
+  if (!el) return;
+  el.classList.remove("screen-shake");
+  void el.offsetWidth;
+  el.classList.add("screen-shake");
+  el.addEventListener("animationend", () => el.classList.remove("screen-shake"), { once: true });
+}
+
+function popScoreEl(el) {
+  if (!el) return;
+  el.classList.remove("score-pop");
+  void el.offsetWidth;
+  el.classList.add("score-pop");
+}
+
+function confettiBurst(originX, originY, count = 28) {
+  const colors = ["#ffd700","#ff6b6b","#4ecdc4","#45b7d1","#96e6a1","#f8b500","#ff9ff3","#54a0ff","#5f27cd"];
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement("div");
+    const size = 6 + Math.random() * 8;
+    el.style.cssText = `position:fixed;pointer-events:none;z-index:9999;left:${originX}px;top:${originY}px;width:${size}px;height:${size}px;background:${colors[i % colors.length]};border-radius:${Math.random() > 0.5 ? "50%" : "2px"};`;
+    document.body.appendChild(el);
+    const vx = (Math.random() - 0.5) * 320;
+    const vy = -(160 + Math.random() * 200);
+    const t0 = performance.now();
+    const frame = (now) => {
+      const t = (now - t0) / 1000;
+      const opacity = Math.max(0, 1 - t * 1.3);
+      el.style.transform = `translate(${vx * t}px,${vy * t + 280 * t * t}px) rotate(${t * 400}deg)`;
+      el.style.opacity = opacity;
+      if (opacity > 0) requestAnimationFrame(frame);
+      else el.remove();
+    };
+    requestAnimationFrame(frame);
+  }
+}
+
+/* ── End Effects System ──────────────────────────────────────── */
+
 const MODULES = [
   {
     id: "hay",
@@ -149,7 +201,7 @@ const MODULES = [
     pages: [18, 22],
     color: "#226b8f",
     icon: "I",
-    game: "farmLoop",
+    game: "farmRaider",
     summary:
       "Recycle resources between crops, animals, fish, water, and waste to reduce cost and improve farm output.",
     goals: [
@@ -231,7 +283,7 @@ const MODULES = [
     pages: [42, 46],
     color: "#7c5d2a",
     icon: "S",
-    game: "storageInspector",
+    game: "pestBlaster",
     summary:
       "Prepare and manage granaries, rooms, bags, jars, and containers so grains and tubers remain safe.",
     goals: [
@@ -272,7 +324,7 @@ const MODULES = [
     pages: [47, 54],
     color: "#b57922",
     icon: "F",
-    game: "flourMixer",
+    game: "flourFrenzy",
     summary:
       "Use batter and dough to prepare pancakes, chapati, mandazi, doughnuts, bread, and coated foods.",
     goals: [
@@ -675,26 +727,29 @@ function renderTabs() {
   });
 }
 
+let _rvTimer = null;
+
 function renderView() {
   const module = currentModule();
-  if (state.view !== "play" && window.MTPThreeSim?.disposeAll) window.MTPThreeSim.disposeAll();
-  
-  // Smooth animate out
+  if (state.view !== "play") {
+    if (window.MTPThreeSim?.disposeAll) window.MTPThreeSim.disposeAll();
+    if (window._activeGameCleanup) { window._activeGameCleanup(); window._activeGameCleanup = null; }
+  }
+
   els.viewHost.style.transition = "opacity 0.15s ease, transform 0.15s ease";
   els.viewHost.style.opacity = "0";
   els.viewHost.style.transform = "translateY(15px) scale(0.98)";
-  
-  setTimeout(() => {
+
+  clearTimeout(_rvTimer);
+  _rvTimer = setTimeout(() => {
     if (state.view === "play")    renderPlay(module);
     if (state.view === "learn")   renderLearn(module);
     if (state.view === "quiz")    renderQuiz(module);
     if (state.view === "reader")  renderReader(module);
     if (state.view === "journal") renderJournal(module);
-    
-    // Force reflow
+
     void els.viewHost.offsetWidth;
-    
-    // Smooth animate in
+
     els.viewHost.style.transition = "opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)";
     els.viewHost.style.opacity = "1";
     els.viewHost.style.transform = "translateY(0) scale(1)";
@@ -739,15 +794,19 @@ function renderLearn(module) {
 }
 
 function renderPlay(module) {
+  if (window._activeGameCleanup) { window._activeGameCleanup(); window._activeGameCleanup = null; }
   if (window.MTPThreeSim?.disposeAll) window.MTPThreeSim.disposeAll();
   els.viewHost.innerHTML = `<div id="gameMount"></div>`;
   const mount = document.getElementById("gameMount");
   const games = {
     hayLab: renderHayLab,
     leftoverSort: renderLeftoverSort,
+    farmRaider: renderFarmRaider,
     farmLoop: renderFarmLoop,
     gardenPlanner: renderGardenPlanner,
+    pestBlaster: renderPestBlaster,
     storageInspector: renderStorageInspector,
+    flourFrenzy: renderFlourFrenzy,
     flourMixer: renderFlourMixer,
     cleanupOrder: renderCleanupOrder,
     disinfectMatch: renderDisinfectMatch,
@@ -788,7 +847,7 @@ function renderQuiz(module) {
         </div>
         <div style="padding:12px 14px;border-radius:10px;background:rgba(30,122,69,0.07);border:1px solid rgba(30,122,69,0.15)">
           <p style="margin:0;font-weight:800;font-size:0.88rem">Progress</p>
-          <p style="margin:4px 0 0;font-size:0.82rem;color:var(--muted)">${answered} of ${module.quiz.length} answered</p>
+          <p class="progress-answered" style="margin:4px 0 0;font-size:0.82rem;color:var(--muted)">${answered} of ${module.quiz.length} answered</p>
           <p style="margin:6px 0 0;font-size:0.80rem;color:var(--muted)">Score ≥70% to earn the quiz badge.</p>
         </div>
         <button class="primary-button" id="submitQuizButton" style="margin-top:4px">Submit quiz</button>
@@ -1912,6 +1971,556 @@ function dryerSvg(score, temp) {
   `;
 }
 
+/* ── Canvas Game: Pest Blaster (Storage module) ──────────────── */
+function renderPestBlaster(mount, module) {
+  const W = 520, H = 360;
+  mount.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="canvas-game-wrap" style="position:relative">
+        <canvas id="pestCanvas" width="${W}" height="${H}"></canvas>
+        <div class="game-overlay" id="pestOverlay">
+          <div style="font-size:3.2rem">🌾</div>
+          <h2>Pest Blaster</h2>
+          <p>Click pests before they reach the grain store. Don't let them breach the defence!</p>
+          <button class="primary-button" id="pestStart" style="min-width:160px">Start Game</button>
+        </div>
+      </div>
+      <div class="canvas-hud">
+        <div><span class="eyebrow">Score</span><div class="score-number" id="pestScore">0</div></div>
+        <div><span class="eyebrow">Lives</span><div id="pestLives" style="font-size:1.3rem;letter-spacing:2px">❤️❤️❤️</div></div>
+        <div><span class="eyebrow">Wave</span><div class="score-number" id="pestWave">1</div></div>
+        <ul class="feedback-list" id="pestFeedback" style="margin:0 0 0 auto"></ul>
+      </div>
+    </div>
+  `;
+
+  const canvas = document.getElementById("pestCanvas");
+  const ctx    = canvas.getContext("2d");
+  const overlay = document.getElementById("pestOverlay");
+
+  let animId = null, gameActive = false;
+  let pests = [], particles = [], score = 0, lives = 3, wave = 1;
+  let spawnTimer = 0, lastTime = 0;
+
+  const TYPES = [
+    { emoji: "🐀", r: 16, spd: 58,  pts: 20 },
+    { emoji: "🐛", r: 10, spd: 90,  pts: 15 },
+    { emoji: "🍄", r: 20, spd: 32,  pts: 10 },
+  ];
+
+  function spawnPest() {
+    const t = TYPES[Math.floor(Math.random() * Math.min(1 + Math.floor(wave / 2), 3))];
+    const edge = Math.floor(Math.random() * 4);
+    let x = 0, y = 0;
+    if (edge === 0) { x = 30 + Math.random() * (W - 60); y = -22; }
+    else if (edge === 1) { x = W + 22; y = 30 + Math.random() * (H - 60); }
+    else if (edge === 2) { x = 30 + Math.random() * (W - 60); y = H + 22; }
+    else { x = -22; y = 30 + Math.random() * (H - 60); }
+    const tx = W / 2, ty = H * 0.41;
+    const dx = tx - x, dy = ty - y, dist = Math.hypot(dx, dy);
+    const spd = t.spd * (0.8 + Math.random() * 0.4) * (1 + wave * 0.09);
+    pests.push({ x, y, vx: (dx / dist) * spd, vy: (dy / dist) * spd, r: t.r, emoji: t.emoji, pts: t.pts, hp: 1 + Math.floor(wave / 3), alpha: 1, wobble: Math.random() * 6 });
+  }
+
+  function drawBG() {
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, "#87ceeb"); sky.addColorStop(1, "#e8f5ec");
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#8b6914"; ctx.fillRect(0, H * 0.68, W, H * 0.32);
+    // Granary
+    ctx.fillStyle = "#d4a84b";
+    ctx.beginPath(); ctx.moveTo(W * 0.30, H * 0.23); ctx.lineTo(W * 0.50, H * 0.09); ctx.lineTo(W * 0.70, H * 0.23); ctx.lineTo(W * 0.70, H * 0.68); ctx.lineTo(W * 0.30, H * 0.68); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#9a6820"; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = "#7a4010"; ctx.beginPath(); ctx.roundRect(W * 0.44, H * 0.44, W * 0.12, H * 0.24, 4); ctx.fill();
+    // Sacks
+    [[W * 0.35, H * 0.62, "#e8c84a"], [W * 0.50, H * 0.63, "#d4a840"], [W * 0.65, H * 0.62, "#c89030"]].forEach(([sx, sy, col]) => {
+      ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(sx, sy, 28, 17, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#9a6820"; ctx.lineWidth = 2; ctx.stroke();
+    });
+    // Danger zone
+    ctx.strokeStyle = "rgba(220,60,60,0.40)"; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+    ctx.beginPath(); ctx.arc(W / 2, H * 0.41, 52, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle = "rgba(220,60,60,0.07)";
+    ctx.beginPath(); ctx.arc(W / 2, H * 0.41, 52, 0, Math.PI * 2); ctx.fill();
+  }
+
+  function drawPests() {
+    pests.forEach(p => {
+      if (p.alpha <= 0) return;
+      ctx.save(); ctx.globalAlpha = p.alpha;
+      p.wobble += 0.1;
+      ctx.font = `${p.r * 2}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.shadowColor = "rgba(0,0,0,0.45)"; ctx.shadowBlur = 8;
+      ctx.fillText(p.emoji, p.x + Math.sin(p.wobble) * 2, p.y);
+      ctx.shadowBlur = 0;
+      if (p.hp > 1) {
+        const maxHp = 1 + Math.floor(wave / 3);
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(p.x - 14, p.y - p.r - 10, 28, 5);
+        ctx.fillStyle = "#ff4444"; ctx.fillRect(p.x - 14, p.y - p.r - 10, 28 * (p.hp / maxHp), 5);
+      }
+      ctx.restore();
+    });
+  }
+
+  function burstAt(x, y, pts) {
+    const cols = ["#ffd700", "#ff6b35", "#4ecdc4", "#96e6a1", "#f8b500", "#ff9ff3"];
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      particles.push({ x, y, vx: Math.cos(a) * (2 + Math.random() * 4), vy: Math.sin(a) * (2 + Math.random() * 4) - 2, r: 3 + Math.random() * 4, color: cols[i % cols.length], life: 44, max: 44, txt: null });
+    }
+    if (pts > 0) particles.push({ x, y, vx: 0, vy: -2.5, r: 0, color: "#ffd700", life: 55, max: 55, txt: `+${pts}` });
+  }
+
+  function drawParticles() {
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => {
+      ctx.save(); ctx.globalAlpha = p.life / p.max;
+      if (p.txt) {
+        ctx.font = `bold ${15 + 7 * (1 - p.life / p.max)}px sans-serif`;
+        ctx.textAlign = "center"; ctx.fillStyle = p.color; ctx.fillText(p.txt, p.x, p.y);
+      } else {
+        ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (p.life / p.max), 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+      p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= 1;
+    });
+  }
+
+  function drawHUD() {
+    ctx.fillStyle = "rgba(6,18,10,0.70)"; ctx.beginPath(); ctx.roundRect(8, 8, W - 16, 40, 10); ctx.fill();
+    ctx.font = "bold 15px sans-serif";
+    ctx.fillStyle = "#ffd700"; ctx.textAlign = "left";  ctx.fillText(`Score: ${score}`, 18, 33);
+    ctx.fillStyle = "#ff6b6b"; ctx.textAlign = "center"; ctx.fillText("❤️".repeat(lives), W / 2, 33);
+    ctx.fillStyle = "#4ecdc4"; ctx.textAlign = "right";  ctx.fillText(`Wave ${wave}`, W - 18, 33);
+  }
+
+  function loseLife() {
+    lives--;
+    shakeElement(canvas.parentElement);
+    document.getElementById("pestLives").textContent = "❤️".repeat(Math.max(0, lives));
+    if (lives <= 0) endGame(false);
+  }
+
+  function endGame(won) {
+    gameActive = false;
+    if (animId) cancelAnimationFrame(animId);
+    window._activeGameCleanup = null;
+    overlay.innerHTML = won
+      ? `<div style="font-size:3rem">🏆</div><h2 style="color:#ffd700">Granary Saved!</h2><p>Final score: ${score}</p><button class="primary-button" id="pestStart">Play Again</button>`
+      : `<div style="font-size:3rem">💀</div><h2 style="color:#ff6b6b">Granary Overrun!</h2><p>Score: ${score} — Storage hygiene matters!</p><button class="primary-button" id="pestStart">Try Again</button>`;
+    overlay.style.display = "flex";
+    if (won) { completeGame(module.id); confettiBurst(W / 2, H / 2, 40); }
+    document.getElementById("pestStart").addEventListener("click", startGame, { once: true });
+  }
+
+  function loop(ts) {
+    if (!gameActive) return;
+    const dt = Math.min((ts - lastTime) / 1000, 0.05); lastTime = ts;
+    spawnTimer -= dt;
+    if (spawnTimer <= 0) { spawnPest(); spawnTimer = Math.max(0.35, 2.2 - wave * 0.24) * (0.6 + Math.random() * 0.8); }
+    ctx.clearRect(0, 0, W, H);
+    drawBG();
+    pests = pests.filter(p => p.alpha > 0.02);
+    pests.forEach(p => {
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (Math.hypot(p.x - W / 2, p.y - H * 0.41) < 52) { burstAt(p.x, p.y, 0); p.alpha = 0; loseLife(); }
+    });
+    drawPests(); drawParticles(); drawHUD();
+    if (score > 0 && score >= wave * 150 && !pests.length) { wave++; document.getElementById("pestWave").textContent = wave; popScoreEl(document.getElementById("pestWave")); }
+    if (score >= 500 && lives > 0) { endGame(true); return; }
+    if (gameActive) animId = requestAnimationFrame(loop);
+  }
+
+  function startGame() {
+    overlay.style.display = "none";
+    pests = []; particles = []; score = 0; lives = 3; wave = 1; spawnTimer = 0; lastTime = performance.now();
+    document.getElementById("pestScore").textContent = 0;
+    document.getElementById("pestLives").textContent = "❤️❤️❤️";
+    document.getElementById("pestWave").textContent = 1;
+    document.getElementById("pestFeedback").innerHTML = "";
+    gameActive = true;
+    window._activeGameCleanup = () => { gameActive = false; if (animId) cancelAnimationFrame(animId); };
+    animId = requestAnimationFrame(loop);
+  }
+
+  canvas.addEventListener("click", (e) => {
+    if (!gameActive) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top)  * (H / rect.height);
+    pests.forEach(p => {
+      if (p.alpha <= 0) return;
+      if (Math.hypot(mx - p.x, my - p.y) < p.r * 2.4) {
+        p.hp--;
+        if (p.hp <= 0) {
+          burstAt(p.x, p.y, p.pts); score += p.pts; p.alpha = 0;
+          const el = document.getElementById("pestScore");
+          el.textContent = score; popScoreEl(el);
+        }
+      }
+    });
+    // Miss puff
+    if (!pests.some(p => Math.hypot(mx - p.x, my - p.y) < p.r * 2.4 && p.alpha > 0))
+      particles.push({ x: mx, y: my, vx: 0, vy: -1, r: 14, color: "rgba(180,255,180,0.55)", life: 18, max: 18, txt: null });
+  });
+
+  document.getElementById("pestStart").addEventListener("click", startGame, { once: true });
+}
+
+/* ── Canvas Game: Farm Raider (Integrated Farming module) ─────── */
+function renderFarmRaider(mount, module) {
+  const W = 520, H = 380;
+  const RESOURCES = [
+    { id: "crop",    label: "Crop Field",     emoji: "🌾", color: "#4d934d", x: 80,  y: 80  },
+    { id: "feed",    label: "Animal Feed",    emoji: "🐄", color: "#9a6820", x: 430, y: 95  },
+    { id: "manure",  label: "Manure",         emoji: "💩", color: "#7a4010", x: 440, y: 290 },
+    { id: "compost", label: "Compost",        emoji: "♻️", color: "#226b8f", x: 90,  y: 295 },
+    { id: "pond",    label: "Fish Pond",      emoji: "🐟", color: "#1565c0", x: 260, y: 310 },
+    { id: "food",    label: "Household Food", emoji: "🍽️", color: "#e65100", x: 260, y: 60  },
+  ];
+
+  const player = { x: 260, y: 190, vx: 0, vy: 0, angle: 0 };
+  const keys = {};
+  let touchTarget = null;
+  let collected = new Set(), particles = [];
+  let animId = null, gameActive = false, lastTime = 0;
+
+  mount.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="canvas-game-wrap" style="position:relative">
+        <canvas id="raidCanvas" width="${W}" height="${H}"></canvas>
+        <div class="game-overlay" id="raidOverlay">
+          <div style="font-size:3.2rem">🚜</div>
+          <h2>Farm Raider</h2>
+          <p>Drive your tractor to collect all 6 farm resources and complete the integration loop!</p>
+          <div class="wasd-hint"><span class="key-chip">W</span><span class="key-chip">A</span><span class="key-chip">S</span><span class="key-chip">D</span> <span style="margin:0 4px">or</span> <span class="key-chip">↑</span><span class="key-chip">↓</span><span class="key-chip">←</span><span class="key-chip">→</span> &nbsp;or tap to move</div>
+          <button class="primary-button" id="raidStart" style="min-width:160px">Start Game</button>
+        </div>
+      </div>
+      <div class="canvas-hud">
+        <div><span class="eyebrow">Collected</span><div class="score-number" id="raidCount">0 / 6</div></div>
+        <div id="raidChips" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
+        <button class="secondary-button" id="raidReset">Reset</button>
+      </div>
+    </div>
+  `;
+
+  const canvas  = document.getElementById("raidCanvas");
+  const ctx     = canvas.getContext("2d");
+  const overlay = document.getElementById("raidOverlay");
+
+  const KEY_MAP = { ArrowUp: "u", ArrowDown: "d", ArrowLeft: "l", ArrowRight: "r", w: "u", s: "d", a: "l", d: "r", W: "u", S: "d", A: "l", D: "r" };
+  const onKey = (e, val) => { if (KEY_MAP[e.key]) { keys[KEY_MAP[e.key]] = val; if (val) e.preventDefault(); } };
+  window.addEventListener("keydown", (e) => onKey(e, true));
+  window.addEventListener("keyup",   (e) => onKey(e, false));
+
+  canvas.addEventListener("click", (e) => {
+    if (!gameActive) return;
+    const rect = canvas.getBoundingClientRect();
+    touchTarget = { x: (e.clientX - rect.left) * (W / rect.width), y: (e.clientY - rect.top) * (H / rect.height) };
+  });
+
+  function updateChips() {
+    document.getElementById("raidChips").innerHTML = RESOURCES.map(r =>
+      `<span class="activity-chip" style="${collected.has(r.id) ? `background:${r.color};color:#fff;border-color:${r.color}` : ""}">${r.emoji} ${collected.has(r.id) ? "✓" : r.label}</span>`
+    ).join("");
+    const el = document.getElementById("raidCount"); el.textContent = `${collected.size} / 6`; popScoreEl(el);
+  }
+
+  function drawMap() {
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#5a9a3a"); g.addColorStop(1, "#4a8030");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // Dirt paths
+    ctx.strokeStyle = "rgba(196,168,112,0.45)"; ctx.lineWidth = 22;
+    ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+    // Connection lines
+    const coll = RESOURCES.filter(r => collected.has(r.id));
+    if (coll.length > 1) {
+      ctx.strokeStyle = "rgba(255,215,0,0.55)"; ctx.lineWidth = 2.5; ctx.setLineDash([7, 5]);
+      for (let i = 0; i < coll.length - 1; i++) {
+        ctx.beginPath(); ctx.moveTo(coll[i].x, coll[i].y); ctx.lineTo(coll[i + 1].x, coll[i + 1].y); ctx.stroke();
+      }
+      if (coll.length === 6) { ctx.beginPath(); ctx.moveTo(coll[5].x, coll[5].y); ctx.lineTo(coll[0].x, coll[0].y); ctx.stroke(); }
+      ctx.setLineDash([]);
+    }
+    // Resource nodes
+    RESOURCES.forEach(r => {
+      const done = collected.has(r.id);
+      ctx.fillStyle = done ? r.color : "rgba(255,255,255,0.88)";
+      ctx.beginPath(); ctx.arc(r.x, r.y, 26, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = done ? "rgba(255,255,255,0.6)" : r.color; ctx.lineWidth = done ? 3 : 2;
+      ctx.beginPath(); ctx.arc(r.x, r.y, 26, 0, Math.PI * 2); ctx.stroke();
+      ctx.font = "20px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(done ? "✅" : r.emoji, r.x, r.y);
+      ctx.font = "bold 9.5px sans-serif"; ctx.fillStyle = done ? "#fff" : "#222";
+      ctx.fillText(r.label, r.x, r.y + 38);
+      if (!done) {
+        ctx.strokeStyle = `${r.color}55`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.arc(r.x, r.y, 40, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+      }
+    });
+  }
+
+  function drawPlayer() {
+    ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
+    ctx.fillStyle = "#e65100"; ctx.beginPath(); ctx.roundRect(-13, -9, 26, 18, 4); ctx.fill();
+    ctx.fillStyle = "#bf360c"; ctx.beginPath(); ctx.roundRect(-6, -11, 16, 22, 3); ctx.fill();
+    ctx.fillStyle = "#212121";
+    [[-9, 11, 6, 7], [8, 11, 6, 7], [-9, -11, 6, 7], [8, -11, 6, 7]].forEach(([ex, ey, rx, ry]) => {
+      ctx.beginPath(); ctx.ellipse(ex, ey, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.fillStyle = "rgba(120,210,255,0.75)"; ctx.beginPath(); ctx.roundRect(1, -7, 9, 14, 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawParticles() {
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => {
+      ctx.save(); ctx.globalAlpha = p.life / p.max; ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (p.life / p.max), 0, Math.PI * 2); ctx.fill();
+      ctx.restore(); p.x += p.vx / 28; p.y += p.vy / 28; p.life--;
+    });
+  }
+
+  function updatePlayer(dt) {
+    let ax = 0, ay = 0;
+    if (touchTarget) {
+      const dx = touchTarget.x - player.x, dy = touchTarget.y - player.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 10) touchTarget = null;
+      else { ax = dx / d; ay = dy / d; }
+    } else {
+      if (keys.u) ay = -1; if (keys.d) ay = 1;
+      if (keys.l) ax = -1; if (keys.r) ax = 1;
+    }
+    if (ax || ay) {
+      const ta = Math.atan2(ay, ax);
+      let da = ta - player.angle;
+      while (da > Math.PI) da -= Math.PI * 2;
+      while (da < -Math.PI) da += Math.PI * 2;
+      player.angle += da * 4 * dt;
+      player.vx += ax * 160 * dt; player.vy += ay * 160 * dt;
+      // Exhaust puff occasionally
+      if (Math.random() > 0.72) particles.push({ x: player.x - Math.cos(player.angle) * 14, y: player.y - Math.sin(player.angle) * 14, vx: (Math.random() - 0.5) * 30, vy: (Math.random() - 0.5) * 30 - 18, r: 5, color: "rgba(120,120,120,0.45)", life: 22, max: 22 });
+    }
+    player.vx *= 0.84; player.vy *= 0.84;
+    player.x = Math.max(14, Math.min(W - 14, player.x + player.vx * dt));
+    player.y = Math.max(14, Math.min(H - 14, player.y + player.vy * dt));
+    RESOURCES.forEach(r => {
+      if (collected.has(r.id)) return;
+      if (Math.hypot(player.x - r.x, player.y - r.y) < 40) {
+        collected.add(r.id);
+        for (let i = 0; i < 16; i++) {
+          const a = (i / 16) * Math.PI * 2;
+          particles.push({ x: r.x, y: r.y, vx: Math.cos(a) * 70, vy: Math.sin(a) * 70, r: 5, color: r.color, life: 38, max: 38 });
+        }
+        updateChips();
+        if (collected.size === 6) setTimeout(() => endGame(true), 500);
+      }
+    });
+  }
+
+  function endGame(won) {
+    gameActive = false; if (animId) cancelAnimationFrame(animId); window._activeGameCleanup = null;
+    overlay.innerHTML = won
+      ? `<div style="font-size:3rem">🏆</div><h2 style="color:#ffd700">Loop Complete!</h2><p>All 6 resources collected — the farm is fully integrated!</p><button class="primary-button" id="raidStart">Play Again</button>`
+      : `<div style="font-size:3rem">🚜</div><h2>Nice try!</h2><p>Collected ${collected.size}/6 resources.</p><button class="primary-button" id="raidStart">Try Again</button>`;
+    overlay.style.display = "flex";
+    if (won) { completeGame(module.id); confettiBurst(W / 2, H / 3, 55); }
+    document.getElementById("raidStart").addEventListener("click", startGame, { once: true });
+  }
+
+  function loop(ts) {
+    if (!gameActive) return;
+    const dt = Math.min((ts - lastTime) / 1000, 0.05); lastTime = ts;
+    ctx.clearRect(0, 0, W, H); drawMap(); drawParticles(); updatePlayer(dt); drawPlayer();
+    ctx.fillStyle = "rgba(6,18,10,0.65)"; ctx.beginPath(); ctx.roundRect(8, 8, 190, 38, 10); ctx.fill();
+    ctx.fillStyle = "#ffd700"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "left";
+    ctx.fillText(`Collected: ${collected.size} / 6`, 18, 32);
+    animId = requestAnimationFrame(loop);
+  }
+
+  function startGame() {
+    overlay.style.display = "none";
+    Object.assign(player, { x: 260, y: 190, vx: 0, vy: 0, angle: 0 });
+    collected = new Set(); particles = []; lastTime = performance.now();
+    touchTarget = null; gameActive = true;
+    updateChips();
+    window._activeGameCleanup = () => {
+      gameActive = false; if (animId) cancelAnimationFrame(animId);
+      window.removeEventListener("keydown", (e) => onKey(e, true));
+      window.removeEventListener("keyup",   (e) => onKey(e, false));
+    };
+    animId = requestAnimationFrame(loop);
+  }
+
+  document.getElementById("raidStart").addEventListener("click", startGame, { once: true });
+  document.getElementById("raidReset").addEventListener("click", () => {
+    if (animId) cancelAnimationFrame(animId); gameActive = false;
+    overlay.innerHTML = `<div style="font-size:3.2rem">🚜</div><h2>Farm Raider</h2><p>Drive your tractor to collect all 6 farm resources!</p><div class="wasd-hint"><span class="key-chip">W</span><span class="key-chip">A</span><span class="key-chip">S</span><span class="key-chip">D</span> or tap to move</div><button class="primary-button" id="raidStart" style="min-width:160px">Start Game</button>`;
+    overlay.style.display = "flex";
+    document.getElementById("raidStart").addEventListener("click", startGame, { once: true });
+  });
+
+  updateChips();
+}
+
+/* ── Canvas Game: Flour Frenzy (Flour Mixtures module) ───────── */
+function renderFlourFrenzy(mount, module) {
+  const W = 520, H = 360;
+  const PRODUCTS = [
+    { label: "Chapati",  type: "dough",        emoji: "🫓", color: "#e65100" },
+    { label: "Pancakes", type: "thin_batter",   emoji: "🥞", color: "#f9a825" },
+    { label: "Mandazi",  type: "dough",        emoji: "🍩", color: "#6d4c41" },
+    { label: "Coating",  type: "thick_batter",  emoji: "🍟", color: "#1565c0" },
+    { label: "Bread",    type: "dough",        emoji: "🍞", color: "#4e342e" },
+  ];
+  const TYPES = { dough: "Dough", thin_batter: "Thin Batter", thick_batter: "Thick Batter" };
+  const T_COL  = { dough: "#e65100", thin_batter: "#f9a825", thick_batter: "#1565c0" };
+
+  let items = [], score = 0, streak = 0, timeLeft = 60, gameActive = false, animId = null, lastTime = 0, spawnTimer = 0;
+
+  mount.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="canvas-game-wrap" style="position:relative">
+        <canvas id="frenzyCanvas" width="${W}" height="${H}"></canvas>
+        <div class="game-overlay" id="frenzyOverlay">
+          <div style="font-size:3.2rem">🏭</div>
+          <h2>Flour Frenzy</h2>
+          <p>Products roll in on the belt. Click the correct mixture type before they fall off!</p>
+          <button class="primary-button" id="frenzyStart" style="min-width:160px">Start</button>
+        </div>
+      </div>
+      <div class="canvas-hud">
+        <div><span class="eyebrow">Score</span><div class="score-number" id="frenzyScore">0</div></div>
+        <div><span class="eyebrow">Streak</span><div class="score-number" id="frenzyStreak">0🔥</div></div>
+        <div><span class="eyebrow">Time</span><div class="score-number" id="frenzyTime">60s</div></div>
+        <div style="display:flex;gap:8px;margin-left:auto;flex-wrap:wrap" id="frenzyBtns"></div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("frenzyBtns").innerHTML = Object.entries(TYPES).map(([t, l]) =>
+    `<button class="secondary-button frenzy-ans" data-type="${t}" style="border-left:4px solid ${T_COL[t]}">${l}</button>`
+  ).join("");
+
+  const canvas  = document.getElementById("frenzyCanvas");
+  const ctx     = canvas.getContext("2d");
+  const overlay = document.getElementById("frenzyOverlay");
+
+  function spawnItem() {
+    const p = PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)];
+    items.push({ ...p, x: W + 44, y: H * 0.52 + (Math.random() - 0.5) * 38, spd: 62 + score * 0.1, answered: null, shakeT: 0 });
+  }
+
+  function drawBG() {
+    ctx.fillStyle = "#f0ede4"; ctx.fillRect(0, 0, W, H);
+    // Factory wall
+    ctx.fillStyle = "#607d8b"; ctx.fillRect(0, 0, W, H * 0.38);
+    // Windows
+    [[80, 30, 60, 50], [190, 30, 60, 50], [310, 30, 60, 50]].forEach(([x, y, w, h]) => {
+      ctx.fillStyle = "rgba(180,220,255,0.45)"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 4); ctx.fill();
+      ctx.strokeStyle = "#546e7a"; ctx.lineWidth = 2; ctx.stroke();
+    });
+    // Chimney smoke
+    ctx.fillStyle = "#455a64"; ctx.fillRect(W * 0.77, H * 0.04, 28, H * 0.34);
+    [0, 1, 2].forEach(i => {
+      ctx.globalAlpha = 0.28 - i * 0.07; ctx.fillStyle = "#9e9e9e";
+      ctx.beginPath(); ctx.arc(W * 0.784 + i * 5, H * 0.03 - i * 14, 13 + i * 5, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    // Belt
+    ctx.fillStyle = "#424242"; ctx.fillRect(0, H * 0.40, W, H * 0.32);
+    ctx.fillStyle = "#616161";
+    for (let x = 0; x < W; x += 38) ctx.fillRect(x, H * 0.40, 2, H * 0.32);
+    ctx.fillStyle = "#303030"; ctx.fillRect(0, H * 0.40, W, 8); ctx.fillRect(0, H * 0.72 - 8, W, 8);
+    // Instruction banner
+    ctx.fillStyle = "rgba(6,18,10,0.62)"; ctx.beginPath(); ctx.roundRect(8, 8, W - 16, H * 0.36, 8); ctx.fill();
+    ctx.fillStyle = "#ffd700"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("⚡ Click the correct mixture type as products arrive!", W / 2, 30);
+  }
+
+  function drawItems(dt) {
+    items.forEach(item => {
+      item.x -= item.spd * dt;
+      ctx.save();
+      if (item.shakeT > 0) { ctx.translate(item.x + Math.sin(item.shakeT * 18) * 5, item.y); item.shakeT -= dt; }
+      else ctx.translate(item.x, item.y);
+      const bg = item.answered === "correct" ? "#1e7a45" : item.answered === "wrong" ? "#c62828" : "#fff";
+      ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(-28, -28, 56, 56, 9); ctx.fill();
+      ctx.strokeStyle = T_COL[item.type]; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(-28, -28, 56, 56, 9); ctx.stroke();
+      ctx.font = "22px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(item.emoji, 0, -6);
+      ctx.font = "bold 9px sans-serif"; ctx.fillStyle = item.answered ? "#fff" : "#333"; ctx.fillText(item.label, 0, 15);
+      ctx.restore();
+    });
+  }
+
+  function checkAnswer(type) {
+    if (!gameActive) return;
+    const item = items.filter(i => !i.answered && i.x > 30 && i.x < W - 30).sort((a, b) => a.x - b.x)[0];
+    if (!item) return;
+    if (item.type === type) {
+      item.answered = "correct"; streak++; score += 10 + streak * 2;
+      const se = document.getElementById("frenzyScore"); se.textContent = score; popScoreEl(se);
+      const ste = document.getElementById("frenzyStreak"); ste.textContent = `${streak}🔥`; popScoreEl(ste);
+    } else {
+      item.answered = "wrong"; item.shakeT = 0.3; streak = 0;
+      document.getElementById("frenzyStreak").textContent = "0🔥";
+      shakeElement(document.getElementById("frenzyBtns"));
+    }
+  }
+
+  function loop(ts) {
+    if (!gameActive) return;
+    const dt = Math.min((ts - lastTime) / 1000, 0.05); lastTime = ts;
+    timeLeft -= dt;
+    const te = document.getElementById("frenzyTime"); te.textContent = `${Math.max(0, Math.ceil(timeLeft))}s`;
+    if (timeLeft <= 5) te.style.color = "#ff4444"; else te.style.color = "";
+    if (timeLeft <= 0) { endGame(); return; }
+    spawnTimer -= dt;
+    if (spawnTimer <= 0) { spawnItem(); spawnTimer = Math.max(0.55, 2.0 - score * 0.0015); }
+    items.forEach(i => { if (i.x < -60 && !i.answered) { streak = 0; document.getElementById("frenzyStreak").textContent = "0🔥"; } });
+    items = items.filter(i => i.x > -80);
+    ctx.clearRect(0, 0, W, H); drawBG(); drawItems(dt);
+    // Time bar
+    ctx.fillStyle = "rgba(0,0,0,0.4)"; ctx.fillRect(0, H - 7, W, 7);
+    ctx.fillStyle = timeLeft < 10 ? "#ff4444" : timeLeft < 20 ? "#ffd700" : "#23d06d";
+    ctx.fillRect(0, H - 7, (timeLeft / 60) * W, 7);
+    animId = requestAnimationFrame(loop);
+  }
+
+  function endGame() {
+    gameActive = false; if (animId) cancelAnimationFrame(animId); window._activeGameCleanup = null;
+    const won = score >= 80;
+    overlay.innerHTML = won
+      ? `<div style="font-size:3rem">🏆</div><h2 style="color:#ffd700">Shift Complete!</h2><p>Score: ${score} — Great flour mix knowledge!</p><button class="primary-button" id="frenzyStart">Play Again</button>`
+      : `<div style="font-size:3rem">⏰</div><h2>Time's Up!</h2><p>Score: ${score} — Review batter vs dough differences.</p><button class="primary-button" id="frenzyStart">Try Again</button>`;
+    overlay.style.display = "flex";
+    if (won) { completeGame(module.id); confettiBurst(W / 2, H / 2, 40); }
+    document.getElementById("frenzyStart").addEventListener("click", startGame, { once: true });
+  }
+
+  function startGame() {
+    overlay.style.display = "none";
+    items = []; score = 0; streak = 0; timeLeft = 60; spawnTimer = 0; lastTime = performance.now();
+    document.getElementById("frenzyScore").textContent = 0;
+    document.getElementById("frenzyStreak").textContent = "0🔥";
+    document.getElementById("frenzyTime").textContent = "60s";
+    document.getElementById("frenzyTime").style.color = "";
+    gameActive = true;
+    window._activeGameCleanup = () => { gameActive = false; if (animId) cancelAnimationFrame(animId); };
+    animId = requestAnimationFrame(loop);
+  }
+
+  mount.addEventListener("click", (e) => {
+    const btn = e.target.closest(".frenzy-ans");
+    if (btn) checkAnswer(btn.dataset.type);
+  });
+  document.getElementById("frenzyStart").addEventListener("click", startGame, { once: true });
+}
+
 function shuffle(items) {
   return items
     .map((value) => ({ value, sort: Math.random() }))
@@ -2029,7 +2638,13 @@ document.addEventListener("click", (event) => {
   const module = currentModule();
   state.quizAnswers[module.id] = state.quizAnswers[module.id] || {};
   state.quizAnswers[module.id][answer.dataset.question] = answer.dataset.answer;
-  renderQuiz(module);
+  // Update only this question's button states in-place — no full re-render
+  answer.closest(".quiz-options")?.querySelectorAll(".choice-button").forEach((btn) => {
+    btn.classList.toggle("selected", btn === answer);
+  });
+  const answered = Object.keys(state.quizAnswers[module.id]).length;
+  const progressEl = document.querySelector(".quiz-side .progress-answered");
+  if (progressEl) progressEl.textContent = `${answered} of ${module.quiz.length} answered`;
 });
 
 els.globalSearch.addEventListener("input", (event) => {
