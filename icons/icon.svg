@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#0a3d25"/>
+      <stop offset="100%" stop-color="#0d2e1a"/>
+    </linearGradient>
+    <linearGradient id="leafG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#86efac"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+  </defs>
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- Ground arc -->
+  <ellipse cx="256" cy="430" rx="165" ry="18" fill="#071a0f" opacity="0.7"/>
+  <!-- Stem -->
+  <line x1="256" y1="430" x2="256" y2="170" stroke="#22c55e" stroke-width="18" stroke-linecap="round"/>
+  <!-- Left leaf -->
+  <path d="M256 310 C230 275 175 280 148 248 C190 242 248 278 256 310Z" fill="url(#leafG)"/>
+  <!-- Right leaf -->
+  <path d="M256 265 C282 230 337 234 364 202 C322 196 264 232 256 265Z" fill="#4ade80"/>
+  <!-- Top bud -->
+  <path d="M256 170 C236 138 240 105 256 88 C272 105 276 138 256 170Z" fill="#86efac"/>
+  <!-- Sun -->
+  <circle cx="388" cy="106" r="40" fill="#fbbf24"/>
+  <!-- Glow rays (short dashes) -->
+  <g stroke="#fbbf24" stroke-width="5" stroke-linecap="round" opacity="0.5">
+    <line x1="388" y1="52" x2="388" y2="40"/>
+    <line x1="432" y1="66" x2="440" y2="57"/>
+    <line x1="444" y1="106" x2="458" y2="106"/>
+    <line x1="432" y1="146" x2="440" y2="155"/>
+    <line x1="344" y1="66" x2="336" y2="57"/>
+  </g>
+  <!-- MTP wordmark -->
+  <text x="256" y="490" text-anchor="middle" fill="rgba(255,255,255,0.9)"
+        font-size="52" font-weight="900" font-family="Arial,sans-serif" letter-spacing="4">MTP</text>
+</svg>

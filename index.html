@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Agriculture &amp; Nutrition Grade 9 — MTP Digital</title>
     <meta name="description" content="Interactive Agriculture and Nutrition Grade 9 learning platform by Mountain Publishers.">
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e6b3c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Agri-Nutrition">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body data-theme="liquid">
@@ -39,6 +47,19 @@
       </div>
     </div>
 
+    <!-- Offline / Assignment banners -->
+    <div class="offline-banner" id="offlineBanner" role="alert" style="display:none">
+      <svg viewBox="0 0 20 20" aria-hidden="true" width="18" height="18"><path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2zm0 4v4m0 4h.01" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      You are offline. Content is still available.
+    </div>
+    <div class="assignment-banner" id="assignmentBanner" role="status" style="display:none"></div>
+
+    <!-- Timed assessment overlay -->
+    <div class="assessment-overlay" id="assessmentOverlay" style="display:none" role="dialog" aria-modal="true" aria-label="Timed Assessment"></div>
+
+    <!-- Share modal -->
+    <div class="share-modal-overlay" id="shareModalOverlay" style="display:none" role="dialog" aria-modal="true" aria-label="Share progress"></div>
+
     <div class="app-shell">
       <!-- Sidebar -->
       <aside class="side-panel" aria-label="Book modules">
@@ -68,9 +89,31 @@
             <span id="courseProgressBar"></span>
           </div>
           <p class="progress-hint" id="progressHint">Start a module to begin</p>
+          <div class="streak-goal-row">
+            <span class="streak-chip" id="streakChip" style="display:none"></span>
+            <div class="weekly-goal-ring" id="weeklyGoalRing" aria-label="Weekly goal"></div>
+          </div>
         </div>
 
         <nav id="moduleList" class="module-list" aria-label="Learning modules"></nav>
+
+        <div class="sidebar-settings">
+          <p class="small-label" style="margin-bottom:8px">Settings</p>
+          <div class="lang-toggle" role="group" aria-label="Language">
+            <button class="lang-btn active" data-lang-btn="en">EN</button>
+            <button class="lang-btn" data-lang-btn="sw">SW</button>
+          </div>
+          <div class="font-scale-row" style="margin-top:10px">
+            <span class="small-label">Text size</span>
+            <input id="fontScaleSlider" type="range" min="0.85" max="1.3" step="0.15" value="1" style="width:100%;margin-top:4px">
+          </div>
+          <button id="pwaInstallBtn" class="secondary-button" style="display:none;width:100%;margin-top:10px" aria-label="Install app">
+            📲 Install App
+          </button>
+          <button id="notifToggleBtn" class="secondary-button" style="width:100%;margin-top:6px" aria-label="Enable study reminders">
+            🔔 Enable reminders
+          </button>
+        </div>
 
         <div class="sidebar-footer">
           <span class="small-label">Mountain Publishers &copy; 2025</span>
@@ -88,6 +131,9 @@
             <input id="globalSearch" type="search" placeholder="Search the textbook…" autocomplete="off">
           </div>
           <div class="top-actions">
+            <button class="ai-advisor-btn" id="aiAdvisorBtn" title="AI Study Advisor" aria-label="AI Study Advisor">
+              <span>🤖</span> AI Advisor
+            </button>
             <div class="theme-toggle" role="group" aria-label="Theme mode">
               <button class="theme-button active" data-theme-choice="liquid" title="Liquid Glass theme">
                 <span class="theme-icon">🫧</span>Glass
@@ -121,23 +167,31 @@
         <div class="tab-row" role="tablist" aria-label="Learning views">
           <button class="tab-button active" data-view="learn" role="tab" aria-selected="true">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2L2 7l8 5 8-5-8-5zM2 12l8 5 8-5M2 17l8 5 8-5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Learn
+            <span class="tab-label">Learn</span>
           </button>
           <button class="tab-button" data-view="play" role="tab" aria-selected="false">
-            <svg viewBox="0 0 20 20" aria-hidden="true"><polygon points="5,3 19,10 5,17" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/></svg>
-            Simulate
+            <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><polygon points="8,8 14,10 8,13" fill="currentColor"/></svg>
+            <span class="tab-label">Games</span>
           </button>
           <button class="tab-button" data-view="quiz" role="tab" aria-selected="false">
             <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M10 7v3l2 2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
-            Quiz
+            <span class="tab-label">Quiz</span>
           </button>
           <button class="tab-button" data-view="reader" role="tab" aria-selected="false">
             <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M7 7h6M7 11h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            Book
+            <span class="tab-label">Book</span>
           </button>
           <button class="tab-button" data-view="journal" role="tab" aria-selected="false">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4h12v14H4z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M8 4V2M12 4V2M7 9h6M7 13h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            Notes
+            <span class="tab-label">Notes</span>
+          </button>
+          <button class="tab-button" data-view="flashcard" role="tab" aria-selected="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="5" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M6 9h8M6 13h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span class="tab-label">Flashcards</span>
+          </button>
+          <button class="tab-button" data-view="glossary" role="tab" aria-selected="false">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h12v14H4z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M8 7h4M7 11h6M7 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span class="tab-label">Glossary</span>
           </button>
         </div>
 
@@ -179,6 +233,72 @@
           setTimeout(() => loader.classList.add("loaded"), 180);
           setTimeout(() => loader.remove(), 900);
         }, 600);
+      });
+    </script>
+
+    <!-- PWA: Service Worker registration + install prompt -->
+    <script>
+      // ── Service Worker ────────────────────────────────────────
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", async () => {
+          try {
+            const reg = await navigator.serviceWorker.register("./sw.js");
+
+            // Show "Update available" toast when a new SW is waiting
+            reg.addEventListener("updatefound", () => {
+              const sw = reg.installing;
+              sw.addEventListener("statechange", () => {
+                if (sw.state === "installed" && navigator.serviceWorker.controller) {
+                  const container = document.getElementById("toastContainer");
+                  if (container) {
+                    const el = document.createElement("div");
+                    el.className = "toast toast-info";
+                    el.style.cssText = "display:flex;align-items:center;gap:8px";
+                    el.innerHTML = "🔄 Update ready &mdash; <button onclick=\"navigator.serviceWorker.controller.postMessage('skipWaiting');location.reload()\" style=\"background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:inherit;padding:0\">reload</button>";
+                    container.appendChild(el);
+                  }
+                }
+              });
+            });
+          } catch (err) {
+            console.warn("Service worker registration failed:", err);
+          }
+        });
+      }
+
+      // ── Install prompt ────────────────────────────────────────
+      let _deferredInstall = null;
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        _deferredInstall = e;
+        const btn = document.getElementById("pwaInstallBtn");
+        if (btn) btn.style.display = "block";
+      });
+
+      document.addEventListener("click", (e) => {
+        if (e.target.id !== "pwaInstallBtn" || !_deferredInstall) return;
+        _deferredInstall.prompt();
+        _deferredInstall.userChoice.then((choice) => {
+          if (choice.outcome === "accepted") {
+            document.getElementById("pwaInstallBtn").style.display = "none";
+          }
+          _deferredInstall = null;
+        });
+      });
+
+      window.addEventListener("appinstalled", () => {
+        const btn = document.getElementById("pwaInstallBtn");
+        if (btn) btn.style.display = "none";
+        _deferredInstall = null;
+        // Show a brief confirmation
+        const container = document.getElementById("toastContainer");
+        if (container) {
+          const el = document.createElement("div");
+          el.className = "toast toast-success";
+          el.textContent = "✅ App installed successfully!";
+          container.appendChild(el);
+        }
       });
     </script>
   </body>

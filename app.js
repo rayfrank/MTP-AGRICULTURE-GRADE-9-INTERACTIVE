@@ -135,6 +135,25 @@ const MODULES = [
     activities: ["Pair talk", "Digital search", "Forage conservation project", "Gallery walk"],
     journal:
       "Plan a small hay conservation project for your home or school. Name the forage, tools, drying method, and storage place.",
+    prompts: [
+      "What forage crops are available near your home or school?",
+      "How would you test if hay is dry enough for safe storage?",
+      "What problems might arise if hay is stored while still wet?",
+    ],
+    glossary: [
+      { term: "Forage", def: "Plant material (leaves, stems, grass) that animals eat, either grazed or harvested." },
+      { term: "Hay", def: "Cut and dried forage stored for use as animal feed during dry seasons." },
+      { term: "Pasture", def: "Land covered with grass or other plants suitable for grazing animals." },
+      { term: "Fodder crop", def: "A crop grown specifically to feed livestock, such as maize, sorghum, or lucerne." },
+      { term: "Baling", def: "Compressing dried forage into compact rectangular or round blocks for storage." },
+      { term: "Wilting", def: "The initial drying stage where freshly cut forage loses excess moisture before baling." },
+      { term: "Stover", def: "Dried stalks and leaves of a crop (e.g., maize) left after grain is harvested." },
+    ],
+    links: [
+      { label: "Kenya Forage Handbook", url: "https://www.kari.org/forages" },
+      { label: "FAO Hay Making Guide", url: "https://www.fao.org/agriculture/crops/hay" },
+    ],
+    video: null,
     quiz: [
       {
         q: "At which stage should forage crops be harvested for high quality hay?",
@@ -176,6 +195,24 @@ const MODULES = [
     activities: ["Food safety scenario", "Recipe collection", "Ugali toast", "Mukimo from githeri"],
     journal:
       "Write a safe leftover recipe from your home. Include the original food, storage method, preparation steps, and safety check.",
+    prompts: [
+      "What leftover foods are most common in your household each week?",
+      "How do you know when food has gone bad and should be thrown away?",
+      "What money or resources could your family save by reducing food waste?",
+    ],
+    glossary: [
+      { term: "Leftover food", def: "Food prepared but not eaten at a meal, which can be stored for later use." },
+      { term: "Contamination", def: "The introduction of harmful microbes or substances into food making it unsafe to eat." },
+      { term: "Refrigeration", def: "Cooling food to slow down the growth of bacteria and extend its safe life." },
+      { term: "Reheating", def: "Heating leftover food to a safe temperature to kill any bacteria that may have grown." },
+      { term: "Food wastage", def: "Food that is thrown away unnecessarily, wasting money, energy, and resources." },
+      { term: "Spoilage", def: "The process by which food becomes unfit to eat due to bacteria, mould, or yeast." },
+    ],
+    links: [
+      { label: "KEBS Food Safety Standards", url: "https://www.kebs.org/food-safety" },
+      { label: "WHO Food Safety Tips", url: "https://www.who.int/news-room/fact-sheets/detail/food-safety" },
+    ],
+    video: null,
     quiz: [
       {
         q: "What should be done with leftover rice that smells unusual?",
@@ -217,6 +254,25 @@ const MODULES = [
     activities: ["Farm resource map", "Group discussion", "Home farm audit"],
     journal:
       "Draw or describe a circular farm system that reuses at least four resources before anything becomes waste.",
+    prompts: [
+      "Which farm activities at home or school could share resources?",
+      "How does animal manure benefit a crop garden?",
+      "What is one change you could make at home to reduce farm waste?",
+    ],
+    glossary: [
+      { term: "Integrated farming", def: "A system that combines crops, livestock, fish, and other activities so waste from one becomes input for another." },
+      { term: "Manure", def: "Animal dung used as a natural fertilizer to improve soil fertility." },
+      { term: "Compost", def: "Decomposed organic matter (plant and food waste) used to enrich soil." },
+      { term: "Biogas", def: "Gas (mainly methane) produced from decomposing organic waste, used as fuel for cooking." },
+      { term: "Crop residues", def: "Plant parts left in the field after harvest, such as stalks and leaves." },
+      { term: "Food security", def: "Reliable access to enough safe, nutritious food for all people in a household or community." },
+      { term: "Resource recycling", def: "Using outputs from one process as inputs for another to reduce waste and cost." },
+    ],
+    links: [
+      { label: "FAO Integrated Farming", url: "https://www.fao.org/integrated-farming" },
+      { label: "KALRO Research Farms", url: "https://www.kalro.org" },
+    ],
+    video: null,
     quiz: [
       {
         q: "What is the main idea behind integrated farming?",
@@ -258,6 +314,25 @@ const MODULES = [
     activities: ["Garden duty schedule", "Natural pesticide lab", "Harvesting table", "Portfolio photos"],
     journal:
       "Choose one crop from your area and create a weekly organic garden care schedule from planting to harvest.",
+    prompts: [
+      "What natural materials around your home could be used to make compost?",
+      "Why is it important to harvest crops at the right time rather than too early or too late?",
+      "How does crop rotation help reduce pest and disease problems?",
+    ],
+    glossary: [
+      { term: "Organic gardening", def: "Growing food using natural methods without synthetic chemicals or fertilizers." },
+      { term: "Mulching", def: "Covering soil with plant material to conserve moisture, suppress weeds, and add nutrients." },
+      { term: "Crop rotation", def: "Growing different crops on the same land in different seasons to break pest cycles and restore soil nutrients." },
+      { term: "Companion planting", def: "Growing two or more crops close together so one benefits the other, e.g. by deterring pests." },
+      { term: "Top dressing", def: "Applying fertilizer or compost to the soil surface around growing plants to boost nutrition." },
+      { term: "Natural pesticide", def: "A pest control substance made from plants or minerals rather than synthetic chemicals." },
+      { term: "Field hygiene", def: "Removing crop debris and diseased plants from the garden to prevent spread of pests and diseases." },
+    ],
+    links: [
+      { label: "Kenya Organic Agriculture Network", url: "https://www.koan.co.ke" },
+      { label: "FAO Organic Gardening Guide", url: "https://www.fao.org/organic-agriculture" },
+    ],
+    video: null,
     quiz: [
       {
         q: "Which practice helps suppress weeds and conserve soil moisture in an organic garden?",
@@ -299,6 +374,24 @@ const MODULES = [
     activities: ["Storage structure inspection", "Prepare a school store", "Food safety case study"],
     journal:
       "Inspect a food storage place at home or school. List three risks and three actions that would make it safer.",
+    prompts: [
+      "What storage facilities exist at your home and what condition are they in?",
+      "How can you tell if grain in a store has been attacked by pests or mould?",
+      "What simple actions can a family take today to improve their food storage?",
+    ],
+    glossary: [
+      { term: "Granary", def: "A building or store used for storing harvested grain." },
+      { term: "Ventilation", def: "Allowing fresh air to flow through a store to remove moisture and prevent mould." },
+      { term: "Mould", def: "A type of fungus that grows on damp food or surfaces, making food unsafe to eat." },
+      { term: "Pest-proofing", def: "Sealing gaps and using safe methods to prevent insects and rodents from entering a store." },
+      { term: "Infestation", def: "A large number of insects or rodents living in or attacking a store or crop." },
+      { term: "Desiccant", def: "A substance that absorbs moisture, used to keep stored produce dry." },
+    ],
+    links: [
+      { label: "Post-Harvest Loss Kenya", url: "https://www.aphlis.net/en/page/8/kenya" },
+      { label: "FAO Storage Best Practices", url: "https://www.fao.org/post-harvest" },
+    ],
+    video: null,
     quiz: [
       {
         q: "Why should a crop storage facility be kept dry?",
@@ -340,6 +433,25 @@ const MODULES = [
     activities: ["Prepare batter", "Prepare dough", "Pancake practical", "Chapati and mandazi practical"],
     journal:
       "Compare batter and dough in a table. Include water level, texture, handling method, and two products.",
+    prompts: [
+      "What flour products does your family make at home and how are they made?",
+      "How would you explain the difference between batter and dough to a younger student?",
+      "What safety precautions should you follow when deep frying food?",
+    ],
+    glossary: [
+      { term: "Batter", def: "A liquid mixture of flour and liquid with a flowing consistency, used for pancakes and coatings." },
+      { term: "Dough", def: "A thick, firm mixture of flour and liquid that can be kneaded, rolled, and shaped." },
+      { term: "Kneading", def: "Pressing and folding dough repeatedly to develop gluten and make it elastic." },
+      { term: "Gluten", def: "A protein network formed when flour is mixed with water, giving dough its elasticity." },
+      { term: "Leavening", def: "Making dough or batter rise by adding yeast or baking powder to produce gas bubbles." },
+      { term: "Shallow frying", def: "Cooking food in a small amount of oil in a pan, turning to cook both sides." },
+      { term: "Deep frying", def: "Cooking food by submerging it fully in hot oil." },
+    ],
+    links: [
+      { label: "Kenya Home Science Association", url: "https://www.homescience.co.ke" },
+      { label: "Bread & Baking Basics", url: "https://www.bbga.org/resources/baking-basics" },
+    ],
+    video: null,
     quiz: [
       {
         q: "Which flour mixture has a flowing consistency?",
@@ -381,6 +493,24 @@ const MODULES = [
     activities: ["Waste bin duty roster", "Kitchen sink cleaning", "Drain cleaning practical"],
     journal:
       "Create a weekly cleaning roster for one waste disposal facility. Include tools, safety, and inspection points.",
+    prompts: [
+      "What cleaning tools and products are available in your home for this task?",
+      "How often should a household waste bin be emptied and cleaned?",
+      "What health problems can result from a dirty or blocked drain?",
+    ],
+    glossary: [
+      { term: "Disinfectant", def: "A chemical liquid used to kill germs on surfaces and equipment." },
+      { term: "Detergent", def: "A cleaning substance that removes grease and dirt, usually mixed with water." },
+      { term: "Drain", def: "A channel or pipe that carries away waste water from a sink or yard." },
+      { term: "Bin liner", def: "A plastic bag placed inside a waste bin to make it easier to remove and clean." },
+      { term: "Sanitation", def: "The maintenance of clean conditions to protect health and prevent disease." },
+      { term: "Cross-contamination", def: "The transfer of germs from a dirty surface or object to a clean one." },
+    ],
+    links: [
+      { label: "Ministry of Health Kenya — Sanitation", url: "https://www.health.go.ke/sanitation" },
+      { label: "WHO Hygiene Promotion", url: "https://www.who.int/teams/environment-climate-change-and-health/water-sanitation-and-health" },
+    ],
+    video: null,
     quiz: [
       {
         q: "Why should gloves be worn when cleaning waste disposal facilities?",
@@ -422,6 +552,25 @@ const MODULES = [
     activities: ["Crossword", "Boiling practical", "Disinfectant practical", "Sun drying and ironing"],
     journal:
       "Choose one household article and write the safest disinfecting method for it, including materials and precautions.",
+    prompts: [
+      "Which disinfecting method is most practical for your home and why?",
+      "What safety precautions should be taken when boiling clothing?",
+      "How does sunlight help to kill germs on fabric?",
+    ],
+    glossary: [
+      { term: "Boiling", def: "Submerging items in water heated to 100°C to kill germs and pathogens." },
+      { term: "Salting", def: "Soaking fabrics in a strong salt solution to draw out moisture and kill microorganisms." },
+      { term: "Ironing", def: "Using a hot iron on fabric to kill surface germs through direct heat." },
+      { term: "Pathogen", def: "A microorganism such as a bacterium or virus that causes disease." },
+      { term: "UV rays", def: "Ultraviolet radiation from the sun that destroys the DNA of bacteria on surfaces." },
+      { term: "Scald", def: "A burn caused by very hot liquid or steam." },
+      { term: "Communicable disease", def: "A disease that can spread from person to person through direct or indirect contact." },
+    ],
+    links: [
+      { label: "CDC Disinfection Guidelines", url: "https://www.cdc.gov/infectioncontrol/guidelines" },
+      { label: "WHO Infection Prevention", url: "https://www.who.int/infection-prevention" },
+    ],
+    video: null,
     quiz: [
       {
         q: "Which method uses high water temperature to kill germs on suitable fabrics?",
@@ -463,6 +612,25 @@ const MODULES = [
     activities: ["Plant search", "Guided grafting practical", "Seedling care", "Conflict resolution case"],
     journal:
       "Explain how you would repair a damaged mango seedling by grafting. Include safety precautions for sharp tools.",
+    prompts: [
+      "What fruit trees near your home or school could benefit from grafting?",
+      "Why is it important to make a smooth, matching cut when grafting?",
+      "What would happen if the graft union is not sealed or tied tightly?",
+    ],
+    glossary: [
+      { term: "Scion", def: "The upper part of a grafted plant, taken from a plant with desired characteristics." },
+      { term: "Rootstock", def: "The lower part of a grafted plant that provides the root system and support." },
+      { term: "Graft union", def: "The point where the scion and rootstock are joined together and fuse." },
+      { term: "V-cut grafting", def: "A grafting method where a V-shaped cut is made in the rootstock to insert a wedge-shaped scion." },
+      { term: "Grafting tape", def: "A stretchy tape used to bind and protect the graft union while it heals." },
+      { term: "Callus", def: "New tissue that grows over a wound or graft union to seal and heal the join." },
+      { term: "Vegetative propagation", def: "Reproducing plants using non-seed parts such as cuttings, buds, or grafts." },
+    ],
+    links: [
+      { label: "KARI Horticulture Grafting Guide", url: "https://www.kari.org/horticulture" },
+      { label: "FAO Plant Propagation Manual", url: "https://www.fao.org/plant-production-protection" },
+    ],
+    video: null,
     quiz: [
       {
         q: "What is the upper part of a grafted plant called?",
@@ -504,6 +672,25 @@ const MODULES = [
     activities: ["Sun dryer sketch", "Construction practical", "Temperature test", "Home food security project"],
     journal:
       "Sketch a sun dryer you can build locally. List frame, tray, cover, cleaning steps, and how you will test it.",
+    prompts: [
+      "What locally available materials could you use to build a sun dryer frame?",
+      "Why is it important to turn vegetables during the drying process?",
+      "How would you test whether the vegetables are fully dried before storing them?",
+    ],
+    glossary: [
+      { term: "Sun dryer", def: "A device that uses solar energy and trapped heat to dry food for preservation." },
+      { term: "Transparent cover", def: "A clear material (glass or plastic) that allows sunlight in while trapping heat inside the dryer." },
+      { term: "Wire mesh tray", def: "A tray made from metal netting that holds food and allows air to circulate around it." },
+      { term: "Dehydration", def: "Removing water from food to prevent microbial growth and extend shelf life." },
+      { term: "Solar drying", def: "Using energy from the sun to remove moisture from food or crops." },
+      { term: "Greenhouse effect", def: "The trapping of heat inside an enclosed space, similar to how a sun dryer works." },
+      { term: "Moisture content", def: "The amount of water remaining in dried food, which must be low enough to prevent spoilage." },
+    ],
+    links: [
+      { label: "SOLARAID Food Drying Resources", url: "https://www.solaraid.org/resources" },
+      { label: "FAO Solar Food Drying", url: "https://www.fao.org/post-harvest/solar-drying" },
+    ],
+    video: null,
     quiz: [
       {
         q: "Why does a homemade sun dryer need a transparent cover?",
@@ -526,20 +713,841 @@ const MODULES = [
 
 const STORAGE_KEY = "agriNutritionGrade9Progress";
 const THEME_KEY = "agriNutritionGrade9Theme";
+
+const STRINGS = {
+  en: {
+    tabLearn: "Learn", tabPlay: "Games", tabQuiz: "Quiz", tabReader: "Book",
+    tabJournal: "Journal", tabFlashcard: "Flashcards", tabGlossary: "Glossary",
+    markLearned: "Mark learned", reviewAgain: "Review again",
+    submitQuiz: "Submit quiz", clearAnswers: "Clear answers",
+    saveNote: "Save note", exportProgress: "Export progress", shareProgress: "Share progress",
+    downloadCert: "Download Certificate", startAssessment: "Start Assessment",
+    timedMode: "Timed mode", bestScore: "Best score", progress: "Progress",
+    answered: "answered", badgeEarned: "Quiz badge earned!",
+    keepPractising: "Keep practising!", reviewNotes: "Review the notes and try again.",
+    learnedToast: "Module marked as learned!",
+    noteSaved: "Journal note saved.",
+    progressReset: "Reset all saved progress and notes?",
+    gameComplete: "Game completed! Progress saved.",
+    scoreSaved: "Score saved.",
+    offlineBanner: "You are offline. Content is still available.",
+    onlineBanner: "Back online!",
+    assignmentBanner: "Assignment mode",
+    printSummary: "Print summary",
+    watchVideo: "Watch video",
+    relatedLinks: "Related links",
+    flipHint: "Click card to flip",
+    knownBtn: "Got it!",
+    allKnown: "All cards mastered!",
+    searchGlossary: "Search terms…",
+    copyCode: "Copy code",
+    importCode: "Import",
+    shareModalTitle: "Share your progress",
+    shareInstructions: "Give this code to your teacher or classmate to import your progress.",
+    importModalTitle: "Import progress code",
+    importPlaceholder: "Paste code here…",
+    importBtn: "Import",
+    certTitle: "Certificate of Achievement",
+    certSub: "This is to certify that",
+    certBody: "has successfully completed all modules of the",
+    certCourse: "Agriculture & Nutrition Grade 9 MTP Digital Course",
+    streakLabel: "day streak",
+    weeklyLabel: "this week",
+    assessmentTitle: "Timed Assessment",
+    assessmentTimer: "Time remaining",
+    assessmentSubmit: "Submit Assessment",
+    promptsHeading: "Reflect further…",
+  },
+  sw: {
+    tabLearn: "Jifunze", tabPlay: "Michezo", tabQuiz: "Jaribio", tabReader: "Kitabu",
+    tabJournal: "Shajara", tabFlashcard: "Kadi", tabGlossary: "Kamusi",
+    markLearned: "Weka alama ya kujifunza", reviewAgain: "Kagua tena",
+    submitQuiz: "Wasilisha jaribio", clearAnswers: "Futa majibu",
+    saveNote: "Hifadhi kumbukumbu", exportProgress: "Hamisha maendeleo", shareProgress: "Shiriki maendeleo",
+    downloadCert: "Pakua Cheti", startAssessment: "Anza Tathmini",
+    timedMode: "Hali ya wakati", bestScore: "Alama bora", progress: "Maendeleo",
+    answered: "imejibiwa", badgeEarned: "Beji ya jaribio imepata!",
+    keepPractising: "Endelea kujifunza!", reviewNotes: "Kagua maelezo na ujaribu tena.",
+    learnedToast: "Moduli imewekwa alama ya kujifunza!",
+    noteSaved: "Kumbukumbu ya shajara imehifadhiwa.",
+    progressReset: "Futa maendeleo yote na maelezo?",
+    gameComplete: "Mchezo umekamilika! Maendeleo yamehifadhiwa.",
+    scoreSaved: "Alama imehifadhiwa.",
+    offlineBanner: "Uko nje ya mtandao. Maudhui bado yanapatikana.",
+    onlineBanner: "Umeunganishwa tena!",
+    assignmentBanner: "Hali ya kazi ya darasa",
+    printSummary: "Chapisha muhtasari",
+    watchVideo: "Tazama video",
+    relatedLinks: "Viungo vinavyohusiana",
+    flipHint: "Bonyeza kadi kugeuka",
+    knownBtn: "Nimeelewa!",
+    allKnown: "Kadi zote zimesomwa!",
+    searchGlossary: "Tafuta maneno…",
+    copyCode: "Nakili nambari",
+    importCode: "Ingiza",
+    shareModalTitle: "Shiriki maendeleo yako",
+    shareInstructions: "Toa nambari hii kwa mwalimu au mwanafunzi mwenzako.",
+    importModalTitle: "Ingiza nambari ya maendeleo",
+    importPlaceholder: "Bandika nambari hapa…",
+    importBtn: "Ingiza",
+    certTitle: "Cheti cha Mafanikio",
+    certSub: "Hii ni kuthibitisha kwamba",
+    certBody: "amefanikiwa kukamilisha moduli zote za",
+    certCourse: "Kozi ya Kilimo na Lishe Darasa la 9",
+    streakLabel: "siku mfululizo",
+    weeklyLabel: "wiki hii",
+    assessmentTitle: "Tathmini ya Wakati",
+    assessmentTimer: "Muda uliobaki",
+    assessmentSubmit: "Wasilisha Tathmini",
+    promptsHeading: "Fikiria zaidi…",
+  },
+};
+
+function t(key) {
+  return (STRINGS[progress?.language || "en"] || STRINGS.en)[key] || key;
+}
+
+const MODULE_TRANSLATIONS = {
+  sw: {
+    hay: {
+      strand: "Uhifadhi wa Rasilimali",
+      title: "Kuhifadhi Chakula cha Wanyama: Nyasi",
+      summary: "Hifadhi nyasi iliyokatwa, masalia, au nyasi inayosimama ili wanyama wapate chakula wakati wa kiangazi.",
+      goals: ["Eleza malisho, mfugo, mazao ya malisho, na nyasi.","Chagua mazao ya malisho yanayofaa na uvune wakati wa kuwa na maua.","Kausha, bana, panga, na hifadhi nyasi ili kudumisha thamani ya lishe."],
+      ideas: ["Nyasi nzuri hukatwa na kukaushwa hadi unyevu wa asilimia 15 hadi 20.","Hewa kavu, kupinda mara kwa mara, na kuhifadhi katika eneo kavu hulinda ubora.","Nyasi iliyobanwa kwa kawaida ina lishe zaidi kuliko masalia ya mashina au nyasi inayosimama."],
+      activities: ["Mazungumzo ya wawili","Utafutaji wa kidijitali","Mradi wa kuhifadhi malisho","Matembezi ya maonyesho"],
+      journal: "Panga mradi mdogo wa kuhifadhi nyasi nyumbani au shuleni. Taja aina ya malisho, zana, njia ya kukausha, na mahali pa kuhifadhi.",
+      prompts: ["Je, mazao ya malisho gani yanapatikana karibu na nyumba yako au shuleni?","Ungejuaje ikiwa nyasi imekauka ya kutosha kwa uhifadhi salama?","Ni matatizo gani yanaweza kutokea ikiwa nyasi inahifadhiwa na unyevu mwingi?"],
+      glossary: [
+        { term: "Malisho", def: "Nyenzo za mimea (majani, mashina, nyasi) ambazo wanyama hula kwa kuchunga au kuvuna." },
+        { term: "Nyasi kavu", def: "Malisho yaliyokatwa na kukaushwa, huhifadhiwa kama chakula cha wanyama wakati wa kiangazi." },
+        { term: "Uwanja wa malisho", def: "Ardhi iliyofunikwa na nyasi au mimea mingine inayofaa kwa wanyama kuchunga." },
+        { term: "Zao la malisho", def: "Zao linalolimwa hasa kulisha mifugo, kama mahindi, mtama, au luseni." },
+        { term: "Kubana nyasi", def: "Kusukuma nyasi kavu kuwa mapande makubwa ya mstatili au mviringo kwa uhifadhi." },
+        { term: "Kunyauka", def: "Hatua ya kwanza ya kukausha ambapo malisho mapya yaliyokatwa hupoteza unyevu kupita kiasi." },
+        { term: "Masalia ya mashina", def: "Mashina makavu na majani ya zao (k.m. mahindi) yaliyobaki baada ya nafaka kuvunwa." },
+      ],
+      links: [{ label: "Mwongozo wa Malisho wa Kenya", url: "https://www.kari.org/forages" },{ label: "Mwongozo wa FAO wa Kutengeneza Nyasi", url: "https://www.fao.org/agriculture/crops/hay" }],
+      quiz: [
+        { q: "Mazao ya malisho yanapaswa kuvunwa katika hatua gani kwa nyasi ya ubora wa juu?", o: ["Hatua ya miche","Hatua ya maua","Baada ya kuoza","Wakati wa mvua"] },
+        { q: "Kwa nini nyasi inapaswa kuhifadhiwa katika banda lililoinuliwa na lenye hewa?", o: ["Kuongeza unyevu","Kuihifadhi kavu na kupunguza upotevu wa lishe","Kuvutia wadudu","Kuifanya iwe nyeupe haraka"] },
+        { q: "Njia gani inaruhusu wanyama kuchunga malisho yaliyobaki shambani wakati wa kiangazi?", o: ["Nyasi iliyobanwa","Nyasi inayosimama","Kukaanga kwa mafuta mengi","Uingizaji"] },
+      ],
+    },
+    leftovers: {
+      strand: "Uhifadhi wa Rasilimali",
+      title: "Kuhifadhi Chakula Kilichobaki",
+      summary: "Shughulikia chakula kilichobaki kwa usalama kwa kuhifadhi, kushiriki, kupasha moto, kupika upya, au kutupa chakula kilichooza.",
+      goals: ["Tambua njia salama za kuhifadhi chakula kilichobaki.","Eleza faida za kuzuia upotevu wa chakula.","Andaa milo rahisi kutoka kwa ugali, chapati, viazi vikuu, githeri, na wali uliobaki."],
+      ideas: ["Chakula kilichobaki kinapaswa kuhifadhiwa katika vyombo safi vilivyofunikwa kwenye jokofu au mahali pa baridi.","Chakula chenye harufu mbaya, rangi ya ajabu, au muundo wa ajabu kinapaswa kutupwa.","Kuhifadhi chakula kilichobaki kunaokoa chakula, pesa, mafuta, kazi, na muda."],
+      activities: ["Hali ya usalama wa chakula","Ukusanyaji wa mapishi","Ugali wa kukaanga","Mukimo kutoka githeri"],
+      journal: "Andika mapishi salama ya chakula kilichobaki kutoka nyumbani kwako. Taja chakula cha awali, njia ya kuhifadhi, hatua za maandalizi, na ukaguzi wa usalama.",
+      prompts: ["Ni vyakula gani vilivyobaki vinavyopatikana mara nyingi nyumbani kwako kila wiki?","Unajuaje chakula kimeharibika na kinapaswa kutupwa?","Pesa au rasilimali ngapi familia yako ingeweza kuokoa kwa kupunguza upotevu wa chakula?"],
+      glossary: [
+        { term: "Chakula kilichobaki", def: "Chakula kilichoandaliwa lakini hakikuliwa wakati wa mlo, ambacho kinaweza kuhifadhiwa kwa matumizi ya baadaye." },
+        { term: "Uchafuzi", def: "Kuingizwa kwa vijidudu hatari au vitu kwenye chakula na kukifanya kisifae kuliwa." },
+        { term: "Ujokofu", def: "Kupoza chakula ili kupunguza ukuaji wa bakteria na kuongeza muda wake salama." },
+        { term: "Kupasha moto", def: "Kupasha moto chakula kilichobaki hadi joto salama kuua bakteria yoyote iliyokua." },
+        { term: "Upotevu wa chakula", def: "Chakula kinachotupwa bila sababu, kupoteza pesa, nishati, na rasilimali." },
+        { term: "Kuharibika", def: "Mchakato ambapo chakula kinakuwa kisifae kuliwa kutokana na bakteria, ukungu, au chachu." },
+      ],
+      links: [{ label: "Viwango vya Usalama wa Chakula vya KEBS", url: "https://www.kebs.org/food-safety" },{ label: "Vidokezo vya Usalama wa Chakula vya WHO", url: "https://www.who.int/news-room/fact-sheets/detail/food-safety" }],
+      quiz: [
+        { q: "Ni nini kifanyike na wali uliobaki wenye harufu ya ajabu?", o: ["Uhudumie baridi","Utupe","Uchanganye na viungo tu","Uhifadhi kwa wiki nyingine"] },
+        { q: "Mazoea gani husaidia kuzuia uchafuzi wa chakula kilichobaki?", o: ["Kuacha wazi","Kuhifadhi kwa kufunikwa katika chombo safi","Kuiweka sakafuni","Kugusa kwa mikono michafu"] },
+        { q: "Kubadilisha chakula kilichobaki kuwa mlo mpya hasa husaidia kupunguza nini?", o: ["Upotevu wa chakula","Usafi","Ustadi wa kupika","Uingizaji hewa"] },
+      ],
+    },
+    integrated: {
+      strand: "Uhifadhi wa Rasilimali",
+      title: "Kilimo Changanyiko",
+      summary: "Rudia rasilimali kati ya mazao, wanyama, samaki, maji, na taka ili kupunguza gharama na kuboresha uzalishaji wa shamba.",
+      goals: ["Eleza kilimo changanyiko kama mfumo wa kurudia rasilimali.","Unganisha masalia ya mazao, samadi, maji, mabwawa ya samaki, na bustani.","Eleza jinsi ushirikiano unavyosaidia mapato na usalama wa chakula."],
+      ideas: ["Taka kutoka shughuli moja ya shamba inaweza kuwa ingizo kwa shughuli nyingine.","Samadi ya wanyama inaweza kuboresha rutuba ya udongo au kulisha mboji na mifumo ya biogas.","Mashamba changanyiko hupunguza taka na kutumia ardhi, maji, na kazi vizuri zaidi."],
+      activities: ["Ramani ya rasilimali za shamba","Mjadala wa kikundi","Ukaguzi wa shamba la nyumbani"],
+      journal: "Chora au eleza mfumo wa shamba wa mzunguko ambao unarudia rasilimali angalau nne kabla ya kitu chochote kuwa taka.",
+      prompts: ["Shughuli gani za shamba nyumbani au shuleni zinaweza kushiriki rasilimali?","Jinsi gani samadi ya wanyama inufaisha bustani ya mazao?","Ni mabadiliko gani moja unayoweza kufanya nyumbani ili kupunguza taka za shamba?"],
+      glossary: [
+        { term: "Kilimo changanyiko", def: "Mfumo unaounganisha mazao, mifugo, samaki, na shughuli nyingine ili taka kutoka moja iwe ingizo kwa nyingine." },
+        { term: "Samadi", def: "Kinyesi cha wanyama kinachotumiwa kama mbolea asilia kuboresha rutuba ya udongo." },
+        { term: "Mboji", def: "Viumbe hai vilivyooza (taka za mimea na chakula) vinavyotumiwa kurutubisha udongo." },
+        { term: "Biogas", def: "Gesi (hasa methane) inayozalishwa kutoka kwa taka za viumbe hai vinavyooza, inayotumiwa kama mafuta ya kupikia." },
+        { term: "Masalia ya mazao", def: "Sehemu za mimea zilizobaki shambani baada ya mavuno, kama mashina na majani." },
+        { term: "Usalama wa chakula", def: "Upatikanaji wa kutosha wa chakula salama na chenye lishe kwa watu wote katika kaya au jamii." },
+        { term: "Kurudia rasilimali", def: "Kutumia matokeo ya mchakato mmoja kama ingizo la mchakato mwingine kupunguza taka na gharama." },
+      ],
+      links: [{ label: "Kilimo Changanyiko cha FAO", url: "https://www.fao.org/integrated-farming" },{ label: "Mashamba ya Utafiti ya KALRO", url: "https://www.kalro.org" }],
+      quiz: [
+        { q: "Wazo kuu la kilimo changanyiko ni nini?", o: ["Kutumia zao moja tu","Kurudia rasilimali ndani ya shamba","Kuepuka wanyama","Kuchoma masalia yote"] },
+        { q: "Rasilimali gani kutoka kwa mifugo inaweza kuboresha bustani ya mazao?", o: ["Plastiki","Samadi","Moshi","Kutu"] },
+        { q: "Shamba changanyiko lililopangwa vizuri husaidia kupunguza nini zaidi?", o: ["Ugavi wa chakula","Taka na gharama za uzalishaji","Uhai wa udongo","Uhifadhi wa maji"] },
+      ],
+    },
+    organic: {
+      strand: "Michakato ya Uzalishaji wa Chakula",
+      title: "Bustani ya Kilimo Asilia",
+      summary: "Panda mboga, mikunde, na viungo kwa kutumia mboji, samadi, matandazo, mzunguko wa mazao, dawa za asilia za kuua wadudu, na uvunaji makini.",
+      goals: ["Andaa bustani ya kilimo asilia na ulee mazao kwa uwajibikaji.","Tumia mazoea ya asilia ya rutuba ya udongo na udhibiti wa wadudu.","Vuna mazao katika hatua sahihi ukizingatia usafi."],
+      ideas: ["Kilimo asilia kinaepuka utegemezi mkubwa kwa mbolea bandia na dawa za kuua wadudu.","Mboji, samadi, matandazo, umwagiliaji, na kuongeza mbolea vinasaidia mazao yenye afya.","Mzunguko wa mazao, upanzi wa pamoja, usafi wa shamba, na wawindaji wa asilia hupunguza wadudu na magonjwa."],
+      activities: ["Ratiba ya wajibu wa bustani","Maabara ya dawa za asilia za wadudu","Jedwali la uvunaji","Picha za portfolio"],
+      journal: "Chagua zao moja kutoka eneo lako na uunda ratiba ya kila wiki ya utunzaji wa bustani ya kilimo asilia kutoka upanzi hadi uvunaji.",
+      prompts: ["Ni nyenzo gani za asilia karibu na nyumba yako zinazoweza kutumika kutengeneza mboji?","Kwa nini ni muhimu kuvuna mazao wakati unaofaa badala ya mapema au marehemu sana?","Jinsi gani mzunguko wa mazao husaidia kupunguza matatizo ya wadudu na magonjwa?"],
+      glossary: [
+        { term: "Kilimo asilia", def: "Kukua chakula kwa kutumia njia za asilia bila kemikali bandia au mbolea." },
+        { term: "Matandazo", def: "Kufunika udongo kwa nyenzo za mmea ili kuhifadhi unyevu, kuzuia magugu, na kuongeza virutubisho." },
+        { term: "Mzunguko wa mazao", def: "Kukua mazao tofauti kwenye ardhi moja katika misimu tofauti kuvunja mzunguko wa wadudu na kurejesha virutubisho." },
+        { term: "Upanzi wa pamoja", def: "Kukua mazao mawili au zaidi karibu ili moja linufaishe lingine, k.m. kwa kuzuia wadudu." },
+        { term: "Kuongeza mbolea", def: "Kuweka mbolea au mboji kwenye uso wa udongo karibu na mimea inayokua ili kuongeza lishe." },
+        { term: "Dawa ya asilia ya wadudu", def: "Dawa ya kudhibiti wadudu iliyotengenezwa kutoka kwa mimea au madini badala ya kemikali bandia." },
+        { term: "Usafi wa shamba", def: "Kuondoa masalia ya mazao na mimea yenye ugonjwa kutoka bustanini ili kuzuia kuenea kwa wadudu na magonjwa." },
+      ],
+      links: [{ label: "Mtandao wa Kilimo Asilia wa Kenya", url: "https://www.koan.co.ke" },{ label: "Mwongozo wa FAO wa Bustani ya Kilimo Asilia", url: "https://www.fao.org/organic-agriculture" }],
+      quiz: [
+        { q: "Mazoea gani husaidia kuzuia magugu na kuhifadhi unyevu wa udongo katika bustani ya kilimo asilia?", o: ["Matandazo","Kumwagilia kila siku","Kuchoma mboji","Kuacha udongo wazi"] },
+        { q: "Kwa nini mazao yanayohusiana yanapaswa kupanda maeneo tofauti badala ya sehemu moja kila wakati?", o: ["Yanaweza kushiriki wadudu na magonjwa","Hayawezi kutumia maji","Yanazuia jua","Hayhitaji udongo"] },
+        { q: "Ni kiungo gani cha dawa ya asilia ya wadudu kilichotajwa katika kitabu?", o: ["Pilipili kali","Mafuta ya gari","Majivu ya rangi","Blichi"] },
+      ],
+    },
+    storage: {
+      strand: "Michakato ya Uzalishaji wa Chakula",
+      title: "Kuhifadhi Mazao ya Shamba",
+      summary: "Andaa na simamia maghala, vyumba, mifuko, na vyombo ili nafaka na mizizi viendelee kuwa salama.",
+      goals: ["Tambua miundo ya uhifadhi na vifaa vya mazao ya shamba.","Andaa ghala kwa kusafisha, kukausha, kuziba, na kuzuia wadudu.","Simamia mazao yaliyohifadhiwa ili kuzuia ukungu, wadudu, unyevu, na harufu mbaya."],
+      ideas: ["Vifaa vya uhifadhi vinapaswa kuwa vikavu, safi, baridi, vyenye hewa, na salama dhidi ya wadudu.","Masalia ya mazao ya zamani, vumbi, uvujaji, sehemu zilizovunjika, na mimea karibu na ghala lazima yashughulikiwe.","Mazao yaliyoharibika au yenye wadudu yanapaswa kuondolewa ili kuzuia kuenea."],
+      activities: ["Ukaguzi wa muundo wa uhifadhi","Andaa ghala la shule","Utafiti wa usalama wa chakula"],
+      journal: "Kagua mahali pa kuhifadhi chakula nyumbani au shuleni. Orodhesha hatari tatu na vitendo vitatu vitakavyofanya kuwa salama zaidi.",
+      prompts: ["Ni vifaa gani vya uhifadhi vilivyopo nyumbani kwako na hali yao ni nini?","Unajuaje nafaka kwenye ghala imeshambuliwa na wadudu au ukungu?","Vitendo gani rahisi familia inaweza kuchukua leo kuboresha uhifadhi wao wa chakula?"],
+      glossary: [
+        { term: "Ghala", def: "Jengo au chumba kinachotumiwa kuhifadhi nafaka iliyovunwa." },
+        { term: "Uingizaji hewa", def: "Kuruhusu hewa safi kupita kwenye ghala ili kuondoa unyevu na kuzuia ukungu." },
+        { term: "Ukungu", def: "Aina ya kuvu unaokua kwenye chakula au nyuso zenye unyevu, ukifanya chakula kisifae kuliwa." },
+        { term: "Kuzuia wadudu", def: "Kuziba nafasi na kutumia njia salama ili kuzuia wadudu na panya wasiingie ghali." },
+        { term: "Shambulio la wadudu", def: "Idadi kubwa ya wadudu au panya wanaoishi ndani au kushambulia ghala au mazao." },
+        { term: "Kifyonzaji cha unyevu", def: "Dutu inayofyonza unyevu, inayotumiwa kuweka mazao yaliyohifadhiwa yakiwa kavu." },
+      ],
+      links: [{ label: "Upotevu wa Baada ya Mavuno Kenya", url: "https://www.aphlis.net/en/page/8/kenya" },{ label: "Mazoea Bora ya Uhifadhi ya FAO", url: "https://www.fao.org/post-harvest" }],
+      quiz: [
+        { q: "Kwa nini ghala la mazao inapaswa kuwa kavu?", o: ["Kupunguza kuoza na ukuaji wa ukungu","Kulowesha nafaka","Kuvutia panya","Kuzuia mzunguko wa hewa"] },
+        { q: "Kitendo gani kinazuia wadudu kuingia kwenye chombo cha kuhifadhi?", o: ["Kutumia kifuniko kinachofaa vizuri","Kukiacha wazi","Kuongeza maji","Kuweka sehemu zilizovunjika"] },
+        { q: "Ni nini kifanyike nafaka zilizooza zinapopatikana kwenye mfuko?", o: ["Zirudishe kwenye mfuko","Ziondoe kulinda zilizobaki","Zichanganye na nafaka safi","Lowesha mfuko"] },
+      ],
+    },
+    flour: {
+      strand: "Michakato ya Uzalishaji wa Chakula",
+      title: "Kupika: Kutumia Mchanganyiko wa Unga",
+      summary: "Tumia uji wa kupiga na unga ulioandaliwa kutengeneza pancakes, chapati, mandazi, donati, mkate, na vyakula vilivyopakiwa unga.",
+      goals: ["Tofautisha uji wa kupiga na unga ulioandaliwa kwa muundo na viungo.","Andaa uji wa kupiga na unga ulioandaliwa kwa taratibu sahihi.","Oanisha mchanganyiko wa unga na bidhaa za kukaanga kidogo, kukaanga kwa mafuta mengi, na kuoka."],
+      ideas: ["Uji wa kupiga una muundo wa kutiririka na unaweza kuwa nyembamba au mnene.","Unga ulioandaliwa ni laini lakini imara, hupinda, na unaweza kukandwa, kusombwa, na kupewa umbo.","Uji mwembamba hutengeneza pancakes; unga ulioandaliwa hutengeneza chapati, mandazi, donati, na mkate."],
+      activities: ["Andaa uji wa kupiga","Andaa unga ulioandaliwa","Vitendo vya kutengeneza pancake","Vitendo vya chapati na mandazi"],
+      journal: "Linganisha uji wa kupiga na unga ulioandaliwa kwenye jedwali. Jumuisha kiwango cha maji, muundo, njia ya kushughulikia, na bidhaa mbili.",
+      prompts: ["Ni bidhaa gani za unga familia yako hutengeneza nyumbani na hutengenezwa vipi?","Ungaelezaje tofauti kati ya uji wa kupiga na unga ulioandaliwa kwa mwanafunzi mdogo?","Ni tahadhari gani za usalama unapaswa kufuata unapokaanga chakula kwa mafuta mengi?"],
+      glossary: [
+        { term: "Uji wa kupiga", def: "Mchanganyiko wa unga na kioevu wenye muundo wa kutiririka, unaotumika kwa pancakes na kupaka." },
+        { term: "Unga ulioandaliwa", def: "Mchanganyiko mnene wa unga na kioevu ambao unaweza kukandwa, kusombwa, na kupewa umbo." },
+        { term: "Kukanda", def: "Kubonyeza na kukunja unga mara kwa mara ili kukuza gluteni na kuufanya upinde." },
+        { term: "Gluteni", def: "Mtandao wa protini unaounda unga unapochanganywa na maji, ukipa unga wake wa kupinda." },
+        { term: "Kuchachisha", def: "Kufanya unga au uji wa kupiga uinuke kwa kuongeza chachu au unga wa kuoka." },
+        { term: "Kukaanga kidogo", def: "Kupika chakula katika kiasi kidogo cha mafuta kwenye sufuria, ukigeuzisha kupika pande zote." },
+        { term: "Kukaanga kwa mafuta mengi", def: "Kupika chakula kwa kuzamisha kabisa katika mafuta moto." },
+      ],
+      links: [{ label: "Chama cha Sayansi ya Nyumbani cha Kenya", url: "https://www.homescience.co.ke" },{ label: "Misingi ya Mkate na Uoka", url: "https://www.bbga.org/resources/baking-basics" }],
+      quiz: [
+        { q: "Mchanganyiko gani wa unga una muundo wa kutiririka?", o: ["Uji wa kupiga","Unga ulioandaliwa","Nyasi","Mboji"] },
+        { q: "Bidhaa gani hutengenezwa kawaida kutoka kwa uji mwembamba?", o: ["Pancakes","Chapati","Mandazi","Mkate"] },
+        { q: "Ni nini kinaweza kufanywa na unga ulioandaliwa lakini si kwa uji mwembamba?", o: ["Kukanda na kusomba","Kuumimina kwa urahisi","Kutumia kama dawa","Kuua vijidudu"] },
+      ],
+    },
+    waste: {
+      strand: "Mazoea ya Usafi",
+      title: "Kusafisha Vifaa vya Kutupa Taka",
+      summary: "Safisha mapipa, sinki, na mifereji kwa kutumia zana sahihi, sabuni ya kusafisha, dawa ya kuua vijidudu, na taratibu salama.",
+      goals: ["Tambua vifaa vya kutupa taka vya nyumbani.","Safisha mapipa ya taka, sinki, mifereji ya saruji, na mifereji ya udongo kwa usalama.","Eleza kwa nini kusafisha mara kwa mara kulinda afya."],
+      ideas: ["Glavu hulinda mikono dhidi ya uchafu na vijidudu wakati wa kusafisha.","Sinki na mifereji inapaswa kusafishwa, kukwa, suuzwa, na kusombwa.","Mifuko ya mapipa ya taka na ratiba za wajibu za mara kwa mara husaidia kudumisha usafi."],
+      activities: ["Ratiba ya wajibu wa pipa la taka","Kusafisha sinki la jikoni","Vitendo vya kusafisha mfereji"],
+      journal: "Unda ratiba ya kusafisha kila wiki kwa kifaa kimoja cha kutupa taka. Jumuisha zana, usalama, na pointi za ukaguzi.",
+      prompts: ["Ni zana na bidhaa gani za kusafisha zinazopatikana nyumbani kwako kwa kazi hii?","Pipa la taka la nyumbani linapaswa kutolewa na kusafishwa mara ngapi?","Ni matatizo gani ya afya yanayoweza kutokana na mfereji mchafu au ulozibwa?"],
+      glossary: [
+        { term: "Dawa ya kuua vijidudu", def: "Kioevu cha kemikali kinachotumiwa kuua vijidudu kwenye nyuso na vifaa." },
+        { term: "Sabuni ya kusafisha", def: "Dutu ya kusafisha inayoondoa mafuta na uchafu, kawaida huchanganywa na maji." },
+        { term: "Mfereji", def: "Njia au bomba linalobeba maji machafu kutoka sinki au ua." },
+        { term: "Mfuko wa ndani wa pipa", def: "Mfuko wa plastiki unaowekwa ndani ya pipa la taka kurahisisha kuondoa na kusafisha." },
+        { term: "Usafi wa mazingira", def: "Kudumisha hali za usafi ili kulinda afya na kuzuia magonjwa." },
+        { term: "Maambukizo ya msalaba", def: "Uhamishaji wa vijidudu kutoka uso au kitu kichafu hadi kitu safi." },
+      ],
+      links: [{ label: "Wizara ya Afya ya Kenya — Usafi", url: "https://www.health.go.ke/sanitation" },{ label: "Kukuza Usafi wa WHO", url: "https://www.who.int/teams/environment-climate-change-and-health/water-sanitation-and-health" }],
+      quiz: [
+        { q: "Kwa nini glavu zinapaswa kuvaliwa wakati wa kusafisha vifaa vya kutupa taka?", o: ["Kulinda mikono dhidi ya uchafu na vijidudu","Kukausha sinki","Kuongeza harufu mbaya","Kuhifadhi nafaka"] },
+        { q: "Sinki iliyozibwa inaweza kusababisha nini?", o: ["Mkusanyiko wa uchafu na mifereji mibaya","Uingizaji hewa bora","Mazao makavu zaidi","Mazao safi zaidi"] },
+        { q: "Kwa nini mifuko ya ndani ya mapipa ya taka ni muhimu?", o: ["Hufanya mapipa kuwa rahisi kudumisha usafi","Huvutia wadudu","Inabadilisha kuosha milele","Inaziba mifereji"] },
+      ],
+    },
+    disinfecting: {
+      strand: "Mazoea ya Usafi",
+      title: "Kuua Vijidudu kwenye Nguo na Vifaa vya Nyumbani",
+      summary: "Tumia kuchemsha, dawa ya kuua vijidudu, jua, chumvi, na pasi kupunguza kuenea kwa magonjwa ya kuambukizana.",
+      goals: ["Eleza njia tano za kuua vijidudu kwenye nguo na vifaa vya nyumbani.","Chagua njia zinazofaa kwa vitambaa na hali tofauti.","Zingatia tahadhari za kuzuia kuungua, kuungua kwa mvuke, na maambukizo."],
+      ideas: ["Kuchemsha kunafanya vizuri kwa pamba nyeupe na kitani kinachoweza kuvumilia joto.","Dawa ya kuua vijidudu ni muhimu kwa vitambaa visivyostahimili kuchemsha, lakini maelekezo ya lebo ni muhimu.","Kuchanganya njia kama jua na kupiga pasi kunaweza kuboresha ufanisi."],
+      activities: ["Maneno ya msalaba","Vitendo vya kuchemsha","Vitendo vya dawa ya kuua vijidudu","Kuanikwa na kupiga pasi"],
+      journal: "Chagua kitu kimoja cha nyumbani na uandike njia salama ya kuua vijidudu kwa hicho, ikijumuisha vifaa na tahadhari.",
+      prompts: ["Ni njia gani ya kuua vijidudu inayofaa zaidi kwa nyumba yako na kwa nini?","Ni tahadhari gani za usalama zinapaswa kuchukuliwa wakati wa kuchemsha nguo?","Jinsi gani jua husaidia kuua vijidudu kwenye kitambaa?"],
+      glossary: [
+        { term: "Kuchemsha", def: "Kuzamisha vitu kwenye maji yaliyochomwa hadi 100°C ili kuua vijidudu na viumbe vya magonjwa." },
+        { term: "Kutia chumvi", def: "Kuloweka vitambaa kwenye uyeyusho wenye chumvi nyingi ili kuondoa unyevu na kuua viumbe vidogo." },
+        { term: "Kupiga pasi", def: "Kutumia pasi ya moto kwenye kitambaa kuua vijidudu vya juu kwa joto la moja kwa moja." },
+        { term: "Kimelea cha ugonjwa", def: "Kiumbe kidogo kama bakteria au virusi kinachosababisha ugonjwa." },
+        { term: "Mionzi ya urujuani", def: "Mionzi ya jua isiyoonekana (UV) inayoharibu DNA ya bakteria kwenye nyuso." },
+        { term: "Kuungua kwa mvuke", def: "Kuungua kunakosababishwa na kioevu cha moto sana au mvuke." },
+        { term: "Ugonjwa wa kuambukizana", def: "Ugonjwa unaoweza kuenea kutoka mtu hadi mtu kwa mawasiliano ya moja kwa moja au yasiyokuwa ya moja kwa moja." },
+      ],
+      links: [{ label: "Mwongozo wa Usafi wa CDC", url: "https://www.cdc.gov/infectioncontrol/guidelines" },{ label: "Kuzuia Maambukizo ya WHO", url: "https://www.who.int/infection-prevention" }],
+      quiz: [
+        { q: "Njia gani inatumia joto la juu la maji kuua vijidudu kwenye vitambaa vinavyofaa?", o: ["Kuchemsha","Matandazo","Uingizaji","Kubana nyasi"] },
+        { q: "Njia gani inatumia mionzi ya UV nje ya nyumba?", o: ["Jua","Kutia chumvi","Kupiga vumbi","Kutengeneza mboji"] },
+        { q: "Kwa nini maelekezo ya lebo ya dawa ya kuua vijidudu lazima yasomwe kwa makini?", o: ["Kufuata maelekezo salama na ya ufanisi","Kubadilisha rangi ya kitambaa","Kufanya maji yawe baridi","Kuepuka kusuuza wakati wote"] },
+      ],
+    },
+    grafting: {
+      strand: "Mbinu za Uzalishaji",
+      title: "Uingizaji wa Mimea",
+      summary: "Unganisha chipukizi na shina la msingi kutoka kwa mimea inayohusiana kwa karibu ili kuboresha matunda, maua, kurekebisha, au kufufua mimea.",
+      goals: ["Tambua chipukizi, shina la msingi, na kiungo cha uingizaji.","Fanya uingizaji salama wa kata ya V na funika kiungo.","Tunza mche uliounganishwa hadi kiungo kipone."],
+      ideas: ["Chipukizi ni sehemu ya juu ya mmea inayotakiwa; shina la msingi ni mche wa chini.","Kata laini inayofanana, kufunga kwa nguvu, na kutiia uimarishaji vinalinda kiungo cha uingizaji.","Mwagilia kwa uangalifu, linda mmea, ondoa machipuo chini ya kiungo, na ondoa mkanda baada ya kupona."],
+      activities: ["Utafutaji wa mmea","Vitendo vya uingizaji wa mwongozo","Utunzaji wa mche","Kesi ya utatuzi wa migogoro"],
+      journal: "Eleza jinsi unavyorekebisha mche wa mwembe ulioharibiwa kwa uingizaji. Jumuisha tahadhari za usalama kwa zana kali.",
+      prompts: ["Ni miti gani ya matunda karibu na nyumba yako au shuleni inayoweza kufaidika na uingizaji?","Kwa nini ni muhimu kufanya kata laini inayofanana wakati wa uingizaji?","Ni nini kingetokea ikiwa kiungo cha uingizaji hakifunikwa au hakifungwi kwa nguvu?"],
+      glossary: [
+        { term: "Chipukizi", def: "Sehemu ya juu ya mmea uliounganishwa, inayochukuliwa kutoka kwa mmea wenye sifa zinazotakiwa." },
+        { term: "Shina la msingi", def: "Sehemu ya chini ya mmea uliounganishwa inayotoa mfumo wa mizizi na msaada." },
+        { term: "Kiungo cha uingizaji", def: "Sehemu ambapo chipukizi na shina la msingi vinaunganishwa pamoja na kuungana." },
+        { term: "Uingizaji wa kata ya V", def: "Njia ya uingizaji ambapo kata ya umbo la V inafanywa katika shina la msingi ili kuweka chipukizi chenye umbo la kabari." },
+        { term: "Mkanda wa uingizaji", def: "Mkanda wa kupinda unaotumika kufunga na kulinda kiungo cha uingizaji wakati wa kupona." },
+        { term: "Kalasi", def: "Tishu mpya inayokua juu ya jeraha au kiungo cha uingizaji ili kuiziba na kuiponya." },
+        { term: "Uenezaji kwa mimea", def: "Kuzaliana mimea kwa kutumia sehemu zisizo za mbegu kama vipande, machipuo, au uingizaji." },
+      ],
+      links: [{ label: "Mwongozo wa Uingizaji wa Bustani ya KARI", url: "https://www.kari.org/horticulture" },{ label: "Mwongozo wa FAO wa Uenezaji wa Mimea", url: "https://www.fao.org/plant-production-protection" }],
+      quiz: [
+        { q: "Sehemu ya juu ya mmea uliounganishwa inaitwa nini?", o: ["Chipukizi","Shina la msingi","Tray","Ghala"] },
+        { q: "Kwa nini kiungo cha uingizaji kinafunikwa?", o: ["Kuzuia kuingia kwa maji na kuoza","Kukifanya kiwe huru","Kusimamisha ukuaji wote","Kuvutia wadudu"] },
+        { q: "Ni mazoea gani ya utunzaji yanayosaidia tawi linalotakiwa peke yake kukua?", o: ["Kuondoa machipuo chini ya kiungo cha uingizaji","Kunyunyiza maji kwenye kiungo","Kuacha mkanda milele","Kuvunja chipukizi"] },
+      ],
+    },
+    sunDryer: {
+      strand: "Mbinu za Uzalishaji",
+      title: "Kiyoyozi cha Jua Kilichotengenezwa Nyumbani",
+      summary: "Jenga na tumia kiyoyozi chenye kifuniko cha uwazi na trays ili kuhifadhi mboga za majani kwa njia ya kukausha kwa jua iliyodhibitiwa.",
+      goals: ["Tambua fremu, tray, kifuniko cha uwazi, na nafasi inayofaa.","Jenga kiyoyozi cha jua kwa kutumia vifaa vinavyopatikana eneo.","Kausha mboga kwa usafi katika safu moja na uzihifadhi kwa usalama."],
+      ideas: ["Kifuniko cha uwazi huruhusu jua kuingia na kunasa joto kama chafu ndogo.","Trays za waya hushikilia mboga na kuruhusu mzunguko wa hewa.","Mboga safi, usambazaji sawa, kupinda, na kuhifadhi kwa ukaushaji husaidia kudumisha ubora."],
+      activities: ["Mchoro wa kiyoyozi cha jua","Vitendo vya ujenzi","Jaribio la joto","Mradi wa usalama wa chakula nyumbani"],
+      journal: "Chora kiyoyozi cha jua unachoweza kujenga eneo lako. Orodhesha fremu, tray, kifuniko, hatua za kusafisha, na jinsi utakavyokijaribu.",
+      prompts: ["Ni vifaa gani vinavyopatikana eneo lako unavyoweza kutumia kujenga fremu ya kiyoyozi cha jua?","Kwa nini ni muhimu kupinda mboga wakati wa mchakato wa kukausha?","Ungeujuaje ikiwa mboga zimekauka kabisa kabla ya kuzihifadhi?"],
+      glossary: [
+        { term: "Kiyoyozi cha jua", def: "Kifaa kinachotumia nishati ya jua na joto lililonaswa kukaushia chakula kwa uhifadhi." },
+        { term: "Kifuniko cha uwazi", def: "Nyenzo ya uwazi (kioo au plastiki) inayoruhusu jua kuingia huku ikinasa joto ndani ya kiyoyozi." },
+        { term: "Tray ya waya", def: "Tray iliyotengenezwa kwa wavu wa chuma inayoshikilia chakula na kuruhusu hewa kuzunguka." },
+        { term: "Ukaushaji", def: "Kuondoa maji kutoka kwa chakula ili kuzuia ukuaji wa viumbe vidogo na kuongeza muda wa matumizi." },
+        { term: "Ukaushaji wa jua", def: "Kutumia nishati ya jua kuondoa unyevu kutoka kwa chakula au mazao." },
+        { term: "Athari ya chafu", def: "Kunaswa kwa joto ndani ya nafasi iliyofungwa, sawa na jinsi kiyoyozi cha jua kinavyofanya kazi." },
+        { term: "Maudhui ya unyevu", def: "Kiasi cha maji kilichobaki kwenye chakula kilichokaushwa, ambacho lazima kiwe kidogo ya kutosha kuzuia kuharibika." },
+      ],
+      links: [{ label: "Rasilimali za Kukausha Chakula za SOLARAID", url: "https://www.solaraid.org/resources" },{ label: "Ukaushaji wa Chakula kwa Jua wa FAO", url: "https://www.fao.org/post-harvest/solar-drying" }],
+      quiz: [
+        { q: "Kwa nini kiyoyozi cha jua kilichotengenezwa nyumbani kinahitaji kifuniko cha uwazi?", o: ["Kuruhusu jua kuingia na kunasa joto","Kuzuia mwanga wote","Kuweka mboga zikiwa na unyevu","Kualika wadudu"] },
+        { q: "Kwa nini mboga za majani zinapaswa kupangwa katika safu moja?", o: ["Kuruhusu mzunguko wa hewa na kukausha sawasawa","Kuifanya kukausha kuwe polepole zaidi","Kuficha uchafu","Kuzuia joto"] },
+        { q: "Usiku wa baridi sana, kiyoyozi cha jua kifanyike nini?", o: ["Kiingizwe ndani ya chumba","Kiaachwe mvuani","Ongeza maji zaidi","Fungua mlango usiku wote"] },
+      ],
+    },
+  },
+};
+
+function ml(module, field) {
+  if ((progress?.language || "en") === "en") return module[field];
+  return MODULE_TRANSLATIONS.sw?.[module.id]?.[field] ?? module[field];
+}
+function mlq(module, qIdx) {
+  const item = module.quiz[qIdx];
+  if ((progress?.language || "en") === "en") return { q: item.q, o: item.o };
+  const sw = MODULE_TRANSLATIONS.sw?.[module.id]?.quiz?.[qIdx];
+  return { q: sw?.q ?? item.q, o: sw?.o ?? item.o };
+}
+
+/* ── Achievement Badges ──────────────────────────────────────── */
+const BADGES = [
+  { id: "first_steps", icon: "🌱", title: "First Steps",  desc: "Complete all 3 tasks in any module" },
+  { id: "on_fire",     icon: "🔥", title: "On Fire",      desc: "Reach a 3-day study streak" },
+  { id: "scholar",     icon: "📚", title: "Scholar",      desc: "Mark 5 modules as Learned" },
+  { id: "game_master", icon: "🎮", title: "Game Master",  desc: "Complete 5 games" },
+  { id: "quiz_ace",    icon: "🏆", title: "Quiz Ace",     desc: "Score 100% on any quiz" },
+  { id: "all_rounder", icon: "🌟", title: "All-Rounder",  desc: "Fully complete all 10 modules" },
+  { id: "note_keeper", icon: "✏️",  title: "Note Keeper",  desc: "Write journal notes for 5 modules" },
+  { id: "bilingual",   icon: "🌍", title: "Bilingual",    desc: "Use the Swahili language mode" },
+];
+
+function checkBadges() {
+  if (!progress.badges) progress.badges = [];
+  const newlyEarned = [];
+  BADGES.forEach((badge) => {
+    if (progress.badges.includes(badge.id)) return;
+    let earned = false;
+    switch (badge.id) {
+      case "first_steps": earned = MODULES.some((m) => moduleCompletion(m) === 3); break;
+      case "on_fire":     earned = progress.streak.count >= 3; break;
+      case "scholar":     earned = Object.values(progress.learned).filter(Boolean).length >= 5; break;
+      case "game_master": earned = Object.values(progress.games).filter(Boolean).length >= 5; break;
+      case "quiz_ace":    earned = Object.values(progress.quizScores).some((s) => s >= 100); break;
+      case "all_rounder": earned = MODULES.every((m) => moduleCompletion(m) === 3); break;
+      case "note_keeper": earned = Object.values(progress.notes).filter((n) => n.trim().length > 10).length >= 5; break;
+      case "bilingual":   earned = progress.language === "sw"; break;
+    }
+    if (earned) { progress.badges.push(badge.id); newlyEarned.push(badge); }
+  });
+  if (newlyEarned.length) {
+    saveProgress();
+    newlyEarned.forEach((b) => {
+      showToast(`${b.icon} Badge unlocked: ${b.title}!`, "success");
+      confettiBurst(window.innerWidth / 2, window.innerHeight / 3, 25);
+    });
+    renderBadgesInline();
+  }
+}
+
+function renderBadgesInline() {
+  const el = document.getElementById("badgesGrid");
+  if (!el) return;
+  const earned = progress.badges || [];
+  el.innerHTML = BADGES.map((b) => `
+    <div class="badge-pill ${earned.includes(b.id) ? "badge-earned" : "badge-locked"}" title="${escapeHTML(b.desc)}">
+      <span class="badge-icon">${b.icon}</span>
+      <span class="badge-title">${escapeHTML(b.title)}</span>
+    </div>
+  `).join("");
+}
+
+/* ── Performance Analytics ───────────────────────────────────── */
+function renderAnalyticsCard() {
+  const scores = MODULES.map((m) => progress.quizScores[m.id] || 0);
+  const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  const maxScore = Math.max(...scores);
+  const best = maxScore > 0 ? MODULES[scores.indexOf(maxScore)] : null;
+  const attempted = MODULES.filter((m) => (progress.quizScores[m.id] || 0) > 0);
+  const worst = attempted.sort((a, b) => (progress.quizScores[a.id] || 0) - (progress.quizScores[b.id] || 0))[0];
+  return `
+    <article class="tool-card analytics-card" style="animation-delay:0.22s">
+      <p class="eyebrow">📊 Analytics</p>
+      <h3>Quiz performance</h3>
+      <div class="analytics-bars">
+        ${MODULES.map((m) => {
+          const score = progress.quizScores[m.id] || 0;
+          const label = ml(m, "title").split(":")[0].trim();
+          return `<div class="analytics-row">
+            <span class="analytics-label">${escapeHTML(label)}</span>
+            <div class="analytics-track">
+              <div class="analytics-fill" style="width:${score}%;background:${m.color}"></div>
+            </div>
+            <span class="analytics-pct ${score >= 70 ? "pct-pass" : score > 0 ? "pct-partial" : ""}">${score > 0 ? score + "%" : "—"}</span>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="analytics-summary">
+        <span class="pill">Avg: ${avg}%</span>
+        ${best ? `<span class="pill pill-done">Best: ${escapeHTML(ml(best, "title").split(":")[0])}</span>` : ""}
+        ${worst ? `<span class="pill" style="border-color:rgba(239,68,68,0.35);color:#f87171">Needs work: ${escapeHTML(ml(worst, "title").split(":")[0])}</span>` : ""}
+      </div>
+      ${smartStudyRecommendation()}
+    </article>
+  `;
+}
+
+/* ── AI Advisor Panel ────────────────────────────────────────── */
+function showAIPanel() {
+  const module = currentModule();
+  const misses = progress.quizMisses?.[module.id] || {};
+  const hardQuestions = module.quiz
+    .map((q, i) => ({ idx: i, q: q.q, count: misses[i] || 0 }))
+    .filter((q) => q.count > 0)
+    .sort((a, b) => b.count - a.count);
+
+  const overall = coursePercent();
+  const attempted = MODULES.filter((m) => (progress.quizScores[m.id] || 0) > 0);
+  const avgScore = attempted.length
+    ? Math.round(attempted.reduce((s, m) => s + progress.quizScores[m.id], 0) / attempted.length)
+    : 0;
+
+  const modal = document.createElement("div");
+  modal.className = "share-modal-overlay";
+  modal.style.display = "flex";
+  modal.innerHTML = `
+    <div class="share-modal" style="width:min(540px,95vw);max-height:88vh;overflow-y:auto">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="font-size:1.8rem">🤖</span>
+        <div>
+          <h3 style="margin:0;font-size:1.1rem">AI Study Advisor</h3>
+          <p style="margin:0;font-size:0.76rem;color:var(--muted)">Works fully offline — no internet needed</p>
+        </div>
+        <span class="pill" style="margin-left:auto;background:rgba(22,163,74,0.15);color:var(--leaf);font-size:0.72rem">Offline ✓</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0">
+        <div style="padding:10px;border-radius:10px;background:rgba(30,122,69,0.08);text-align:center">
+          <div style="font-size:1.4rem;font-weight:900">${overall}%</div>
+          <div style="font-size:0.72rem;color:var(--muted)">Course done</div>
+        </div>
+        <div style="padding:10px;border-radius:10px;background:rgba(30,122,69,0.08);text-align:center">
+          <div style="font-size:1.4rem;font-weight:900">${avgScore > 0 ? avgScore + "%" : "—"}</div>
+          <div style="font-size:0.72rem;color:var(--muted)">Avg quiz score</div>
+        </div>
+        <div style="padding:10px;border-radius:10px;background:rgba(30,122,69,0.08);text-align:center">
+          <div style="font-size:1.4rem;font-weight:900">${progress.streak.count}</div>
+          <div style="font-size:0.72rem;color:var(--muted)">Day streak 🔥</div>
+        </div>
+      </div>
+
+      <p class="eyebrow" style="margin-bottom:6px">📚 Recommended next step</p>
+      ${smartStudyRecommendation()}
+
+      <p class="eyebrow" style="margin:14px 0 6px">🎯 Adaptive quiz — ${escapeHTML(ml(module, "title").split(":")[0])}</p>
+      ${hardQuestions.length ? `
+        <ul style="list-style:none;padding:0;margin:0 0 8px">
+          ${hardQuestions.map((hq) => `
+            <li style="padding:7px 10px;margin-bottom:5px;border-radius:8px;background:rgba(239,68,68,0.07);border-left:3px solid rgba(239,68,68,0.45);font-size:0.82rem">
+              <strong>Missed ${hq.count}×</strong> — ${escapeHTML(hq.q)}
+            </li>`).join("")}
+        </ul>
+        <p style="font-size:0.78rem;color:var(--muted)">These questions appear first on your next quiz attempt.</p>
+      ` : `<p style="font-size:0.84rem;color:var(--muted);margin-bottom:8px">No missed questions yet for this module. Take the quiz to unlock personalised ordering.</p>`}
+
+      <p class="eyebrow" style="margin:14px 0 8px">🔊 Read aloud</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+        <button class="secondary-button" id="aiSpeakSummary">Module summary</button>
+        ${(ml(module, "goals") || []).slice(0, 2).map((g, i) => `<button class="secondary-button ai-speak-btn" data-speak="${escapeHTML(g)}" style="font-size:0.78rem">Goal ${i + 1}</button>`).join("")}
+        ${(ml(module, "ideas") || []).slice(0, 2).map((idea, i) => `<button class="secondary-button ai-speak-btn" data-speak="${escapeHTML(idea)}" style="font-size:0.78rem">Idea ${i + 1}</button>`).join("")}
+      </div>
+
+      <button class="primary-button" id="closeAIPanel" style="width:100%">Close</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector("#closeAIPanel")?.addEventListener("click", () => modal.remove());
+  modal.querySelector("#aiSpeakSummary")?.addEventListener("click", () => speakText(ml(module, "summary")));
+  modal.querySelectorAll(".ai-speak-btn").forEach((btn) => btn.addEventListener("click", () => speakText(btn.dataset.speak)));
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+}
+
+/* ── Smart Study Recommendation ──────────────────────────────── */
+function smartStudyRecommendation() {
+  const incomplete = MODULES.filter((m) => moduleCompletion(m) < 3);
+  if (!incomplete.length) {
+    return `<p style="margin-top:12px;padding:9px 12px;border-radius:8px;background:rgba(22,163,74,0.12);border:1px solid rgba(22,163,74,0.25);font-size:0.84rem;color:var(--leaf)">🎉 Outstanding — every module is complete. Download your certificate!</p>`;
+  }
+  const attempted = MODULES.filter((m) => (progress.quizScores[m.id] || 0) > 0);
+  const failing = attempted
+    .filter((m) => (progress.quizScores[m.id] || 0) < 70)
+    .sort((a, b) => (progress.quizScores[a.id] || 0) - (progress.quizScores[b.id] || 0));
+  const unstarted = MODULES.find((m) => !progress.learned[m.id] && !progress.games[m.id] && !(progress.quizScores[m.id] || 0));
+  const learnDoneNoGame = MODULES.find((m) => progress.learned[m.id] && !progress.games[m.id]);
+  const gameDoneNoQuiz = MODULES.find((m) => progress.games[m.id] && (progress.quizScores[m.id] || 0) < 70);
+
+  let msg = "";
+  if (failing.length) {
+    const m = failing[0];
+    msg = `Retake the <strong>${escapeHTML(ml(m, "title").split(":")[0])}</strong> quiz — score is ${progress.quizScores[m.id] || 0}%, needs 70%.`;
+  } else if (gameDoneNoQuiz) {
+    msg = `Open the Quiz tab for <strong>${escapeHTML(ml(gameDoneNoQuiz, "title").split(":")[0])}</strong> — you finished the game, now take the quiz.`;
+  } else if (learnDoneNoGame) {
+    msg = `Try the Simulate tab for <strong>${escapeHTML(ml(learnDoneNoGame, "title").split(":")[0])}</strong> — you read it, now play the game.`;
+  } else if (unstarted) {
+    msg = `Start <strong>${escapeHTML(ml(unstarted, "title").split(":")[0])}</strong> — open the Learn tab to begin.`;
+  } else {
+    msg = `Keep going — ${incomplete.length} module${incomplete.length > 1 ? "s" : ""} left to fully complete.`;
+  }
+  return `<p style="margin-top:12px;padding:9px 12px;border-radius:8px;background:rgba(30,122,69,0.07);border:1px solid rgba(30,122,69,0.18);font-size:0.84rem;line-height:1.55">💡 <strong>Recommended next:</strong> ${msg}</p>`;
+}
+
+/* ── Report Card ─────────────────────────────────────────────── */
+function generateReportCard() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 900; canvas.height = 1260;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#f7faf7";
+  ctx.fillRect(0, 0, 900, 1260);
+  ctx.fillStyle = "#0d3320";
+  ctx.fillRect(0, 0, 900, 110);
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.font = "bold 28px Arial";
+  ctx.fillText("Agriculture & Nutrition Grade 9 — MTP Digital", 450, 44);
+  ctx.font = "19px Arial";
+  ctx.fillText("Student Progress Report", 450, 80);
+  ctx.fillStyle = "rgba(255,255,255,0.55)";
+  ctx.font = "13px Arial";
+  ctx.textAlign = "right";
+  ctx.fillText(`${new Date().toLocaleDateString("en-KE", { dateStyle: "long" })}   ·   Streak: ${progress.streak.count} day${progress.streak.count !== 1 ? "s" : ""}`, 875, 132);
+  let y = 148;
+  MODULES.forEach((m) => {
+    const score = progress.quizScores[m.id] || 0;
+    const comp = moduleCompletion(m);
+    ctx.fillStyle = "#eaf3ea";
+    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(24, y, 852, 74, 7); else ctx.rect(24, y, 852, 74); ctx.fill();
+    ctx.fillStyle = m.color;
+    ctx.fillRect(24, y, 6, 74);
+    ctx.fillStyle = "#111";
+    ctx.font = "bold 16px Arial";
+    ctx.textAlign = "left";
+    ctx.fillText(m.title, 44, y + 25);
+    ctx.font = "13px Arial";
+    ctx.fillStyle = progress.learned[m.id] ? "#16a34a" : "#bbb";
+    ctx.fillText("✓ Learn", 44, y + 52);
+    ctx.fillStyle = progress.games[m.id] ? "#16a34a" : "#bbb";
+    ctx.fillText("✓ Game", 120, y + 52);
+    ctx.fillStyle = score >= 70 ? "#16a34a" : score > 0 ? "#d97706" : "#bbb";
+    ctx.fillText(`Quiz: ${score > 0 ? score + "%" : "—"}`, 196, y + 52);
+    ctx.fillStyle = comp === 3 ? "#16a34a" : comp > 0 ? "#d97706" : "#999";
+    ctx.font = "bold 20px Arial";
+    ctx.textAlign = "right";
+    ctx.fillText(`${comp}/3`, 868, y + 44);
+    y += 82;
+  });
+  y += 8;
+  ctx.fillStyle = "#0d3320";
+  ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(24, y, 852, 60, 8); else ctx.rect(24, y, 852, 60); ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 19px Arial";
+  ctx.textAlign = "left";
+  ctx.fillText(`Overall: ${coursePercent()}%`, 44, y + 37);
+  ctx.textAlign = "right";
+  ctx.fillText(`Badges: ${(progress.badges || []).length}/${BADGES.length}`, 868, y + 37);
+  ctx.fillStyle = "#aaa";
+  ctx.font = "12px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("Mountain Publishers — MTP Digital", 450, y + 90);
+  const link = document.createElement("a");
+  link.href = canvas.toDataURL("image/png");
+  link.download = "mtp-report-card.png";
+  link.click();
+  showToast("📊 Report card downloaded!", "success");
+}
+
+/* ── Matching Pairs Game ─────────────────────────────────────── */
+function renderMatchingPairs(mount, module) {
+  const glossary = ml(module, "glossary") || [];
+  if (glossary.length < 3) {
+    mount.innerHTML = `<div class="empty-state">Not enough glossary terms for this game. Try the main game instead.</div>`;
+    return;
+  }
+  const pairs = shuffle(glossary).slice(0, Math.min(6, glossary.length));
+  const cards = shuffle([
+    ...pairs.map((g, i) => ({ id: i, text: g.term, kind: "term" })),
+    ...pairs.map((g, i) => ({ id: i, text: g.def,  kind: "def"  })),
+  ]);
+  let flipped = [];
+  let matched = new Set();
+  let moves = 0;
+  let locked = false;
+
+  const draw = () => {
+    const grid = document.getElementById("matchGrid");
+    if (!grid) return;
+    grid.innerHTML = cards.map((card, idx) => {
+      const isFlipped = flipped.includes(idx);
+      const isMatched = matched.has(String(card.id));
+      const small = card.text.length > 45;
+      return `<button class="match-card ${isMatched ? "match-matched" : isFlipped ? "match-flipped" : ""}"
+        data-match-idx="${idx}">
+        <div class="match-inner">
+          <div class="match-face match-back-face">?</div>
+          <div class="match-face match-front-face" style="font-size:${small ? "0.65rem" : "0.8rem"}">${escapeHTML(card.text)}</div>
+        </div>
+      </button>`;
+    }).join("");
+    const movesEl = document.getElementById("matchMoves");
+    const foundEl = document.getElementById("matchFound");
+    if (movesEl) movesEl.textContent = moves;
+    if (foundEl) foundEl.textContent = `${matched.size}/${pairs.length}`;
+    if (matched.size === pairs.length) {
+      completeGame(module.id);
+      confettiBurst(
+        mount.getBoundingClientRect().left + mount.offsetWidth / 2,
+        mount.getBoundingClientRect().top + 120, 35
+      );
+    }
+  };
+
+  mount.innerHTML = `
+    <div class="game-board">
+      <article class="tool-card">
+        <p class="eyebrow">🃏 Term Match</p>
+        <h3>${escapeHTML(ml(module, "title"))}</h3>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">Flip cards to match each term with its definition.</p>
+        <div class="match-grid" id="matchGrid"></div>
+        <p style="margin-top:10px;font-size:0.82rem;color:var(--muted)">
+          Moves: <strong id="matchMoves">0</strong> &nbsp;·&nbsp; Matched: <strong id="matchFound">0/${pairs.length}</strong>
+        </p>
+      </article>
+      <article class="tool-card result-panel">
+        <p class="eyebrow">How to play</p>
+        <h3>Memory matching</h3>
+        <ul class="feedback-list">
+          <li>Click any card to flip it</li>
+          <li>Find its matching pair</li>
+          <li>Match all ${pairs.length} pairs to complete</li>
+        </ul>
+        <button class="secondary-button" id="matchReset" style="margin-top:14px">🔀 New game</button>
+      </article>
+    </div>
+  `;
+  draw();
+
+  mount.addEventListener("click", (e) => {
+    if (e.target.id === "matchReset") { renderMatchingPairs(mount, module); return; }
+    if (locked) return;
+    const btn = e.target.closest("[data-match-idx]");
+    if (!btn) return;
+    const idx = Number(btn.dataset.matchIdx);
+    const card = cards[idx];
+    if (flipped.includes(idx) || matched.has(String(card.id))) return;
+    if (flipped.length >= 2) return;
+    flipped = [...flipped, idx];
+    draw();
+    if (flipped.length === 2) {
+      locked = true;
+      const [i1, i2] = flipped;
+      const c1 = cards[i1], c2 = cards[i2];
+      setTimeout(() => {
+        if (c1.id === c2.id && c1.kind !== c2.kind) {
+          matched.add(String(c1.id));
+          showToast(`✅ ${c1.kind === "term" ? c1.text : c2.text}`, "success");
+        }
+        flipped = [];
+        locked = false;
+        draw();
+      }, 950);
+    }
+  });
+}
+
+/* ── Notifications ───────────────────────────────────────────── */
+function initNotifications() {
+  const btn = document.getElementById("notifToggleBtn");
+  if (!("Notification" in window)) { if (btn) btn.style.display = "none"; return; }
+  const updateBtn = () => {
+    if (!btn) return;
+    if (Notification.permission === "granted") {
+      btn.textContent = "🔔 Reminders on";
+      btn.classList.add("active");
+    } else if (Notification.permission === "denied") {
+      btn.textContent = "🔕 Blocked";
+      btn.disabled = true;
+    } else {
+      btn.textContent = "🔔 Enable reminders";
+      btn.classList.remove("active");
+    }
+  };
+  updateBtn();
+  if (btn) btn.addEventListener("click", async () => {
+    if (Notification.permission === "default") await Notification.requestPermission();
+    updateBtn();
+    if (Notification.permission === "granted") scheduleReminder();
+  });
+  if (Notification.permission === "granted") scheduleReminder();
+}
+
+function scheduleReminder() {
+  const today = todayISO();
+  if (progress.streak.lastDate === today) return;
+  setTimeout(() => {
+    if (todayISO() !== progress.streak.lastDate && Notification.permission === "granted") {
+      new Notification("📚 MTP Digital — Time to study!", {
+        body: `Keep your ${progress.streak.count}-day streak going! Open the app to continue.`,
+        icon: "./icons/icon.svg",
+      });
+    }
+  }, 4 * 60 * 60 * 1000);
+}
+
+/* ── Teacher Dashboard ───────────────────────────────────────── */
+function showTeacherDashboard() {
+  const modal = document.createElement("div");
+  modal.className = "share-modal-overlay";
+  modal.style.display = "flex";
+  modal.innerHTML = `
+    <div class="share-modal" style="width:min(700px,96vw)">
+      <h3>📋 Teacher Dashboard</h3>
+      <p style="color:var(--muted);font-size:0.88rem;margin-bottom:12px">Paste up to 6 student progress codes (one per line) to compare scores.</p>
+      <textarea id="teacherCodesInput" rows="6" placeholder="Paste student codes here, one per line…"
+        style="width:100%;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,0.18);color:inherit;padding:10px 12px;font-family:monospace;font-size:0.78rem;resize:vertical;box-sizing:border-box;margin-bottom:12px"></textarea>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="primary-button" id="teacherAnalyseBtn">Analyse</button>
+        <button class="secondary-button" id="closeTeacherModal">Close</button>
+      </div>
+      <div id="teacherResults"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector("#closeTeacherModal").addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+  modal.querySelector("#teacherAnalyseBtn").addEventListener("click", () => {
+    const lines = modal.querySelector("#teacherCodesInput").value.trim().split("\n").filter(Boolean).slice(0, 6);
+    if (!lines.length) return;
+    const results = lines.map((code, i) => {
+      try {
+        const d = JSON.parse(atob(code.trim()));
+        return { label: `Student ${i + 1}`, scores: d.scores || {}, learned: d.learned || {}, games: d.games || {} };
+      } catch { return null; }
+    }).filter(Boolean);
+    if (!results.length) { showToast("❌ No valid codes found.", "warn"); return; }
+    const host = modal.querySelector("#teacherResults");
+    const rows = MODULES.map((m) => {
+      const cells = results.map((r) => {
+        const s = r.scores[m.id] || 0;
+        const color = s >= 70 ? "#4ade80" : s > 0 ? "#fbbf24" : "rgba(255,255,255,0.25)";
+        return `<td style="text-align:center;padding:7px 10px;color:${color}">${s > 0 ? s + "%" : "—"}</td>`;
+      }).join("");
+      return `<tr style="border-top:1px solid rgba(255,255,255,0.07)">
+        <td style="padding:7px 10px;font-weight:600">${escapeHTML(ml(m, "title").split(":")[0])}</td>${cells}
+      </tr>`;
+    }).join("");
+    const avgCells = results.map((r) => {
+      const vals = Object.values(r.scores).filter(Boolean);
+      const avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+      return `<td style="text-align:center;padding:7px 10px">${avg > 0 ? avg + "%" : "—"}</td>`;
+    }).join("");
+    host.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.82rem">
+      <thead><tr style="background:rgba(255,255,255,0.07)">
+        <th style="text-align:left;padding:8px 10px">Module</th>
+        ${results.map((r) => `<th style="padding:8px 10px">${escapeHTML(r.label)}</th>`).join("")}
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr style="background:rgba(255,255,255,0.06);font-weight:700">
+        <td style="padding:7px 10px">Average</td>${avgCells}
+      </tr></tfoot>
+    </table></div>`;
+  });
+}
+
 const state = {
   moduleId: "hay",
   view: "learn",
   globalSearch: "",
   quizAnswers: {},
   theme: localStorage.getItem(THEME_KEY) || "liquid",
+  timedMode: false,
+  timedSecondsLeft: 60,
+  timedTimer: null,
+  assessmentActive: false,
+  assessmentTimer: null,
+  locked: null,
+  altGame: "main",
 };
 
 const params = new URLSearchParams(window.location.search);
 if (MODULES.some((module) => module.id === params.get("module"))) {
   state.moduleId = params.get("module");
 }
-if (["learn", "play", "quiz", "reader", "journal"].includes(params.get("view"))) {
+if (["learn", "play", "quiz", "reader", "journal", "flashcard", "glossary"].includes(params.get("view"))) {
   state.view = params.get("view");
+}
+if (params.get("lock") && MODULES.some((m) => m.id === params.get("lock"))) {
+  state.locked = params.get("lock");
+  state.moduleId = params.get("lock");
 }
 
 let progress = loadProgress();
@@ -553,6 +1561,7 @@ const els = {
   globalSearch: document.getElementById("globalSearch"),
   openPdfButton: document.getElementById("openPdfButton"),
   resetProgressButton: document.getElementById("resetProgressButton"),
+  aiAdvisorBtn: document.getElementById("aiAdvisorBtn"),
 };
 
 function applyTheme() {
@@ -568,16 +1577,70 @@ function loadProgress() {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved && typeof saved === "object") {
       return {
-        learned: saved.learned || {},
-        games: saved.games || {},
-        quizScores: saved.quizScores || {},
-        notes: saved.notes || {},
+        learned:      saved.learned      || {},
+        games:        saved.games        || {},
+        quizScores:   saved.quizScores   || {},
+        notes:        saved.notes        || {},
+        quizHistory:  saved.quizHistory  || {},
+        quizMisses:   saved.quizMisses   || {},
+        streak:       saved.streak       || { count: 0, lastDate: "" },
+        weeklyGoal:   saved.weeklyGoal   || { target: 3, weekStart: "", done: [] },
+        fontScale:    saved.fontScale    ?? 1,
+        language:     saved.language     || "en",
+        badges:       saved.badges       || [],
       };
     }
   } catch (error) {
     console.warn(error);
   }
-  return { learned: {}, games: {}, quizScores: {}, notes: {} };
+  return {
+    learned: {}, games: {}, quizScores: {}, notes: {},
+    quizHistory: {}, quizMisses: {}, streak: { count: 0, lastDate: "" },
+    weeklyGoal: { target: 3, weekStart: "", done: [] },
+    fontScale: 1, language: "en", badges: [],
+  };
+}
+
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function mondayISO() {
+  const d = new Date();
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() - day + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function checkStreak() {
+  const today = todayISO();
+  const last = progress.streak.lastDate;
+  if (last === today) return;
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yISO = yesterday.toISOString().slice(0, 10);
+  if (last === yISO) {
+    progress.streak.count += 1;
+  } else if (last !== "") {
+    progress.streak.count = 1;
+  } else {
+    progress.streak.count = 1;
+  }
+  progress.streak.lastDate = today;
+  saveProgress();
+}
+
+function checkWeeklyGoal(moduleId) {
+  const monday = mondayISO();
+  if (progress.weeklyGoal.weekStart !== monday) {
+    progress.weeklyGoal.weekStart = monday;
+    progress.weeklyGoal.done = [];
+  }
+  const module = MODULES.find((m) => m.id === moduleId);
+  if (module && moduleCompletion(module) === 3 && !progress.weeklyGoal.done.includes(moduleId)) {
+    progress.weeklyGoal.done.push(moduleId);
+    saveProgress();
+  }
 }
 
 function saveProgress() {
@@ -642,12 +1705,62 @@ function highlight(text, query) {
 
 function render() {
   applyTheme();
+  applyLanguage();
+  applyFontScale();
   renderModuleList();
   renderProgress();
   renderHero();
   renderTabs();
   renderView();
+  renderStreakAndGoal();
+  if (state.locked) {
+    const lockBanner = document.getElementById("assignmentBanner");
+    if (lockBanner) {
+      const m = MODULES.find((mod) => mod.id === state.locked);
+      lockBanner.textContent = `📋 ${t("assignmentBanner")}: ${m ? m.title : state.locked}`;
+      lockBanner.style.display = "flex";
+    }
+  }
 }
+
+function applyLanguage() {
+  const lang = progress.language || "en";
+  document.body.dataset.lang = lang;
+  document.querySelectorAll("[data-view='learn']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabLearn"); });
+  document.querySelectorAll("[data-view='play']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabPlay"); });
+  document.querySelectorAll("[data-view='quiz']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabQuiz"); });
+  document.querySelectorAll("[data-view='reader']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabReader"); });
+  document.querySelectorAll("[data-view='journal']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabJournal"); });
+  document.querySelectorAll("[data-view='flashcard']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabFlashcard"); });
+  document.querySelectorAll("[data-view='glossary']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabGlossary"); });
+  document.querySelectorAll("[data-lang-btn]").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.langBtn === lang);
+  });
+}
+
+function applyFontScale() {
+  document.documentElement.style.setProperty("--font-scale", progress.fontScale ?? 1);
+  const slider = document.getElementById("fontScaleSlider");
+  if (slider) slider.value = progress.fontScale ?? 1;
+}
+
+function renderModuleList() {
+  const modules = state.locked ? MODULES.filter((m) => m.id === state.locked) : MODULES;
+  els.moduleList.innerHTML = modules.map((module) => {
+    const done = moduleCompletion(module) === 3;
+    const active = module.id === state.moduleId;
+    return `
+      <button class="module-button ${active ? "active" : ""} ${done ? "done" : ""}" data-module="${module.id}">
+        <span class="module-icon" style="background:${module.color}">${module.icon}</span>
+        <span>
+          <span class="module-title">${escapeHTML(ml(module, "title"))}</span>
+          <span class="module-pages">Pages ${module.pages[0]}-${module.pages[1]} - ${moduleCompletion(module)}/3</span>
+        </span>
+        <span class="module-check">OK</span>
+      </button>
+    `;
+  }).join("");}
+
 
 function renderProgress() {
   const percent = coursePercent();
@@ -663,22 +1776,6 @@ function renderProgress() {
   }
 }
 
-function renderModuleList() {
-  els.moduleList.innerHTML = MODULES.map((module) => {
-    const done = moduleCompletion(module) === 3;
-    const active = module.id === state.moduleId;
-    return `
-      <button class="module-button ${active ? "active" : ""} ${done ? "done" : ""}" data-module="${module.id}">
-        <span class="module-icon" style="background:${module.color}">${module.icon}</span>
-        <span>
-          <span class="module-title">${escapeHTML(module.title)}</span>
-          <span class="module-pages">Pages ${module.pages[0]}-${module.pages[1]} - ${moduleCompletion(module)}/3</span>
-        </span>
-        <span class="module-check">OK</span>
-      </button>
-    `;
-  }).join("");
-}
 
 function renderHero() {
   const module = currentModule();
@@ -687,9 +1784,9 @@ function renderHero() {
   const quizScore = progress.quizScores[module.id] || 0;
   els.moduleHero.innerHTML = `
     <div class="hero-copy">
-      <p class="eyebrow">MTP Digital &mdash; ${escapeHTML(module.strand)}</p>
-      <h2>${escapeHTML(module.title)}</h2>
-      <p>${escapeHTML(module.summary)}</p>
+      <p class="eyebrow">MTP Digital &mdash; ${escapeHTML(ml(module, "strand"))}</p>
+      <h2>${escapeHTML(ml(module, "title"))}</h2>
+      <p>${escapeHTML(ml(module, "summary"))}</p>
       <div class="hero-meta">
         <span class="pill" title="Click the Book tab to read">📖 Pages ${module.pages[0]}–${module.pages[1]}</span>
         <span class="pill ${learnDone ? "pill-done" : ""}" title="Click Learn tab">${learnDone ? "✅" : "📚"} Learn ${learnDone ? "done" : "open"}</span>
@@ -742,11 +1839,13 @@ function renderView() {
 
   clearTimeout(_rvTimer);
   _rvTimer = setTimeout(() => {
-    if (state.view === "play")    renderPlay(module);
-    if (state.view === "learn")   renderLearn(module);
-    if (state.view === "quiz")    renderQuiz(module);
-    if (state.view === "reader")  renderReader(module);
-    if (state.view === "journal") renderJournal(module);
+    if (state.view === "play")      renderPlay(module);
+    if (state.view === "learn")     renderLearn(module);
+    if (state.view === "quiz")      renderQuiz(module);
+    if (state.view === "reader")    renderReader(module);
+    if (state.view === "journal")   renderJournal(module);
+    if (state.view === "flashcard") renderFlashcard(module);
+    if (state.view === "glossary")  renderGlossary(module);
 
     void els.viewHost.offsetWidth;
 
@@ -757,47 +1856,87 @@ function renderView() {
 }
 
 function renderLearn(module) {
+  const hasSpeech = !!window.speechSynthesis;
+  const speakerBtn = (text) => hasSpeech
+    ? `<button class="speak-btn ghost-button" data-speak="${escapeHTML(text)}" title="Listen" aria-label="Listen">🔊</button>`
+    : "";
+  const videoCard = module.video ? `
+    <article class="tool-card video-embed-card" style="animation-delay:0.28s">
+      <p class="eyebrow">🎬 Video</p>
+      <h3>${t("watchVideo")}</h3>
+      <div class="video-thumb" id="videoThumb_${module.id}">
+        <button class="primary-button" id="loadVideoBtn">${t("watchVideo")}</button>
+      </div>
+    </article>` : "";
+  const linksCard = (module.links && module.links.length) ? `
+    <article class="tool-card" style="animation-delay:0.32s">
+      <p class="eyebrow">🔗 ${t("relatedLinks")}</p>
+      <div class="activity-strip">
+        ${module.links.map((lnk, li) => { const label = (ml(module, "links") || [])[li]?.label ?? lnk.label; return `<a class="activity-chip" href="${escapeHTML(lnk.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a>`; }).join("")}
+      </div>
+    </article>` : "";
   els.viewHost.innerHTML = `
     <div class="grid-2">
       <article class="lesson-card" style="animation-delay:0.04s">
         <p class="eyebrow">🎯 Skill targets</p>
         <h3>What to master</h3>
         <ul class="idea-list">
-          ${module.goals.map((goal, i) => `<li><span>${i + 1}</span><p>${escapeHTML(goal)}</p></li>`).join("")}
+          ${ml(module, "goals").map((goal, i) => `<li><span>${i + 1}</span><p>${escapeHTML(goal)}</p>${speakerBtn(goal)}</li>`).join("")}
         </ul>
       </article>
       <article class="lesson-card" style="animation-delay:0.10s">
         <p class="eyebrow">💡 Core ideas</p>
         <h3>Book focus</h3>
         <ul class="idea-list">
-          ${module.ideas.map((idea, i) => `<li><span>${i + 1}</span><p>${escapeHTML(idea)}</p></li>`).join("")}
+          ${ml(module, "ideas").map((idea, i) => `<li><span>${i + 1}</span><p>${escapeHTML(idea)}</p>${speakerBtn(idea)}</li>`).join("")}
         </ul>
       </article>
     </div>
-    <div class="grid-2" style="margin-top:${16}px">
+    <div class="grid-2" style="margin-top:16px">
       <article class="tool-card" style="animation-delay:0.16s">
         <p class="eyebrow">🏫 Activities</p>
         <h3>Classroom moves</h3>
         <p>Use these formats from the textbook to turn the topic into discussion, practical work, and reflection.</p>
         <div class="activity-strip">
-          ${module.activities.map((a) => `<span class="activity-chip">${escapeHTML(a)}</span>`).join("")}
+          ${ml(module, "activities").map((a) => `<span class="activity-chip">${escapeHTML(a)}</span>`).join("")}
         </div>
       </article>
       <article class="tool-card" style="animation-delay:0.22s">
         <p class="eyebrow">✅ Checkpoint</p>
         <h3>${progress.learned[module.id] ? "Learning marked ✅" : "Mark after review"}</h3>
         <p>Read pages ${module.pages[0]}–${module.pages[1]}, complete the lesson cards, then mark this section before trying the simulation and quiz.</p>
-        <button class="primary-button" id="markLearnedButton">${progress.learned[module.id] ? "🔄 Review again" : "✅ Mark learned"}</button>
+        <button class="primary-button" id="markLearnedButton">${progress.learned[module.id] ? "🔄 " + t("reviewAgain") : "✅ " + t("markLearned")}</button>
+        <button class="secondary-button" id="printSummaryButton" style="margin-top:8px">🖨️ ${t("printSummary")}</button>
       </article>
     </div>
+    ${videoCard}${linksCard}
   `;
+  if (module.video) {
+    document.getElementById("loadVideoBtn")?.addEventListener("click", () => {
+      const thumb = document.getElementById(`videoThumb_${module.id}`);
+      if (thumb) thumb.innerHTML = `<iframe src="${escapeHTML(module.video)}" width="100%" height="240" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius:10px"></iframe>`;
+    }, { once: true });
+  }
 }
 
 function renderPlay(module) {
   if (window._activeGameCleanup) { window._activeGameCleanup(); window._activeGameCleanup = null; }
   if (window.MTPThreeSim?.disposeAll) window.MTPThreeSim.disposeAll();
-  els.viewHost.innerHTML = `<div id="gameMount"></div>`;
+  const altGame = state.altGame || "main";
+  els.viewHost.innerHTML = `
+    <div class="game-tab-row">
+      <button class="game-tab-btn ${altGame === "main" ? "active" : ""}" data-alt-game="main">⚙️ Main Game</button>
+      <button class="game-tab-btn ${altGame === "match" ? "active" : ""}" data-alt-game="match">🃏 Term Match</button>
+      <button class="game-tab-btn ${altGame === "wordsearch" ? "active" : ""}" data-alt-game="wordsearch">🔤 Word Search</button>
+    </div>
+    <div id="gameMount"></div>
+  `;
+  els.viewHost.querySelectorAll("[data-alt-game]").forEach((btn) => {
+    btn.addEventListener("click", () => { state.altGame = btn.dataset.altGame; renderPlay(module); });
+  });
   const mount = document.getElementById("gameMount");
+  if (altGame === "match") { renderMatchingPairs(mount, module); return; }
+  if (altGame === "wordsearch") { renderWordSearch(mount, module); return; }
   const games = {
     hayLab: renderHayLab,
     leftoverSort: renderLeftoverSort,
@@ -812,49 +1951,97 @@ function renderPlay(module) {
     disinfectMatch: renderDisinfectMatch,
     graftingLab: renderGraftingLab,
     sunDryer: renderSunDryer,
+    wordSearch: renderWordSearch,
   };
-  games[module.game](mount, module);
+  const gameFn = games[module.game];
+  if (!gameFn) { mount.innerHTML = `<div class="empty-state">Game not available for this module.</div>`; return; }
+  gameFn(mount, module);
 }
 
 function renderQuiz(module) {
+  if (state.timedTimer) { clearInterval(state.timedTimer); state.timedTimer = null; }
   state.quizAnswers[module.id] = state.quizAnswers[module.id] || {};
   const answers = state.quizAnswers[module.id];
   const bestScore = progress.quizScores[module.id] || 0;
   const answered = Object.keys(answers).length;
+  const history = (progress.quizHistory[module.id] || []).slice(-5);
+  const historyHtml = history.length ? `
+    <div style="margin-top:8px">
+      <p style="margin:0 0 4px;font-weight:700;font-size:0.82rem">Last attempts:</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${history.map((s) => `<span class="pill ${s >= 70 ? "pill-done" : ""}">${s}%</span>`).join("")}
+      </div>
+    </div>` : "";
   els.viewHost.innerHTML = `
     <div class="quiz-layout">
       <div class="question-card" style="animation-delay:0.04s">
-        <p class="eyebrow">🏆 Practice quiz</p>
+        <p class="eyebrow">🏆 ${t("tabQuiz")}</p>
         <h3>${escapeHTML(module.title)}</h3>
-        ${module.quiz.map((item, index) => `
-          <div class="quiz-block" data-question="${index}" style="margin-bottom:20px">
-            <p style="font-weight:800;margin-bottom:8px">${index + 1}. ${escapeHTML(item.q)}</p>
-            <div class="quiz-options">
-              ${item.o.map((option) => `
-                <button class="choice-button ${answers[index] === option ? "selected" : ""}" data-answer="${escapeHTML(option)}" data-question="${index}">
-                  ${escapeHTML(option)}
-                </button>
-              `).join("")}
-            </div>
-          </div>
-        `).join("")}
+        <div id="timedQuizBar" class="timed-quiz-bar" style="display:${state.timedMode ? "block" : "none"}">
+          <div class="timed-quiz-fill" id="timedQuizFill" style="width:100%"></div>
+          <span id="timedQuizLabel">60s</span>
+        </div>
+        ${(() => {
+          const hasSpeech = !!window.speechSynthesis;
+          const misses = progress.quizMisses?.[module.id] || {};
+          const sortedIndices = module.quiz.map((_, i) => i)
+            .sort((a, b) => (misses[b] || 0) - (misses[a] || 0));
+          return sortedIndices.map((index) => {
+            const item = module.quiz[index];
+            const tq = mlq(module, index);
+            const speakQ = hasSpeech ? ` <button class="speak-btn ghost-button" data-speak="${escapeHTML(tq.q)}" title="Listen" style="font-size:0.78rem;padding:2px 5px;vertical-align:middle">🔊</button>` : "";
+            return `
+            <div class="quiz-block" data-question="${index}" style="margin-bottom:20px">
+              <p style="font-weight:800;margin-bottom:8px">${index + 1}. ${escapeHTML(tq.q)}${speakQ}</p>
+              <div class="quiz-options">
+                ${item.o.map((option_en, oi) => `
+                  <button class="choice-button ${answers[index] === option_en ? "selected" : ""}" data-answer="${escapeHTML(option_en)}" data-question="${index}">
+                    ${escapeHTML(tq.o[oi] ?? option_en)}
+                  </button>
+                `).join("")}
+              </div>
+            </div>`;
+          }).join("");
+        })()}
       </div>
       <aside class="tool-card quiz-side" style="animation-delay:0.10s">
         <div>
-          <p class="eyebrow">Best score</p>
+          <p class="eyebrow">${t("bestScore")}</p>
           <div class="score-number" id="quizScoreDisplay">${bestScore}%</div>
           <div class="quiz-score-bar" style="margin-top:8px"><span style="width:${bestScore}%"></span></div>
+          ${historyHtml}
         </div>
         <div style="padding:12px 14px;border-radius:10px;background:rgba(30,122,69,0.07);border:1px solid rgba(30,122,69,0.15)">
-          <p style="margin:0;font-weight:800;font-size:0.88rem">Progress</p>
-          <p class="progress-answered" style="margin:4px 0 0;font-size:0.82rem;color:var(--muted)">${answered} of ${module.quiz.length} answered</p>
+          <p style="margin:0;font-weight:800;font-size:0.88rem">${t("progress")}</p>
+          <p class="progress-answered" style="margin:4px 0 0;font-size:0.82rem;color:var(--muted)">${answered} of ${module.quiz.length} ${t("answered")}</p>
           <p style="margin:6px 0 0;font-size:0.80rem;color:var(--muted)">Score ≥70% to earn the quiz badge.</p>
         </div>
-        <button class="primary-button" id="submitQuizButton" style="margin-top:4px">Submit quiz</button>
-        <button class="secondary-button" id="clearQuizButton">Clear answers</button>
+        <button class="primary-button" id="submitQuizButton" style="margin-top:4px">${t("submitQuiz")}</button>
+        <button class="secondary-button" id="clearQuizButton">${t("clearAnswers")}</button>
+        <button class="secondary-button ${state.timedMode ? "active" : ""}" id="toggleTimedMode" style="margin-top:4px">⏱ ${t("timedMode")}</button>
+        <button class="secondary-button" id="startAssessmentButton" style="margin-top:4px">📋 ${t("startAssessment")}</button>
       </aside>
     </div>
   `;
+  if (state.timedMode) startTimedQuiz(module);
+}
+
+function startTimedQuiz(_module) {
+  if (state.timedTimer) clearInterval(state.timedTimer);
+  state.timedSecondsLeft = 60;
+  const fill = document.getElementById("timedQuizFill");
+  const label = document.getElementById("timedQuizLabel");
+  state.timedTimer = setInterval(() => {
+    state.timedSecondsLeft -= 1;
+    const pct = (state.timedSecondsLeft / 60) * 100;
+    if (fill) fill.style.width = `${pct}%`;
+    if (label) { label.textContent = `${state.timedSecondsLeft}s`; label.style.color = state.timedSecondsLeft <= 10 ? "#ff4444" : ""; }
+    if (state.timedSecondsLeft <= 0) {
+      clearInterval(state.timedTimer);
+      state.timedTimer = null;
+      document.getElementById("submitQuizButton")?.click();
+    }
+  }, 1000);
 }
 
 function renderReader(module) {
@@ -911,30 +2098,485 @@ function createSnippet(text, query) {
 function renderJournal(module) {
   const note = progress.notes[module.id] || "";
   const completed = MODULES.filter((item) => moduleCompletion(item) === 3).length;
+  const allDone = completed === MODULES.length;
+  const certCard = allDone ? `
+    <article class="tool-card certificate-ready" style="animation-delay:0.28s">
+      <p class="eyebrow">🏆 Achievement</p>
+      <h3>${t("certTitle")}</h3>
+      <p>You have completed all ${MODULES.length} modules. Download your certificate!</p>
+      <button class="primary-button" id="downloadCertButton">🎓 ${t("downloadCert")}</button>
+    </article>` : "";
   els.viewHost.innerHTML = `
     <div class="grid-2">
       <article class="journal-card">
         <p class="eyebrow">Portfolio prompt</p>
-        <h3>${escapeHTML(module.title)}</h3>
-        <p>${escapeHTML(module.journal)}</p>
+        <h3>${escapeHTML(ml(module, "title"))}</h3>
+        <p>${escapeHTML(ml(module, "journal"))}</p>
         <textarea id="journalText" placeholder="Write your notes here">${escapeHTML(note)}</textarea>
+        <div id="journalPromptStrip" class="prompt-strip" style="display:none">
+          <p class="eyebrow">💬 ${t("promptsHeading")}</p>
+          ${(ml(module, "prompts") || []).map((p) => `<button class="activity-chip prompt-chip" data-prompt="${escapeHTML(p)}">${escapeHTML(p)}</button>`).join("")}
+        </div>
         <div class="journal-actions">
-          <button class="primary-button" id="saveJournalButton">Save note</button>
-          <button class="secondary-button" id="exportProgressButton">Export progress</button>
+          <button class="primary-button" id="saveJournalButton">${t("saveNote")}</button>
+          <button class="secondary-button" id="exportProgressButton">${t("exportProgress")}</button>
+          <button class="secondary-button" id="shareProgressButton">${t("shareProgress")}</button>
         </div>
       </article>
-      <article class="tool-card">
-        <p class="eyebrow">Badges</p>
-        <h3>Your offline record</h3>
-        <div class="badge-row">
-          <span class="badge">Learned ${Object.keys(progress.learned).length}/${MODULES.length}</span>
-          <span class="badge">Games ${Object.keys(progress.games).length}/${MODULES.length}</span>
-          <span class="badge">Quizzes ${Object.values(progress.quizScores).filter((score) => score >= 70).length}/${MODULES.length}</span>
-          <span class="badge">Finished modules ${completed}/${MODULES.length}</span>
+      <div class="journal-side-col">
+        <article class="tool-card" style="animation-delay:0.10s">
+          <p class="eyebrow">Achievements</p>
+          <h3>Badges</h3>
+          <div class="badges-grid" id="badgesGrid"></div>
+          <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="secondary-button" id="generateReportCardButton">📊 Report card</button>
+            <button class="secondary-button" id="teacherViewButton">📋 Teacher view</button>
+          </div>
+          <div style="margin-top:14px">
+            <p class="eyebrow">Import code</p>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <input id="importCodeInput" type="text" placeholder="${t("importPlaceholder")}" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--control);color:inherit;font-size:0.85rem">
+              <button class="secondary-button" id="importCodeButton">${t("importBtn")}</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+    ${renderAnalyticsCard()}
+    ${certCard}
+  `;
+  const textarea = document.getElementById("journalText");
+  const promptStrip = document.getElementById("journalPromptStrip");
+  if (textarea && promptStrip && module.prompts?.length) {
+    textarea.addEventListener("input", () => {
+      promptStrip.style.display = textarea.value.length >= 50 ? "block" : "none";
+    });
+    if (note.length >= 50) promptStrip.style.display = "block";
+  }
+  renderBadgesInline();
+}
+
+/* ── Flashcard View ──────────────────────────────────────────── */
+function renderFlashcard(module) {
+  const cards = [
+    ...ml(module, "goals").map((g) => ({ front: "Goal", back: g, type: "goal" })),
+    ...ml(module, "ideas").map((g) => ({ front: "Core Idea", back: g, type: "idea" })),
+    ...(ml(module, "glossary") || []).map((g) => ({ front: g.term, back: g.def, type: "glossary" })),
+  ];
+  let idx = 0;
+  let flipped = false;
+  let known = new Set();
+
+  const draw = () => {
+    const card = cards[idx];
+    const host = document.getElementById("flashcardHost");
+    if (!host) return;
+    host.innerHTML = `
+      <div class="flashcard-scene" id="flashcardScene">
+        <div class="flashcard-card ${flipped ? "flipped" : ""}" id="flashcardInner">
+          <div class="flashcard-front">
+            <p class="eyebrow">${escapeHTML(card.front)}</p>
+            <p class="flashcard-text">${card.type === "glossary" ? escapeHTML(card.front) : "Can you recall this " + escapeHTML(card.front.toLowerCase()) + "?"}</p>
+            <p class="flip-hint">${t("flipHint")}</p>
+          </div>
+          <div class="flashcard-back">
+            <p class="eyebrow">${escapeHTML(card.front)}</p>
+            <p class="flashcard-text">${escapeHTML(card.back)}</p>
+            ${window.speechSynthesis ? `<button class="speak-btn ghost-button" data-speak="${escapeHTML(card.back)}" title="Listen" style="margin-top:6px;font-size:0.85rem">🔊 Listen</button>` : ""}
+          </div>
         </div>
+      </div>
+      <div class="flashcard-nav">
+        <button class="secondary-button" id="fcPrev" ${idx === 0 ? "disabled" : ""}>← Prev</button>
+        <span style="font-weight:700;font-size:0.9rem;color:var(--muted)">${idx + 1} / ${cards.length}${known.size === cards.length ? " — " + t("allKnown") : ""}</span>
+        <button class="secondary-button" id="fcNext" ${idx === cards.length - 1 ? "disabled" : ""}>Next →</button>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <button class="primary-button ${known.has(idx) ? "active" : ""}" id="fcKnown">${known.has(idx) ? "✅ " + t("knownBtn") : t("knownBtn")}</button>
+      </div>
+    `;
+    document.getElementById("flashcardScene")?.addEventListener("click", () => {
+      flipped = !flipped;
+      document.getElementById("flashcardInner")?.classList.toggle("flipped", flipped);
+    });
+    document.getElementById("fcPrev")?.addEventListener("click", () => { idx = Math.max(0, idx - 1); flipped = false; draw(); });
+    document.getElementById("fcNext")?.addEventListener("click", () => { idx = Math.min(cards.length - 1, idx + 1); flipped = false; draw(); });
+    document.getElementById("fcKnown")?.addEventListener("click", () => { known.has(idx) ? known.delete(idx) : known.add(idx); draw(); });
+  };
+
+  els.viewHost.innerHTML = `
+    <article class="tool-card" style="max-width:600px;margin:0 auto">
+      <p class="eyebrow">🃏 ${t("tabFlashcard")}</p>
+      <h3>${escapeHTML(module.title)}</h3>
+      <div id="flashcardHost"></div>
+    </article>
+  `;
+  draw();
+}
+
+/* ── Glossary View ───────────────────────────────────────────── */
+function renderGlossary(module) {
+  const hasSpeech = !!window.speechSynthesis;
+  let query = "";
+  const allTerms = MODULES.flatMap((m) => (ml(m, "glossary") || []).map((g) => ({ ...g, moduleTitle: ml(m, "title"), color: m.color })));
+  const moduleTerms = (ml(module, "glossary") || []).map((g) => ({ ...g, moduleTitle: ml(module, "title"), color: module.color }));
+
+  const draw = (terms) => {
+    const host = document.getElementById("glossaryList");
+    if (!host) return;
+    const filtered = query ? terms.filter((t) => t.term.toLowerCase().includes(query.toLowerCase()) || t.def.toLowerCase().includes(query.toLowerCase())) : terms;
+    if (!filtered.length) { host.innerHTML = `<div class="empty-state">No matching terms.</div>`; return; }
+    host.innerHTML = filtered.map((item) => `
+      <article class="glossary-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span class="module-icon" style="background:${item.color};width:28px;height:28px;font-size:0.75rem">${item.moduleTitle.charAt(0)}</span>
+          <strong class="glossary-term">${highlight(item.term, query)}</strong>
+          ${hasSpeech ? `<button class="speak-btn ghost-button" data-speak="${escapeHTML(item.term + ". " + item.def)}" title="Listen">🔊</button>` : ""}
+        </div>
+        <p class="glossary-def">${highlight(item.def, query)}</p>
+        <span class="pill" style="font-size:0.75rem">${escapeHTML(item.moduleTitle)}</span>
+      </article>
+    `).join("");
+  };
+
+  els.viewHost.innerHTML = `
+    <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <input id="glossarySearch" type="search" placeholder="${t("searchGlossary")}" style="flex:1;min-width:180px;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--control);color:inherit;font-size:0.9rem">
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:700;cursor:pointer">
+        <input type="checkbox" id="glossaryAllModules"> All modules
+      </label>
+    </div>
+    <div class="glossary-grid" id="glossaryList"></div>
+  `;
+  draw(moduleTerms);
+  document.getElementById("glossarySearch")?.addEventListener("input", (e) => {
+    query = e.target.value;
+    const all = document.getElementById("glossaryAllModules")?.checked;
+    draw(all ? allTerms : moduleTerms);
+  });
+  document.getElementById("glossaryAllModules")?.addEventListener("change", (e) => {
+    draw(e.target.checked ? allTerms : moduleTerms);
+  });
+}
+
+/* ── Speech Utility ──────────────────────────────────────────── */
+function speakText(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = (progress?.language === "sw") ? "sw-KE" : "en-KE";
+  utter.rate = 0.9;
+  window.speechSynthesis.speak(utter);
+}
+
+/* ── Certificate Generator ───────────────────────────────────── */
+function generateCertificate() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1200; canvas.height = 800;
+  const ctx = canvas.getContext("2d");
+
+  const grad = ctx.createLinearGradient(0, 0, 1200, 800);
+  grad.addColorStop(0, "#0a3d25"); grad.addColorStop(1, "#1a5c38");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 1200, 800);
+
+  ctx.strokeStyle = "rgba(255,215,0,0.6)"; ctx.lineWidth = 12;
+  ctx.strokeRect(24, 24, 1152, 752);
+  ctx.strokeStyle = "rgba(255,215,0,0.3)"; ctx.lineWidth = 4;
+  ctx.strokeRect(36, 36, 1128, 728);
+
+  ctx.fillStyle = "rgba(255,255,255,0.05)";
+  for (let i = 0; i < 8; i++) {
+    ctx.beginPath(); ctx.arc(150 + i * 130, 400, 60, 0, Math.PI * 2); ctx.fill();
+  }
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#ffd700";
+  ctx.font = "bold 56px 'Nunito', sans-serif";
+  ctx.fillText(t("certTitle"), 600, 120);
+
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.font = "26px 'Nunito Sans', sans-serif";
+  ctx.fillText(t("certSub"), 600, 200);
+
+  const name = (progress.notes[MODULES[0].id] || "").split("\n")[0].substring(0, 40) || "Student";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 44px 'Nunito', sans-serif";
+  ctx.fillText(escapeHTML(name), 600, 270);
+
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.font = "24px 'Nunito Sans', sans-serif";
+  ctx.fillText(t("certBody"), 600, 330);
+
+  ctx.fillStyle = "#ffd700";
+  ctx.font = "bold 28px 'Nunito', sans-serif";
+  ctx.fillText(t("certCourse"), 600, 380);
+
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.font = "18px 'Nunito Sans', sans-serif";
+  const mods = MODULES.map((m) => m.title).join("  •  ");
+  ctx.fillText(mods.substring(0, 120), 600, 450);
+
+  ctx.fillStyle = "#ffd700";
+  ctx.font = "bold 20px 'Nunito Sans', sans-serif";
+  ctx.fillText(new Date().toLocaleDateString("en-KE", { year: "numeric", month: "long", day: "numeric" }), 600, 680);
+
+  ctx.fillStyle = "rgba(255,215,0,0.8)";
+  ctx.font = "18px 'Nunito Sans', sans-serif";
+  ctx.fillText("MTP Digital — Agriculture & Nutrition Grade 9", 600, 730);
+
+  const link = document.createElement("a");
+  link.href = canvas.toDataURL("image/png");
+  link.download = "mtp-certificate.png";
+  link.click();
+  confettiBurst(window.innerWidth / 2, window.innerHeight / 3, 55);
+  showToast("🎓 Certificate downloaded!", "success");
+}
+
+/* ── Share / Import Code ─────────────────────────────────────── */
+function generateShareCode() {
+  try {
+    const data = { scores: progress.quizScores, learned: progress.learned, games: progress.games };
+    return btoa(JSON.stringify(data));
+  } catch { return ""; }
+}
+
+function importShareCode(code) {
+  try {
+    const data = JSON.parse(atob(code.trim()));
+    if (data.scores) Object.assign(progress.quizScores, data.scores);
+    if (data.learned) Object.assign(progress.learned, data.learned);
+    if (data.games) Object.assign(progress.games, data.games);
+    saveProgress();
+    render();
+    showToast("✅ Progress imported successfully!", "success");
+  } catch {
+    showToast("❌ Invalid code. Please check and try again.", "warn");
+  }
+}
+
+function showShareModal() {
+  const code = generateShareCode();
+  const modal = document.createElement("div");
+  modal.className = "share-modal-overlay";
+  modal.innerHTML = `
+    <div class="share-modal">
+      <h3>${t("shareModalTitle")}</h3>
+      <p>${t("shareInstructions")}</p>
+      <textarea class="share-code-box" readonly>${code}</textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="primary-button" id="copyShareCode">${t("copyCode")}</button>
+        <button class="secondary-button" id="closeShareModal">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  document.getElementById("copyShareCode")?.addEventListener("click", () => {
+    navigator.clipboard?.writeText(code).then(() => showToast("📋 Code copied!", "success")).catch(() => {});
+  });
+  document.getElementById("closeShareModal")?.addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+}
+
+/* ── Timed Assessment ────────────────────────────────────────── */
+function showAssessmentOverlay(module) {
+  if (state.assessmentActive) return;
+  state.assessmentActive = true;
+  let assessAnswers = {};
+  let secondsLeft = 600;
+
+  const overlay = document.getElementById("assessmentOverlay");
+  if (!overlay) return;
+
+  overlay.innerHTML = `
+    <div class="assessment-panel">
+      <div class="assessment-header">
+        <h2>📋 ${t("assessmentTitle")} — ${escapeHTML(ml(module, "title"))}</h2>
+        <div class="assessment-timer">
+          <span class="eyebrow">${t("assessmentTimer")}</span>
+          <div class="score-number" id="assessTimer">10:00</div>
+        </div>
+      </div>
+      <div class="assessment-bar"><div class="assessment-bar-fill" id="assessBarFill" style="width:100%"></div></div>
+      <div class="assessment-questions">
+        ${module.quiz.map((item, index) => {
+          const tq = mlq(module, index);
+          return `
+          <div class="quiz-block" style="margin-bottom:20px">
+            <p style="font-weight:800;margin-bottom:8px">${index + 1}. ${escapeHTML(tq.q)}</p>
+            <div class="quiz-options">
+              ${item.o.map((option_en, oi) => `
+                <button class="choice-button" data-assess-answer="${escapeHTML(option_en)}" data-assess-question="${index}">
+                  ${escapeHTML(tq.o[oi] ?? option_en)}
+                </button>
+              `).join("")}
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+      <button class="primary-button" id="assessSubmitBtn" style="margin-top:16px">${t("assessmentSubmit")}</button>
+    </div>
+  `;
+  overlay.style.display = "flex";
+
+  const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+  const timerEl = document.getElementById("assessTimer");
+  const fillEl = document.getElementById("assessBarFill");
+
+  state.assessmentTimer = setInterval(() => {
+    secondsLeft -= 1;
+    if (timerEl) { timerEl.textContent = formatTime(secondsLeft); timerEl.style.color = secondsLeft <= 60 ? "#ff4444" : ""; }
+    if (fillEl) fillEl.style.width = `${(secondsLeft / 600) * 100}%`;
+    if (secondsLeft <= 0) submitAssessment();
+  }, 1000);
+
+  const submitAssessment = () => {
+    clearInterval(state.assessmentTimer);
+    state.assessmentActive = false;
+    overlay.style.display = "none";
+    const correct = module.quiz.filter((item, i) => assessAnswers[i] === item.a).length;
+    const score = Math.round((correct / module.quiz.length) * 100);
+    const oldBest = progress.quizScores[module.id] || 0;
+    progress.quizScores[module.id] = Math.max(oldBest, score);
+    progress.quizHistory[module.id] = progress.quizHistory[module.id] || [];
+    progress.quizHistory[module.id].push(score);
+    saveProgress();
+    showToast(`📋 Assessment complete — ${score}%`, score >= 70 ? "success" : "info");
+    renderProgress(); renderHero(); renderModuleList();
+  };
+
+  overlay.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-assess-answer]");
+    if (btn) {
+      const q = Number(btn.dataset.assessQuestion);
+      assessAnswers[q] = btn.dataset.assessAnswer;
+      btn.closest(".quiz-options")?.querySelectorAll("[data-assess-answer]").forEach((b) => b.classList.toggle("selected", b === btn));
+    }
+    if (e.target.id === "assessSubmitBtn") submitAssessment();
+  });
+}
+
+/* ── Word Search Game ────────────────────────────────────────── */
+function generateWordGrid(words, size = 12) {
+  const grid = Array.from({ length: size }, () => Array(size).fill(""));
+  const placed = [];
+  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+  const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  for (const word of words) {
+    const w = word.toUpperCase().replace(/\s+/g, "");
+    let attempts = 0;
+    while (attempts < 80) {
+      attempts++;
+      const [dr, dc] = dirs[Math.floor(Math.random() * dirs.length)];
+      const row = Math.floor(Math.random() * size);
+      const col = Math.floor(Math.random() * size);
+      const endR = row + dr * (w.length - 1);
+      const endC = col + dc * (w.length - 1);
+      if (endR < 0 || endR >= size || endC < 0 || endC >= size) continue;
+      let fits = true;
+      for (let i = 0; i < w.length; i++) {
+        const ch = grid[row + dr * i][col + dc * i];
+        if (ch && ch !== w[i]) { fits = false; break; }
+      }
+      if (!fits) continue;
+      const cells = [];
+      for (let i = 0; i < w.length; i++) {
+        grid[row + dr * i][col + dc * i] = w[i];
+        cells.push(`${row + dr * i},${col + dc * i}`);
+      }
+      placed.push({ word: w, cells });
+      break;
+    }
+  }
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
+    if (!grid[r][c]) grid[r][c] = alpha[Math.floor(Math.random() * alpha.length)];
+  }
+  return { grid, placed };
+}
+
+function renderWordSearch(mount, module) {
+  const words = (module.glossary || []).map((g) => g.term.toUpperCase().split(" ")[0]).filter((w) => w.length >= 3 && w.length <= 10).slice(0, 8);
+  if (!words.length) { mount.innerHTML = `<div class="empty-state">No glossary words available for word search.</div>`; return; }
+  const SIZE = 12;
+  const { grid, placed } = generateWordGrid(words, SIZE);
+  const found = new Set();
+  let startCell = null;
+  let selectedCells = new Set();
+
+  const draw = () => {
+    const gridEl = document.getElementById("wsGrid");
+    if (!gridEl) return;
+    gridEl.innerHTML = grid.map((row, r) =>
+      row.map((ch, c) => {
+        const key = `${r},${c}`;
+        const isFound = [...found].some((w) => placed.find((p) => p.word === w)?.cells.includes(key));
+        const isSel = selectedCells.has(key);
+        return `<button class="ws-cell ${isFound ? "ws-found" : ""} ${isSel ? "ws-selecting" : ""}" data-cell="${key}">${ch}</button>`;
+      }).join("")
+    ).join("");
+    document.getElementById("wsFoundCount").textContent = `${found.size} / ${placed.length}`;
+    document.getElementById("wsWordList").innerHTML = placed.map((p) =>
+      `<span class="activity-chip ${found.has(p.word) ? "ws-word-done" : ""}">${p.word}</span>`
+    ).join("");
+  };
+
+  mount.innerHTML = `
+    <div class="game-board">
+      <article class="tool-card">
+        <p class="eyebrow">🔤 Word Search</p>
+        <h3>${escapeHTML(module.title)}</h3>
+        <div class="ws-grid" id="wsGrid" style="grid-template-columns:repeat(${SIZE},1fr)"></div>
+        <p style="font-size:0.8rem;color:var(--muted);margin-top:8px">Click a start letter, then click the end letter to select a word.</p>
+      </article>
+      <article class="tool-card result-panel">
+        <div id="wsThreeStage" style="width:100%;height:160px;border-radius:10px;overflow:hidden;margin-bottom:10px"></div>
+        <p class="eyebrow">Found: <span id="wsFoundCount">0 / ${placed.length}</span></p>
+        <div id="wsWordList" class="activity-strip" style="flex-wrap:wrap"></div>
+        <button class="secondary-button" id="wsReset" style="margin-top:12px">New puzzle</button>
       </article>
     </div>
   `;
+  draw();
+  const wsStage = document.getElementById("wsThreeStage");
+  if (wsStage && window.MTPThreeSim?.mountWordSearchScene) {
+    window.MTPThreeSim.mountWordSearchScene(wsStage);
+  }
+
+  mount.addEventListener("click", (e) => {
+    if (e.target.id === "wsReset") { renderWordSearch(mount, module); return; }
+    const cell = e.target.closest("[data-cell]");
+    if (!cell) return;
+    const key = cell.dataset.cell;
+    if (!startCell) {
+      startCell = key;
+      selectedCells = new Set([key]);
+    } else {
+      const [r1, c1] = startCell.split(",").map(Number);
+      const [r2, c2] = key.split(",").map(Number);
+      const dr = Math.sign(r2 - r1), dc = Math.sign(c2 - c1);
+      const cells = [];
+      let r = r1, c = c1;
+      while (true) {
+        cells.push(`${r},${c}`);
+        if (r === r2 && c === c2) break;
+        r += dr; c += dc;
+        if (cells.length > SIZE + 1) break;
+      }
+      const selectedWord = cells.map((cellKey) => { const [rr, cc] = cellKey.split(",").map(Number); return grid[rr][cc]; }).join("");
+      const match = placed.find((p) => p.word === selectedWord.toUpperCase() || p.word === [...selectedWord].reverse().join("").toUpperCase());
+      if (match) {
+        found.add(match.word);
+        showToast(`✅ Found: ${match.word}`, "success");
+        if (found.size === placed.length) {
+          completeGame(module.id);
+          confettiBurst(mount.getBoundingClientRect().left + mount.offsetWidth / 2, mount.getBoundingClientRect().top + 100, 35);
+        }
+      }
+      startCell = null;
+      selectedCells = new Set();
+    }
+    draw();
+  });
 }
 
 function renderHayLab(mount, module) {
@@ -973,12 +2615,13 @@ function renderHayLab(mount, module) {
         <p class="eyebrow">Bale result</p>
         <div class="score-number" id="hayScore">0</div>
         <div class="mini-meter"><span id="hayMeter"></span></div>
-        <div class="visual-panel">${haySvg(18)}</div>
+        <div id="hayThreeStage" style="width:100%;height:280px;border-radius:12px;overflow:hidden"></div>
         <ul class="feedback-list" id="hayFeedback"></ul>
         <button class="primary-button" id="saveHayButton">Save game result</button>
       </article>
     </div>
   `;
+  let hayThreeCtrl = null;
   const update = () => {
     const moisture = Number(document.getElementById("hayMoisture").value);
     const days = Number(document.getElementById("hayDays").value);
@@ -1007,12 +2650,21 @@ function renderHayLab(mount, module) {
     document.getElementById("hayDaysLabel").textContent = days;
     document.getElementById("hayScore").textContent = score;
     document.getElementById("hayMeter").style.width = `${score}%`;
-    document.querySelector(".visual-panel").innerHTML = haySvg(moisture);
+    if (hayThreeCtrl) {
+      hayThreeCtrl.update({ moisture, storage, weather });
+    }
     document.getElementById("hayFeedback").innerHTML = feedback.map((item) => `<li>${escapeHTML(item)}</li>`).join("");
     document.getElementById("saveHayButton").dataset.score = score;
   };
-  mount.addEventListener("input", update);
-  mount.addEventListener("change", update);
+  if (mount._gameAC) mount._gameAC.abort();
+  const _hayAC = new AbortController();
+  mount._gameAC = _hayAC;
+  mount.addEventListener("input",  update, { signal: _hayAC.signal });
+  mount.addEventListener("change", update, { signal: _hayAC.signal });
+  const hayStage = document.getElementById("hayThreeStage");
+  if (window.MTPThreeSim?.mountHayScene) {
+    hayThreeCtrl = window.MTPThreeSim.mountHayScene(hayStage, { moisture: 18, storage: "raised", weather: "hot" });
+  }
   update();
 }
 
@@ -1068,6 +2720,7 @@ function renderLeftoverSort(mount, module) {
   const assignments = {};
   mount.innerHTML = `
     <div class="sort-layout">
+      <div id="leftoverThreeStage" style="width:100%;height:180px;border-radius:12px;overflow:hidden;margin-bottom:14px"></div>
       <article class="tool-card">
         <p class="eyebrow">Leftover safety sort</p>
         <h3>Choose the safest action</h3>
@@ -1131,6 +2784,10 @@ function renderLeftoverSort(mount, module) {
     }
   });
   draw();
+  const leftoverStage = document.getElementById("leftoverThreeStage");
+  if (leftoverStage && window.MTPThreeSim?.mountLeftoverSortScene) {
+    window.MTPThreeSim.mountLeftoverSortScene(leftoverStage);
+  }
 }
 
 function renderFarmLoop(mount, module) {
@@ -1152,16 +2809,21 @@ function renderFarmLoop(mount, module) {
       <article class="tool-card result-panel">
         <p class="eyebrow">Your cycle</p>
         <ol class="sequence-list" id="farmSequence"></ol>
-        <div class="visual-panel">${farmLoopSvg(0)}</div>
+        <div id="farmLoopThreeStage" style="width:100%;height:260px;border-radius:12px;overflow:hidden"></div>
         <ul class="feedback-list" id="farmLoopFeedback"></ul>
       </article>
     </div>
   `;
+  let farmLoopThreeCtrl = null;
+  const farmLoopStage = document.getElementById("farmLoopThreeStage");
+  if (window.MTPThreeSim?.mountFarmLoopScene) {
+    farmLoopThreeCtrl = window.MTPThreeSim.mountFarmLoopScene(farmLoopStage, { count: 0 });
+  }
   const draw = () => {
     document.getElementById("farmSequence").innerHTML = sequence.map((item, index) => `
       <li class="sequence-item"><span class="step-index">${index + 1}</span><span>${escapeHTML(item)}</span><button class="ghost-button" data-remove-loop="${index}">Remove</button></li>
     `).join("");
-    document.querySelector(".visual-panel").innerHTML = farmLoopSvg(sequence.length);
+    if (farmLoopThreeCtrl) farmLoopThreeCtrl.update({ count: sequence.length });
   };
   mount.addEventListener("click", (event) => {
     const item = event.target.closest("[data-loop-item]");
@@ -1547,19 +3209,27 @@ function renderStorageInspector(mount, module) {
         <p class="eyebrow">Food safety</p>
         <div class="score-number" id="storageScore">0</div>
         <div class="mini-meter"><span id="storageMeter"></span></div>
-        <div class="visual-panel" id="storageVisual"></div>
+        <div id="storageThreeStage" style="width:100%;height:280px;border-radius:12px;overflow:hidden"></div>
         <button class="primary-button" id="saveStoragePlan">Save inspection</button>
       </article>
     </div>
   `;
+  let storageThreeCtrl = null;
   const update = () => {
     const score = checks.reduce((sum, [id, , value]) => sum + (document.querySelector(`[data-storage="${id}"]`)?.checked ? value : 0), 0);
     document.getElementById("storageScore").textContent = `${score}%`;
     document.getElementById("storageMeter").style.width = `${score}%`;
-    document.getElementById("storageVisual").innerHTML = storageSvg(score);
+    if (storageThreeCtrl) storageThreeCtrl.update({ score });
     document.getElementById("saveStoragePlan").dataset.score = score;
   };
-  mount.addEventListener("change", update);
+  if (mount._gameAC) mount._gameAC.abort();
+  const _storageAC = new AbortController();
+  mount._gameAC = _storageAC;
+  mount.addEventListener("change", update, { signal: _storageAC.signal });
+  const storageStage = document.getElementById("storageThreeStage");
+  if (window.MTPThreeSim?.mountStorageScene) {
+    storageThreeCtrl = window.MTPThreeSim.mountStorageScene(storageStage, { score: 0 });
+  }
   update();
 }
 
@@ -1604,12 +3274,13 @@ function renderFlourMixer(mount, module) {
       <article class="tool-card result-panel">
         <p class="eyebrow">Mixture result</p>
         <h3 id="mixtureType">Dough</h3>
-        <div class="visual-panel" id="flourVisual"></div>
+        <div id="flourThreeStage" style="width:100%;height:280px;border-radius:12px;overflow:hidden"></div>
         <ul class="feedback-list" id="flourFeedback"></ul>
         <button class="primary-button" id="saveFlourMix">Save mixture</button>
       </article>
     </div>
   `;
+  let flourThreeCtrl = null;
   const update = () => {
     const flour = Number(document.getElementById("flourAmount").value);
     const water = Number(document.getElementById("waterAmount").value);
@@ -1621,15 +3292,22 @@ function renderFlourMixer(mount, module) {
     document.getElementById("flourAmountLabel").textContent = `${flour} g`;
     document.getElementById("waterAmountLabel").textContent = `${water} ml`;
     document.getElementById("mixtureType").textContent = type;
-    document.getElementById("flourVisual").innerHTML = flourSvg(type);
+    if (flourThreeCtrl) flourThreeCtrl.update({ type });
     document.getElementById("flourFeedback").innerHTML = [
       `${productLabel(product)} needs ${expected.toLowerCase()}.`,
       type === expected ? "The consistency matches the book process." : "Adjust the liquid-to-flour balance.",
     ].map((item) => `<li>${escapeHTML(item)}</li>`).join("");
     document.getElementById("saveFlourMix").dataset.score = score;
   };
-  mount.addEventListener("input", update);
-  mount.addEventListener("change", update);
+  if (mount._gameAC) mount._gameAC.abort();
+  const _flourAC = new AbortController();
+  mount._gameAC = _flourAC;
+  mount.addEventListener("input",  update, { signal: _flourAC.signal });
+  mount.addEventListener("change", update, { signal: _flourAC.signal });
+  const flourStage = document.getElementById("flourThreeStage");
+  if (window.MTPThreeSim?.mountFlourScene) {
+    flourThreeCtrl = window.MTPThreeSim.mountFlourScene(flourStage, { type: "Dough" });
+  }
   update();
 }
 
@@ -1653,40 +3331,91 @@ function flourSvg(type) {
 
 function renderCleanupOrder(mount, module) {
   const procedures = {
-    bin: ["Wear gloves", "Empty the bin", "Wash with warm soapy water", "Rinse with clean water", "Disinfect", "Dry and line the bin"],
-    sink: ["Wear gloves", "Rinse loose dirt", "Sprinkle baking soda", "Scrub basin, tap, and drain", "Rinse with warm then cold water", "Dry with a clean cloth"],
+    bin:   ["Wear gloves", "Empty the bin", "Wash with warm soapy water", "Rinse with clean water", "Disinfect", "Dry and line the bin"],
+    sink:  ["Wear gloves", "Rinse loose dirt", "Sprinkle baking soda", "Scrub basin, tap, and drain", "Rinse with warm then cold water", "Dry with a clean cloth"],
     drain: ["Wear gloves", "Remove litter and leaves", "Pour warm soapy water", "Scrub with stiff brush", "Rinse with clean water", "Flush with hot then cold water"],
   };
   let facility = "bin";
   let order = shuffle([...procedures[facility]]);
-  const draw = () => {
-    mount.innerHTML = cleanupTemplate(facility, order);
+
+  // Set layout ONCE so the Three.js canvas isn't destroyed on every reorder
+  mount.innerHTML = `
+    <div class="game-board">
+      <article class="tool-card">
+        <p class="eyebrow">Cleanup sequence</p>
+        <h3>Put the steps in order</h3>
+        <div class="field-row">
+          <label for="facilitySelect">Facility</label>
+          <select id="facilitySelect">
+            <option value="bin">Waste bin</option>
+            <option value="sink">Kitchen sink</option>
+            <option value="drain">Open drain</option>
+          </select>
+        </div>
+        <ol class="sequence-list" id="cleanupSeqList"></ol>
+      </article>
+      <article class="tool-card result-panel">
+        <p class="eyebrow">Hygiene check</p>
+        <div id="cleanupThreeStage" style="width:100%;height:260px;border-radius:12px;overflow:hidden"></div>
+        <button class="primary-button" id="checkCleanup">Check order</button>
+        <ul class="feedback-list" id="cleanupFeedback"></ul>
+      </article>
+    </div>
+  `;
+
+  let cleanupThreeCtrl = null;
+  const cleanupStage = document.getElementById("cleanupThreeStage");
+  if (window.MTPThreeSim?.mountCleanupScene) {
+    cleanupThreeCtrl = window.MTPThreeSim.mountCleanupScene(cleanupStage, { facility, score: 0 });
+  }
+
+  const drawSequence = () => {
+    document.getElementById("cleanupSeqList").innerHTML = order.map((step, index) => `
+      <li class="sequence-item">
+        <span class="step-index">${index + 1}</span>
+        <span>${escapeHTML(step)}</span>
+        <span class="step-tools">
+          <button data-move="up"   data-index="${index}" title="Move up">Up</button>
+          <button data-move="down" data-index="${index}" title="Move down">Dn</button>
+        </span>
+      </li>`).join("");
   };
+
+  if (mount._gameAC) mount._gameAC.abort();
+  const _cleanupAC = new AbortController();
+  mount._gameAC = _cleanupAC;
+  const _sig = _cleanupAC.signal;
+
   mount.addEventListener("click", (event) => {
     const move = event.target.closest("[data-move]");
     if (move) {
       const index = Number(move.dataset.index);
-      const dir = move.dataset.move === "up" ? -1 : 1;
-      const next = index + dir;
+      const dir   = move.dataset.move === "up" ? -1 : 1;
+      const next  = index + dir;
       if (next >= 0 && next < order.length) {
         [order[index], order[next]] = [order[next], order[index]];
-        draw();
+        drawSequence();
       }
     }
     if (event.target.id === "checkCleanup") {
-      const score = procedures[facility].filter((step, index) => order[index] === step).length;
-      document.getElementById("cleanupFeedback").innerHTML = `<li>${score} of ${order.length} steps are in the correct place.</li>`;
-      if (score === order.length) completeGame(module.id);
+      const correct = procedures[facility].filter((step, i) => order[i] === step).length;
+      const pct = Math.round((correct / order.length) * 100);
+      document.getElementById("cleanupFeedback").innerHTML = `<li>${correct} of ${order.length} steps are in the correct place.</li>`;
+      if (cleanupThreeCtrl) cleanupThreeCtrl.update({ facility, score: pct });
+      if (correct === order.length) completeGame(module.id);
     }
-  });
+  }, { signal: _sig });
+
   mount.addEventListener("change", (event) => {
     if (event.target.id === "facilitySelect") {
       facility = event.target.value;
       order = shuffle([...procedures[facility]]);
-      draw();
+      drawSequence();
+      if (cleanupThreeCtrl) cleanupThreeCtrl.update({ facility, score: 0 });
     }
-  });
-  draw();
+  }, { signal: _sig });
+
+  drawSequence();
 }
 
 function cleanupTemplate(facility, order) {
@@ -1768,23 +3497,34 @@ function renderDisinfectMatch(mount, module) {
       </article>
       <article class="tool-card result-panel">
         <p class="eyebrow">Health protection</p>
-        <div class="visual-panel">${disinfectSvg(0)}</div>
+        <div id="disinfectThreeStage" style="width:100%;height:260px;border-radius:12px;overflow:hidden"></div>
         <button class="primary-button" id="checkDisinfect">Check matches</button>
         <ul class="feedback-list" id="disinfectFeedback"></ul>
       </article>
     </div>
   `;
+  let disinfectThreeCtrl = null;
+  const disinfectStage = document.getElementById("disinfectThreeStage");
+  if (window.MTPThreeSim?.mountDisinfectScene) {
+    disinfectThreeCtrl = window.MTPThreeSim.mountDisinfectScene(disinfectStage, { correct: 0 });
+  }
+
+  if (mount._gameAC) mount._gameAC.abort();
+  const _disinfAC = new AbortController();
+  mount._gameAC = _disinfAC;
+  const _dsig = _disinfAC.signal;
+
   mount.addEventListener("change", (event) => {
     if (event.target.dataset.disinfect) picks[event.target.dataset.disinfect] = event.target.value;
-  });
+  }, { signal: _dsig });
   mount.addEventListener("click", (event) => {
     if (event.target.id === "checkDisinfect") {
       const correct = scenarios.filter(([id, , answer]) => picks[id] === answer).length;
-      document.querySelector(".visual-panel").innerHTML = disinfectSvg(correct);
+      if (disinfectThreeCtrl) disinfectThreeCtrl.update({ correct });
       document.getElementById("disinfectFeedback").innerHTML = `<li>${correct} of ${scenarios.length} methods match the safest situations.</li>`;
       if (correct >= 4) completeGame(module.id);
     }
-  });
+  }, { signal: _dsig });
 }
 
 function disinfectSvg(count) {
@@ -1818,14 +3558,19 @@ function renderGraftingLab(mount, module) {
       <article class="tool-card result-panel">
         <p class="eyebrow">Seedling progress</p>
         <ol class="sequence-list" id="graftSequence"></ol>
-        <div class="visual-panel" id="graftVisual"></div>
+        <div id="graftThreeStage" style="width:100%;height:260px;border-radius:12px;overflow:hidden"></div>
         <ul class="feedback-list" id="graftFeedback"></ul>
       </article>
     </div>
   `;
+  let graftThreeCtrl = null;
+  const graftStage = document.getElementById("graftThreeStage");
+  if (window.MTPThreeSim?.mountGraftingScene) {
+    graftThreeCtrl = window.MTPThreeSim.mountGraftingScene(graftStage, { count: 0 });
+  }
   const draw = () => {
     document.getElementById("graftSequence").innerHTML = steps.map((step, index) => `<li class="sequence-item"><span class="step-index">${index + 1}</span><span>${escapeHTML(step)}</span><button class="ghost-button" data-remove-graft="${index}">Remove</button></li>`).join("");
-    document.getElementById("graftVisual").innerHTML = graftSvg(steps.length);
+    if (graftThreeCtrl) graftThreeCtrl.update({ count: steps.length });
   };
   mount.addEventListener("click", (event) => {
     const step = event.target.closest("[data-graft-step]");
@@ -1897,12 +3642,17 @@ function renderSunDryer(mount, module) {
         <p class="eyebrow">Drying result</p>
         <div class="score-number" id="dryerScore">0%</div>
         <div class="mini-meter"><span id="dryerMeter"></span></div>
-        <div class="visual-panel" id="dryerVisual"></div>
+        <div id="dryerThreeStage" style="width:100%;height:260px;border-radius:12px;overflow:hidden"></div>
         <ul class="feedback-list" id="dryerFeedback"></ul>
         <button class="primary-button" id="saveDryer">Save dryer</button>
       </article>
     </div>
   `;
+  let dryerThreeCtrl = null;
+  const dryerStage = document.getElementById("dryerThreeStage");
+  if (window.MTPThreeSim?.mountSunDryerScene) {
+    dryerThreeCtrl = window.MTPThreeSim.mountSunDryerScene(dryerStage, { score: 0, temp: 24 });
+  }
   const update = () => {
     let score = 0;
     checks.forEach(([id]) => {
@@ -1919,7 +3669,7 @@ function renderSunDryer(mount, module) {
     document.getElementById("turnsLabel").textContent = turns;
     document.getElementById("dryerScore").textContent = `${score}%`;
     document.getElementById("dryerMeter").style.width = `${score}%`;
-    document.getElementById("dryerVisual").innerHTML = dryerSvg(score, temp);
+    if (dryerThreeCtrl) dryerThreeCtrl.update({ score, temp });
     document.getElementById("dryerFeedback").innerHTML = [
       `Estimated inside temperature: ${temp} C.`,
       `Estimated moisture remaining: ${moisture}%.`,
@@ -1927,8 +3677,11 @@ function renderSunDryer(mount, module) {
     ].map((item) => `<li>${escapeHTML(item)}</li>`).join("");
     document.getElementById("saveDryer").dataset.score = score;
   };
-  mount.addEventListener("input", update);
-  mount.addEventListener("change", update);
+  if (mount._gameAC) mount._gameAC.abort();
+  const _dryerAC = new AbortController();
+  mount._gameAC = _dryerAC;
+  mount.addEventListener("input",  update, { signal: _dryerAC.signal });
+  mount.addEventListener("change", update, { signal: _dryerAC.signal });
   update();
 }
 
@@ -1976,8 +3729,8 @@ function renderPestBlaster(mount, module) {
   const W = 520, H = 360;
   mount.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="canvas-game-wrap" style="position:relative">
-        <canvas id="pestCanvas" width="${W}" height="${H}"></canvas>
+      <div class="canvas-game-wrap" style="position:relative;aspect-ratio:520/360">
+        <div id="pestThreeStage" style="position:absolute;inset:0"></div>
         <div class="game-overlay" id="pestOverlay">
           <div style="font-size:3.2rem">🌾</div>
           <h2>Pest Blaster</h2>
@@ -1994,8 +3747,11 @@ function renderPestBlaster(mount, module) {
     </div>
   `;
 
-  const canvas = document.getElementById("pestCanvas");
-  const ctx    = canvas.getContext("2d");
+  const pestStage = document.getElementById("pestThreeStage");
+  let gameCtrl = null;
+  if (window.MTPThreeSim?.mountPestBlaster3D) {
+    gameCtrl = window.MTPThreeSim.mountPestBlaster3D(pestStage);
+  }
   const overlay = document.getElementById("pestOverlay");
 
   let animId = null, gameActive = false;
@@ -2022,81 +3778,17 @@ function renderPestBlaster(mount, module) {
     pests.push({ x, y, vx: (dx / dist) * spd, vy: (dy / dist) * spd, r: t.r, emoji: t.emoji, pts: t.pts, hp: 1 + Math.floor(wave / 3), alpha: 1, wobble: Math.random() * 6 });
   }
 
-  function drawBG() {
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, "#87ceeb"); sky.addColorStop(1, "#e8f5ec");
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = "#8b6914"; ctx.fillRect(0, H * 0.68, W, H * 0.32);
-    // Granary
-    ctx.fillStyle = "#d4a84b";
-    ctx.beginPath(); ctx.moveTo(W * 0.30, H * 0.23); ctx.lineTo(W * 0.50, H * 0.09); ctx.lineTo(W * 0.70, H * 0.23); ctx.lineTo(W * 0.70, H * 0.68); ctx.lineTo(W * 0.30, H * 0.68); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = "#9a6820"; ctx.lineWidth = 3; ctx.stroke();
-    ctx.fillStyle = "#7a4010"; ctx.beginPath(); ctx.roundRect(W * 0.44, H * 0.44, W * 0.12, H * 0.24, 4); ctx.fill();
-    // Sacks
-    [[W * 0.35, H * 0.62, "#e8c84a"], [W * 0.50, H * 0.63, "#d4a840"], [W * 0.65, H * 0.62, "#c89030"]].forEach(([sx, sy, col]) => {
-      ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(sx, sy, 28, 17, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "#9a6820"; ctx.lineWidth = 2; ctx.stroke();
-    });
-    // Danger zone
-    ctx.strokeStyle = "rgba(220,60,60,0.40)"; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
-    ctx.beginPath(); ctx.arc(W / 2, H * 0.41, 52, 0, Math.PI * 2); ctx.stroke();
-    ctx.setLineDash([]); ctx.fillStyle = "rgba(220,60,60,0.07)";
-    ctx.beginPath(); ctx.arc(W / 2, H * 0.41, 52, 0, Math.PI * 2); ctx.fill();
-  }
-
-  function drawPests() {
-    pests.forEach(p => {
-      if (p.alpha <= 0) return;
-      ctx.save(); ctx.globalAlpha = p.alpha;
-      p.wobble += 0.1;
-      ctx.font = `${p.r * 2}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.shadowColor = "rgba(0,0,0,0.45)"; ctx.shadowBlur = 8;
-      ctx.fillText(p.emoji, p.x + Math.sin(p.wobble) * 2, p.y);
-      ctx.shadowBlur = 0;
-      if (p.hp > 1) {
-        const maxHp = 1 + Math.floor(wave / 3);
-        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(p.x - 14, p.y - p.r - 10, 28, 5);
-        ctx.fillStyle = "#ff4444"; ctx.fillRect(p.x - 14, p.y - p.r - 10, 28 * (p.hp / maxHp), 5);
-      }
-      ctx.restore();
-    });
-  }
-
   function burstAt(x, y, pts) {
-    const cols = ["#ffd700", "#ff6b35", "#4ecdc4", "#96e6a1", "#f8b500", "#ff9ff3"];
     for (let i = 0; i < 12; i++) {
       const a = (i / 12) * Math.PI * 2;
-      particles.push({ x, y, vx: Math.cos(a) * (2 + Math.random() * 4), vy: Math.sin(a) * (2 + Math.random() * 4) - 2, r: 3 + Math.random() * 4, color: cols[i % cols.length], life: 44, max: 44, txt: null });
+      particles.push({ x, y, vx: Math.cos(a) * (2 + Math.random() * 4), vy: Math.sin(a) * (2 + Math.random() * 4) - 2, r: 3 + Math.random() * 4, life: 44, max: 44, txt: null });
     }
-    if (pts > 0) particles.push({ x, y, vx: 0, vy: -2.5, r: 0, color: "#ffd700", life: 55, max: 55, txt: `+${pts}` });
-  }
-
-  function drawParticles() {
-    particles = particles.filter(p => p.life > 0);
-    particles.forEach(p => {
-      ctx.save(); ctx.globalAlpha = p.life / p.max;
-      if (p.txt) {
-        ctx.font = `bold ${15 + 7 * (1 - p.life / p.max)}px sans-serif`;
-        ctx.textAlign = "center"; ctx.fillStyle = p.color; ctx.fillText(p.txt, p.x, p.y);
-      } else {
-        ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (p.life / p.max), 0, Math.PI * 2); ctx.fill();
-      }
-      ctx.restore();
-      p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= 1;
-    });
-  }
-
-  function drawHUD() {
-    ctx.fillStyle = "rgba(6,18,10,0.70)"; ctx.beginPath(); ctx.roundRect(8, 8, W - 16, 40, 10); ctx.fill();
-    ctx.font = "bold 15px sans-serif";
-    ctx.fillStyle = "#ffd700"; ctx.textAlign = "left";  ctx.fillText(`Score: ${score}`, 18, 33);
-    ctx.fillStyle = "#ff6b6b"; ctx.textAlign = "center"; ctx.fillText("❤️".repeat(lives), W / 2, 33);
-    ctx.fillStyle = "#4ecdc4"; ctx.textAlign = "right";  ctx.fillText(`Wave ${wave}`, W - 18, 33);
+    if (pts > 0) particles.push({ x, y, vx: 0, vy: -2.5, r: 0, life: 55, max: 55, txt: `+${pts}` });
   }
 
   function loseLife() {
     lives--;
-    shakeElement(canvas.parentElement);
+    shakeElement(pestStage?.parentElement);
     document.getElementById("pestLives").textContent = "❤️".repeat(Math.max(0, lives));
     if (lives <= 0) endGame(false);
   }
@@ -2109,7 +3801,11 @@ function renderPestBlaster(mount, module) {
       ? `<div style="font-size:3rem">🏆</div><h2 style="color:#ffd700">Granary Saved!</h2><p>Final score: ${score}</p><button class="primary-button" id="pestStart">Play Again</button>`
       : `<div style="font-size:3rem">💀</div><h2 style="color:#ff6b6b">Granary Overrun!</h2><p>Score: ${score} — Storage hygiene matters!</p><button class="primary-button" id="pestStart">Try Again</button>`;
     overlay.style.display = "flex";
-    if (won) { completeGame(module.id); confettiBurst(W / 2, H / 2, 40); }
+    if (won) {
+      completeGame(module.id);
+      const r = pestStage?.getBoundingClientRect();
+      confettiBurst(r ? r.left + r.width / 2 : W / 2, r ? r.top + r.height / 2 : H / 2, 40);
+    }
     document.getElementById("pestStart").addEventListener("click", startGame, { once: true });
   }
 
@@ -2118,14 +3814,15 @@ function renderPestBlaster(mount, module) {
     const dt = Math.min((ts - lastTime) / 1000, 0.05); lastTime = ts;
     spawnTimer -= dt;
     if (spawnTimer <= 0) { spawnPest(); spawnTimer = Math.max(0.35, 2.2 - wave * 0.24) * (0.6 + Math.random() * 0.8); }
-    ctx.clearRect(0, 0, W, H);
-    drawBG();
     pests = pests.filter(p => p.alpha > 0.02);
     pests.forEach(p => {
       p.x += p.vx * dt; p.y += p.vy * dt;
+      p.wobble += 0.1;
       if (Math.hypot(p.x - W / 2, p.y - H * 0.41) < 52) { burstAt(p.x, p.y, 0); p.alpha = 0; loseLife(); }
     });
-    drawPests(); drawParticles(); drawHUD();
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= 1; });
+    if (gameCtrl) gameCtrl.syncState({ pests, particles });
     if (score > 0 && score >= wave * 150 && !pests.length) { wave++; document.getElementById("pestWave").textContent = wave; popScoreEl(document.getElementById("pestWave")); }
     if (score >= 500 && lives > 0) { endGame(true); return; }
     if (gameActive) animId = requestAnimationFrame(loop);
@@ -2143,15 +3840,16 @@ function renderPestBlaster(mount, module) {
     animId = requestAnimationFrame(loop);
   }
 
-  canvas.addEventListener("click", (e) => {
-    if (!gameActive) return;
-    const rect = canvas.getBoundingClientRect();
-    const mx = (e.clientX - rect.left) * (W / rect.width);
-    const my = (e.clientY - rect.top)  * (H / rect.height);
+  pestStage.addEventListener("click", (e) => {
+    if (!gameActive || !gameCtrl) return;
+    const gc = gameCtrl.getClickGameCoords(e);
+    if (!gc) return;
+    const mx = gc.x, my = gc.y;
+    let hit = false;
     pests.forEach(p => {
       if (p.alpha <= 0) return;
       if (Math.hypot(mx - p.x, my - p.y) < p.r * 2.4) {
-        p.hp--;
+        hit = true; p.hp--;
         if (p.hp <= 0) {
           burstAt(p.x, p.y, p.pts); score += p.pts; p.alpha = 0;
           const el = document.getElementById("pestScore");
@@ -2159,9 +3857,7 @@ function renderPestBlaster(mount, module) {
         }
       }
     });
-    // Miss puff
-    if (!pests.some(p => Math.hypot(mx - p.x, my - p.y) < p.r * 2.4 && p.alpha > 0))
-      particles.push({ x: mx, y: my, vx: 0, vy: -1, r: 14, color: "rgba(180,255,180,0.55)", life: 18, max: 18, txt: null });
+    if (!hit) particles.push({ x: mx, y: my, vx: 0, vy: -1, r: 14, life: 18, max: 18, txt: null });
   });
 
   document.getElementById("pestStart").addEventListener("click", startGame, { once: true });
@@ -2187,8 +3883,8 @@ function renderFarmRaider(mount, module) {
 
   mount.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="canvas-game-wrap" style="position:relative">
-        <canvas id="raidCanvas" width="${W}" height="${H}"></canvas>
+      <div class="canvas-game-wrap" style="position:relative;aspect-ratio:520/380">
+        <div id="raidThreeStage" style="position:absolute;inset:0"></div>
         <div class="game-overlay" id="raidOverlay">
           <div style="font-size:3.2rem">🚜</div>
           <h2>Farm Raider</h2>
@@ -2205,19 +3901,22 @@ function renderFarmRaider(mount, module) {
     </div>
   `;
 
-  const canvas  = document.getElementById("raidCanvas");
-  const ctx     = canvas.getContext("2d");
+  let gameCtrl = null;
+  const raidStage = document.getElementById("raidThreeStage");
+  if (window.MTPThreeSim?.mountFarmRaider3D) {
+    gameCtrl = window.MTPThreeSim.mountFarmRaider3D(raidStage, RESOURCES);
+  }
   const overlay = document.getElementById("raidOverlay");
 
   const KEY_MAP = { ArrowUp: "u", ArrowDown: "d", ArrowLeft: "l", ArrowRight: "r", w: "u", s: "d", a: "l", d: "r", W: "u", S: "d", A: "l", D: "r" };
   const onKey = (e, val) => { if (KEY_MAP[e.key]) { keys[KEY_MAP[e.key]] = val; if (val) e.preventDefault(); } };
-  window.addEventListener("keydown", (e) => onKey(e, true));
-  window.addEventListener("keyup",   (e) => onKey(e, false));
+  const _onKeyDown = (e) => onKey(e, true);
+  const _onKeyUp   = (e) => onKey(e, false);
 
-  canvas.addEventListener("click", (e) => {
-    if (!gameActive) return;
-    const rect = canvas.getBoundingClientRect();
-    touchTarget = { x: (e.clientX - rect.left) * (W / rect.width), y: (e.clientY - rect.top) * (H / rect.height) };
+  raidStage.addEventListener("click", (e) => {
+    if (!gameActive || !gameCtrl) return;
+    const gc = gameCtrl.getClickGameCoords(e);
+    if (gc) touchTarget = { x: gc.x, y: gc.y };
   });
 
   function updateChips() {
@@ -2225,63 +3924,6 @@ function renderFarmRaider(mount, module) {
       `<span class="activity-chip" style="${collected.has(r.id) ? `background:${r.color};color:#fff;border-color:${r.color}` : ""}">${r.emoji} ${collected.has(r.id) ? "✓" : r.label}</span>`
     ).join("");
     const el = document.getElementById("raidCount"); el.textContent = `${collected.size} / 6`; popScoreEl(el);
-  }
-
-  function drawMap() {
-    const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "#5a9a3a"); g.addColorStop(1, "#4a8030");
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    // Dirt paths
-    ctx.strokeStyle = "rgba(196,168,112,0.45)"; ctx.lineWidth = 22;
-    ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
-    // Connection lines
-    const coll = RESOURCES.filter(r => collected.has(r.id));
-    if (coll.length > 1) {
-      ctx.strokeStyle = "rgba(255,215,0,0.55)"; ctx.lineWidth = 2.5; ctx.setLineDash([7, 5]);
-      for (let i = 0; i < coll.length - 1; i++) {
-        ctx.beginPath(); ctx.moveTo(coll[i].x, coll[i].y); ctx.lineTo(coll[i + 1].x, coll[i + 1].y); ctx.stroke();
-      }
-      if (coll.length === 6) { ctx.beginPath(); ctx.moveTo(coll[5].x, coll[5].y); ctx.lineTo(coll[0].x, coll[0].y); ctx.stroke(); }
-      ctx.setLineDash([]);
-    }
-    // Resource nodes
-    RESOURCES.forEach(r => {
-      const done = collected.has(r.id);
-      ctx.fillStyle = done ? r.color : "rgba(255,255,255,0.88)";
-      ctx.beginPath(); ctx.arc(r.x, r.y, 26, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = done ? "rgba(255,255,255,0.6)" : r.color; ctx.lineWidth = done ? 3 : 2;
-      ctx.beginPath(); ctx.arc(r.x, r.y, 26, 0, Math.PI * 2); ctx.stroke();
-      ctx.font = "20px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText(done ? "✅" : r.emoji, r.x, r.y);
-      ctx.font = "bold 9.5px sans-serif"; ctx.fillStyle = done ? "#fff" : "#222";
-      ctx.fillText(r.label, r.x, r.y + 38);
-      if (!done) {
-        ctx.strokeStyle = `${r.color}55`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
-        ctx.beginPath(); ctx.arc(r.x, r.y, 40, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-      }
-    });
-  }
-
-  function drawPlayer() {
-    ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
-    ctx.fillStyle = "#e65100"; ctx.beginPath(); ctx.roundRect(-13, -9, 26, 18, 4); ctx.fill();
-    ctx.fillStyle = "#bf360c"; ctx.beginPath(); ctx.roundRect(-6, -11, 16, 22, 3); ctx.fill();
-    ctx.fillStyle = "#212121";
-    [[-9, 11, 6, 7], [8, 11, 6, 7], [-9, -11, 6, 7], [8, -11, 6, 7]].forEach(([ex, ey, rx, ry]) => {
-      ctx.beginPath(); ctx.ellipse(ex, ey, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
-    });
-    ctx.fillStyle = "rgba(120,210,255,0.75)"; ctx.beginPath(); ctx.roundRect(1, -7, 9, 14, 2); ctx.fill();
-    ctx.restore();
-  }
-
-  function drawParticles() {
-    particles = particles.filter(p => p.life > 0);
-    particles.forEach(p => {
-      ctx.save(); ctx.globalAlpha = p.life / p.max; ctx.fillStyle = p.color;
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (p.life / p.max), 0, Math.PI * 2); ctx.fill();
-      ctx.restore(); p.x += p.vx / 28; p.y += p.vy / 28; p.life--;
-    });
   }
 
   function updatePlayer(dt) {
@@ -2328,17 +3970,21 @@ function renderFarmRaider(mount, module) {
       ? `<div style="font-size:3rem">🏆</div><h2 style="color:#ffd700">Loop Complete!</h2><p>All 6 resources collected — the farm is fully integrated!</p><button class="primary-button" id="raidStart">Play Again</button>`
       : `<div style="font-size:3rem">🚜</div><h2>Nice try!</h2><p>Collected ${collected.size}/6 resources.</p><button class="primary-button" id="raidStart">Try Again</button>`;
     overlay.style.display = "flex";
-    if (won) { completeGame(module.id); confettiBurst(W / 2, H / 3, 55); }
+    if (won) {
+      completeGame(module.id);
+      const r = raidStage?.getBoundingClientRect();
+      confettiBurst(r ? r.left + r.width / 2 : W / 2, r ? r.top + r.height / 3 : H / 3, 55);
+    }
     document.getElementById("raidStart").addEventListener("click", startGame, { once: true });
   }
 
   function loop(ts) {
     if (!gameActive) return;
     const dt = Math.min((ts - lastTime) / 1000, 0.05); lastTime = ts;
-    ctx.clearRect(0, 0, W, H); drawMap(); drawParticles(); updatePlayer(dt); drawPlayer();
-    ctx.fillStyle = "rgba(6,18,10,0.65)"; ctx.beginPath(); ctx.roundRect(8, 8, 190, 38, 10); ctx.fill();
-    ctx.fillStyle = "#ffd700"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "left";
-    ctx.fillText(`Collected: ${collected.size} / 6`, 18, 32);
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => { p.x += p.vx / 28; p.y += p.vy / 28; p.life--; });
+    updatePlayer(dt);
+    if (gameCtrl) gameCtrl.syncState({ player, collected, particles });
     animId = requestAnimationFrame(loop);
   }
 
@@ -2348,10 +3994,12 @@ function renderFarmRaider(mount, module) {
     collected = new Set(); particles = []; lastTime = performance.now();
     touchTarget = null; gameActive = true;
     updateChips();
+    window.addEventListener("keydown", _onKeyDown);
+    window.addEventListener("keyup",   _onKeyUp);
     window._activeGameCleanup = () => {
       gameActive = false; if (animId) cancelAnimationFrame(animId);
-      window.removeEventListener("keydown", (e) => onKey(e, true));
-      window.removeEventListener("keyup",   (e) => onKey(e, false));
+      window.removeEventListener("keydown", _onKeyDown);
+      window.removeEventListener("keyup",   _onKeyUp);
     };
     animId = requestAnimationFrame(loop);
   }
@@ -2384,8 +4032,8 @@ function renderFlourFrenzy(mount, module) {
 
   mount.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="canvas-game-wrap" style="position:relative">
-        <canvas id="frenzyCanvas" width="${W}" height="${H}"></canvas>
+      <div class="canvas-game-wrap" style="position:relative;aspect-ratio:520/360">
+        <div id="frenzyThreeStage" style="position:absolute;inset:0"></div>
         <div class="game-overlay" id="frenzyOverlay">
           <div style="font-size:3.2rem">🏭</div>
           <h2>Flour Frenzy</h2>
@@ -2406,55 +4054,16 @@ function renderFlourFrenzy(mount, module) {
     `<button class="secondary-button frenzy-ans" data-type="${t}" style="border-left:4px solid ${T_COL[t]}">${l}</button>`
   ).join("");
 
-  const canvas  = document.getElementById("frenzyCanvas");
-  const ctx     = canvas.getContext("2d");
+  const frenzyStage = document.getElementById("frenzyThreeStage");
+  let gameCtrl = null;
+  if (window.MTPThreeSim?.mountFlourFrenzy3D) {
+    gameCtrl = window.MTPThreeSim.mountFlourFrenzy3D(frenzyStage, PRODUCTS);
+  }
   const overlay = document.getElementById("frenzyOverlay");
 
   function spawnItem() {
     const p = PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)];
     items.push({ ...p, x: W + 44, y: H * 0.52 + (Math.random() - 0.5) * 38, spd: 62 + score * 0.1, answered: null, shakeT: 0 });
-  }
-
-  function drawBG() {
-    ctx.fillStyle = "#f0ede4"; ctx.fillRect(0, 0, W, H);
-    // Factory wall
-    ctx.fillStyle = "#607d8b"; ctx.fillRect(0, 0, W, H * 0.38);
-    // Windows
-    [[80, 30, 60, 50], [190, 30, 60, 50], [310, 30, 60, 50]].forEach(([x, y, w, h]) => {
-      ctx.fillStyle = "rgba(180,220,255,0.45)"; ctx.beginPath(); ctx.roundRect(x, y, w, h, 4); ctx.fill();
-      ctx.strokeStyle = "#546e7a"; ctx.lineWidth = 2; ctx.stroke();
-    });
-    // Chimney smoke
-    ctx.fillStyle = "#455a64"; ctx.fillRect(W * 0.77, H * 0.04, 28, H * 0.34);
-    [0, 1, 2].forEach(i => {
-      ctx.globalAlpha = 0.28 - i * 0.07; ctx.fillStyle = "#9e9e9e";
-      ctx.beginPath(); ctx.arc(W * 0.784 + i * 5, H * 0.03 - i * 14, 13 + i * 5, 0, Math.PI * 2); ctx.fill();
-    });
-    ctx.globalAlpha = 1;
-    // Belt
-    ctx.fillStyle = "#424242"; ctx.fillRect(0, H * 0.40, W, H * 0.32);
-    ctx.fillStyle = "#616161";
-    for (let x = 0; x < W; x += 38) ctx.fillRect(x, H * 0.40, 2, H * 0.32);
-    ctx.fillStyle = "#303030"; ctx.fillRect(0, H * 0.40, W, 8); ctx.fillRect(0, H * 0.72 - 8, W, 8);
-    // Instruction banner
-    ctx.fillStyle = "rgba(6,18,10,0.62)"; ctx.beginPath(); ctx.roundRect(8, 8, W - 16, H * 0.36, 8); ctx.fill();
-    ctx.fillStyle = "#ffd700"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "center";
-    ctx.fillText("⚡ Click the correct mixture type as products arrive!", W / 2, 30);
-  }
-
-  function drawItems(dt) {
-    items.forEach(item => {
-      item.x -= item.spd * dt;
-      ctx.save();
-      if (item.shakeT > 0) { ctx.translate(item.x + Math.sin(item.shakeT * 18) * 5, item.y); item.shakeT -= dt; }
-      else ctx.translate(item.x, item.y);
-      const bg = item.answered === "correct" ? "#1e7a45" : item.answered === "wrong" ? "#c62828" : "#fff";
-      ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(-28, -28, 56, 56, 9); ctx.fill();
-      ctx.strokeStyle = T_COL[item.type]; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(-28, -28, 56, 56, 9); ctx.stroke();
-      ctx.font = "22px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(item.emoji, 0, -6);
-      ctx.font = "bold 9px sans-serif"; ctx.fillStyle = item.answered ? "#fff" : "#333"; ctx.fillText(item.label, 0, 15);
-      ctx.restore();
-    });
   }
 
   function checkAnswer(type) {
@@ -2481,13 +4090,13 @@ function renderFlourFrenzy(mount, module) {
     if (timeLeft <= 0) { endGame(); return; }
     spawnTimer -= dt;
     if (spawnTimer <= 0) { spawnItem(); spawnTimer = Math.max(0.55, 2.0 - score * 0.0015); }
-    items.forEach(i => { if (i.x < -60 && !i.answered) { streak = 0; document.getElementById("frenzyStreak").textContent = "0🔥"; } });
+    items.forEach(i => {
+      i.x -= i.spd * dt;
+      if (i.shakeT > 0) i.shakeT -= dt;
+      if (i.x < -60 && !i.answered) { streak = 0; document.getElementById("frenzyStreak").textContent = "0🔥"; }
+    });
     items = items.filter(i => i.x > -80);
-    ctx.clearRect(0, 0, W, H); drawBG(); drawItems(dt);
-    // Time bar
-    ctx.fillStyle = "rgba(0,0,0,0.4)"; ctx.fillRect(0, H - 7, W, 7);
-    ctx.fillStyle = timeLeft < 10 ? "#ff4444" : timeLeft < 20 ? "#ffd700" : "#23d06d";
-    ctx.fillRect(0, H - 7, (timeLeft / 60) * W, 7);
+    if (gameCtrl) gameCtrl.syncState({ items });
     animId = requestAnimationFrame(loop);
   }
 
@@ -2498,7 +4107,11 @@ function renderFlourFrenzy(mount, module) {
       ? `<div style="font-size:3rem">🏆</div><h2 style="color:#ffd700">Shift Complete!</h2><p>Score: ${score} — Great flour mix knowledge!</p><button class="primary-button" id="frenzyStart">Play Again</button>`
       : `<div style="font-size:3rem">⏰</div><h2>Time's Up!</h2><p>Score: ${score} — Review batter vs dough differences.</p><button class="primary-button" id="frenzyStart">Try Again</button>`;
     overlay.style.display = "flex";
-    if (won) { completeGame(module.id); confettiBurst(W / 2, H / 2, 40); }
+    if (won) {
+      completeGame(module.id);
+      const r = frenzyStage?.getBoundingClientRect();
+      confettiBurst(r ? r.left + r.width / 2 : W / 2, r ? r.top + r.height / 2 : H / 2, 40);
+    }
     document.getElementById("frenzyStart").addEventListener("click", startGame, { once: true });
   }
 
@@ -2532,12 +4145,14 @@ function completeGame(moduleId) {
   if (!progress.games[moduleId]) {
     progress.games[moduleId] = true;
     saveProgress();
-    showToast("🎉 Game completed! Progress saved.", "success");
+    checkWeeklyGoal(moduleId);
+    checkBadges();
+    showToast("🎉 " + t("gameComplete"), "success");
     triggerCelebration(document.getElementById("gameMount"));
   } else {
     progress.games[moduleId] = true;
     saveProgress();
-    showToast("✅ Score saved.", "info");
+    showToast("✅ " + t("scoreSaved"), "info");
   }
   renderModuleList();
   renderProgress();
@@ -2563,6 +4178,7 @@ document.addEventListener("click", (event) => {
   if (moduleButton) {
     state.moduleId = moduleButton.dataset.module;
     state.globalSearch = "";
+    state.altGame = "main";
     els.globalSearch.value = "";
     render();
     return;
@@ -2576,32 +4192,56 @@ document.addEventListener("click", (event) => {
   if (event.target.id === "markLearnedButton") {
     progress.learned[state.moduleId] = true;
     saveProgress();
-    showToast("📚 Module marked as learned!", "success");
+    checkWeeklyGoal(state.moduleId);
+    checkBadges();
+    showToast("📚 " + t("learnedToast"), "success");
     render();
   }
   if (event.target.id === "submitQuizButton") {
+    if (state.timedTimer) { clearInterval(state.timedTimer); state.timedTimer = null; }
     const module = currentModule();
     const answers = state.quizAnswers[module.id] || {};
     const correct = module.quiz.filter((item, index) => answers[index] === item.a).length;
     const score = Math.round((correct / module.quiz.length) * 100);
     const oldBest = progress.quizScores[module.id] || 0;
     progress.quizScores[module.id] = Math.max(oldBest, score);
+    progress.quizHistory[module.id] = progress.quizHistory[module.id] || [];
+    progress.quizHistory[module.id].push(score);
     saveProgress();
+    checkWeeklyGoal(module.id);
+    const ideas = ml(module, "ideas") || [];
+    if (!progress.quizMisses) progress.quizMisses = {};
+    if (!progress.quizMisses[module.id]) progress.quizMisses[module.id] = {};
     document.querySelectorAll(".quiz-block").forEach((block) => {
       const index = Number(block.dataset.question);
+      const isWrong = answers[index] !== module.quiz[index].a;
       block.querySelectorAll(".choice-button").forEach((button) => {
         button.classList.toggle("correct", button.dataset.answer === module.quiz[index].a);
         button.classList.toggle("wrong", button.classList.contains("selected") && button.dataset.answer !== module.quiz[index].a);
       });
+      if (isWrong) {
+        progress.quizMisses[module.id][index] = (progress.quizMisses[module.id][index] || 0) + 1;
+        if (!block.querySelector(".quiz-hint")) {
+          const hint = ideas[index % ideas.length];
+          if (hint) {
+            const el = document.createElement("p");
+            el.className = "quiz-hint";
+            el.style.cssText = "margin-top:8px;padding:8px 10px;border-radius:7px;background:rgba(30,122,69,0.07);border-left:3px solid var(--leaf);font-size:0.82rem;color:var(--muted)";
+            el.innerHTML = `💡 <em>Hint:</em> ${escapeHTML(hint)}`;
+            block.appendChild(el);
+          }
+        }
+      }
     });
-    // Animate the score display
+    saveProgress();
     const scoreEl = document.getElementById("quizScoreDisplay");
     const scoreBar = document.querySelector(".quiz-score-bar span");
     if (scoreEl) animateValue(scoreEl, progress.quizScores[module.id], 700, "%");
     if (scoreBar) { scoreBar.style.transition = "width 0.7s cubic-bezier(0.34,1.56,0.64,1)"; scoreBar.style.width = `${progress.quizScores[module.id]}%`; }
-    if (score >= 70) showToast(`🏆 ${score}% — Quiz badge earned!`, "success");
-    else if (score >= 40) showToast(`📝 ${score}% — Keep practising!`, "info");
-    else showToast(`🔄 ${score}% — Review the notes and try again.`, "warn");
+    checkBadges();
+    if (score >= 70) showToast(`🏆 ${score}% — ${t("badgeEarned")}`, "success");
+    else if (score >= 40) showToast(`📝 ${score}% — ${t("keepPractising")}`, "info");
+    else showToast(`🔄 ${score}% — ${t("reviewNotes")}`, "warn");
     renderModuleList();
     renderProgress();
     renderHero();
@@ -2610,11 +4250,19 @@ document.addEventListener("click", (event) => {
     state.quizAnswers[state.moduleId] = {};
     renderQuiz(currentModule());
   }
+  if (event.target.id === "toggleTimedMode") {
+    if (state.timedTimer) { clearInterval(state.timedTimer); state.timedTimer = null; }
+    state.timedMode = !state.timedMode;
+    renderQuiz(currentModule());
+  }
+  if (event.target.id === "startAssessmentButton") {
+    showAssessmentOverlay(currentModule());
+  }
   if (event.target.id === "saveJournalButton") {
-    progress.notes[state.moduleId] = document.getElementById("journalText").value;
+    progress.notes[state.moduleId] = document.getElementById("journalText")?.value || "";
     saveProgress();
-    showToast("💾 Journal note saved.", "info");
-    render();
+    checkBadges();
+    showToast("💾 " + t("noteSaved"), "info");
   }
   if (event.target.id === "exportProgressButton") {
     const blob = new Blob([JSON.stringify(progress, null, 2)], { type: "application/json" });
@@ -2624,6 +4272,26 @@ document.addEventListener("click", (event) => {
     link.download = "agriculture-nutrition-progress.json";
     link.click();
     URL.revokeObjectURL(url);
+  }
+  if (event.target.id === "shareProgressButton") showShareModal();
+  if (event.target.id === "downloadCertButton") generateCertificate();
+  if (event.target.id === "generateReportCardButton") generateReportCard();
+  if (event.target.id === "teacherViewButton") showTeacherDashboard();
+  if (event.target.id === "printSummaryButton") {
+    document.body.classList.add("printing-module");
+    window.print();
+    setTimeout(() => document.body.classList.remove("printing-module"), 1000);
+  }
+  if (event.target.id === "importCodeButton") {
+    const code = document.getElementById("importCodeInput")?.value || "";
+    if (code) importShareCode(code);
+  }
+  const speakBtn = event.target.closest(".speak-btn[data-speak]");
+  if (speakBtn) speakText(speakBtn.dataset.speak);
+  const promptChip = event.target.closest(".prompt-chip[data-prompt]");
+  if (promptChip) {
+    const ta = document.getElementById("journalText");
+    if (ta) { ta.value += (ta.value ? "\n\n" : "") + promptChip.dataset.prompt + "\n"; ta.dispatchEvent(new Event("input")); }
   }
   if (event.target.id === "saveHayButton" && Number(event.target.dataset.score) >= 75) completeGame(state.moduleId);
   if (event.target.id === "saveGardenPlan" && Number(event.target.dataset.score) >= 75) completeGame(state.moduleId);
@@ -2681,12 +4349,80 @@ els.openPdfButton.addEventListener("click", () => {
   window.open("assets/book.pdf", "_blank");
 });
 
+els.aiAdvisorBtn?.addEventListener("click", () => showAIPanel());
+
 els.resetProgressButton.addEventListener("click", () => {
-  if (!confirm("Reset all saved progress and notes?")) return;
-  progress = { learned: {}, games: {}, quizScores: {}, notes: {} };
+  if (!confirm(t("progressReset"))) return;
+  progress = {
+    learned: {}, games: {}, quizScores: {}, notes: {},
+    quizHistory: {}, quizMisses: {}, streak: { count: 0, lastDate: "" },
+    weeklyGoal: { target: 3, weekStart: "", done: [] },
+    fontScale: 1, language: "en", badges: [],
+  };
   state.quizAnswers = {};
   saveProgress();
   render();
 });
 
+document.addEventListener("click", (event) => {
+  const langBtn = event.target.closest("[data-lang-btn]");
+  if (langBtn) {
+    progress.language = langBtn.dataset.langBtn;
+    saveProgress();
+    checkBadges();
+    render();
+  }
+});
+
+document.addEventListener("input", (event) => {
+  if (event.target.id === "fontScaleSlider") {
+    progress.fontScale = Number(event.target.value);
+    saveProgress();
+    applyFontScale();
+  }
+});
+
+function initOfflineIndicator() {
+  const banner = document.getElementById("offlineBanner");
+  if (!banner) return;
+  const update = () => {
+    banner.style.display = navigator.onLine ? "none" : "flex";
+    banner.textContent = navigator.onLine ? "" : t("offlineBanner");
+    if (navigator.onLine) showToast("🌐 " + t("onlineBanner"), "success");
+  };
+  window.addEventListener("online", update);
+  window.addEventListener("offline", update);
+  if (!navigator.onLine) { banner.style.display = "flex"; banner.textContent = t("offlineBanner"); }
+}
+
+function renderStreakAndGoal() {
+  const streakEl = document.getElementById("streakChip");
+  if (streakEl && progress.streak.count > 0) {
+    streakEl.textContent = `🔥 ${progress.streak.count} ${t("streakLabel")}`;
+    streakEl.style.display = "inline-flex";
+  } else if (streakEl) {
+    streakEl.style.display = "none";
+  }
+  const goalEl = document.getElementById("weeklyGoalRing");
+  if (!goalEl) return;
+  const done = (progress.weeklyGoal.done || []).length;
+  const target = progress.weeklyGoal.target || 3;
+  const pct = Math.min(done / target, 1);
+  const r = 22, circ = 2 * Math.PI * r;
+  goalEl.innerHTML = `
+    <svg width="60" height="60" viewBox="0 0 60 60" aria-label="${done}/${target} ${t("weeklyLabel")}">
+      <circle cx="30" cy="30" r="${r}" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="5"/>
+      <circle cx="30" cy="30" r="${r}" fill="none" stroke="var(--leaf)" stroke-width="5"
+        stroke-dasharray="${circ}" stroke-dashoffset="${circ * (1 - pct)}"
+        stroke-linecap="round" transform="rotate(-90 30 30)"/>
+      <text x="30" y="34" text-anchor="middle" font-size="11" font-weight="800" fill="white">${done}/${target}</text>
+    </svg>
+    <span style="font-size:0.75rem;color:var(--muted)">${t("weeklyLabel")}</span>
+  `;
+}
+
+checkStreak();
+checkBadges();
+initOfflineIndicator();
+initNotifications();
 render();

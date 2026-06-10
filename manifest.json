@@ -1,0 +1,41 @@
+{
+  "name": "Agriculture & Nutrition Grade 9 — MTP Digital",
+  "short_name": "Agri-Nutrition",
+  "description": "Interactive Agriculture and Nutrition Grade 9 learning platform by Mountain Publishers.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d1f17",
+  "theme_color": "#1e6b3c",
+  "categories": ["education"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "mtplogo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Hay Module",
+      "short_name": "Hay",
+      "url": "./index.html?module=hay&view=learn",
+      "description": "Open the Conserving Animal Feed module"
+    },
+    {
+      "name": "Quiz",
+      "short_name": "Quiz",
+      "url": "./index.html?view=quiz",
+      "description": "Jump straight to a quiz"
+    }
+  ]
+}
