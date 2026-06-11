@@ -1638,6 +1638,8 @@ function mountPestBlaster3D(host) {
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
   host.appendChild(renderer.domElement);
@@ -1645,25 +1647,37 @@ function mountPestBlaster3D(host) {
   // Ground
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(38, 30), makeMat(0x4a8c3a, 0.88));
   ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
   scene.add(ground);
   const dirt = new THREE.Mesh(new THREE.PlaneGeometry(38, 9), makeMat(0x8b6914, 0.88));
   dirt.rotation.x = -Math.PI / 2;
   dirt.position.set(0, 0.01, 5.5);
+  dirt.receiveShadow = true;
   scene.add(dirt);
+
+  // Atmospheric depth
+  scene.fog = new THREE.Fog(0xb8d898, 20, 48);
+
+  // Crop rows outside fence perimeter
+  const pestCropMat = makeMat(0x3a8824, 0.8);
+  for (let z = -12; z <= 4; z += 1.3) {
+    const row = new THREE.Mesh(new THREE.BoxGeometry(36, 0.16, 0.28), pestCropMat);
+    row.position.set(0, 0.08, z); row.receiveShadow = true; scene.add(row);
+  }
 
   // Granary
   const granary = new THREE.Group();
-  const gWalls = new THREE.Mesh(new THREE.BoxGeometry(4.8, 3.2, 4.4), makeMat(0xd4a84b, 0.68));
-  gWalls.position.y = 1.6;
+  const gWalls = new THREE.Mesh(new THREE.BoxGeometry(4.8, 3.2, 4.4), makeMat(0xd4a84b, 0.65, 0.08));
+  gWalls.position.y = 1.6; gWalls.castShadow = true; gWalls.receiveShadow = true;
   granary.add(gWalls);
-  const gRoof = new THREE.Mesh(new THREE.ConeGeometry(3.8, 2.2, 4), makeMat(0x9a6820, 0.72));
-  gRoof.position.y = 4.1;
-  gRoof.rotation.y = Math.PI / 4;
+  const gRoof = new THREE.Mesh(new THREE.ConeGeometry(3.8, 2.2, 4), makeMat(0x8b3c14, 0.7, 0.05));
+  gRoof.position.y = 4.1; gRoof.rotation.y = Math.PI / 4;
+  gRoof.castShadow = true; gRoof.receiveShadow = true;
   granary.add(gRoof);
-  const gDoor = new THREE.Mesh(new THREE.BoxGeometry(1.1, 2.1, 0.15), makeMat(0x6a3010, 0.78));
-  gDoor.position.set(0, 1.05, 2.21);
+  const gDoor = new THREE.Mesh(new THREE.BoxGeometry(1.1, 2.1, 0.15), makeMat(0x5a2808, 0.85));
+  gDoor.position.set(0, 1.05, 2.21); gDoor.castShadow = true;
   granary.add(gDoor);
-  const winMat = new THREE.MeshStandardMaterial({ color: 0xb0d4f0, roughness: 0.2, transparent: true, opacity: 0.65 });
+  const winMat = new THREE.MeshPhysicalMaterial({ color: 0x88c4f0, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.6, transmission: 0.4 });
   [[-1.4, 2.2], [1.4, 2.2]].forEach(([wx, wy]) => {
     const win = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.75, 0.1), winMat);
     win.position.set(wx, wy, 2.23);
@@ -1674,8 +1688,8 @@ function mountPestBlaster3D(host) {
 
   // Danger ring
   const dangerRing = new THREE.Mesh(
-    new THREE.TorusGeometry(52 / SCALE, 0.07, 8, 48),
-    new THREE.MeshBasicMaterial({ color: 0xdc3c3c, opacity: 0.55, transparent: true })
+    new THREE.TorusGeometry(52 / SCALE, 0.09, 8, 56),
+    new THREE.MeshStandardMaterial({ color: 0xff2222, emissive: 0xff0000, emissiveIntensity: 1.4, transparent: true, opacity: 0.82 })
   );
   dangerRing.rotation.x = Math.PI / 2;
   dangerRing.position.set(0, 0.04, GRAN_Z);
@@ -1701,23 +1715,35 @@ function mountPestBlaster3D(host) {
     });
   }
 
-  // Trees
-  const treeGeo = new THREE.ConeGeometry(1.1, 2.8, 7);
-  const treeMat = makeMat(0x2d7a2d, 0.82);
+  // Trees — two-tier for fuller pine look
+  const treeGeo  = new THREE.ConeGeometry(1.1,  2.8, 7);
+  const treeGeo2 = new THREE.ConeGeometry(0.65, 1.9, 7);
+  const treeMat  = makeMat(0x2d7a2d, 0.82);
+  const treeMat2 = makeMat(0x3a8e3a, 0.78);
   const trunkGeo = new THREE.CylinderGeometry(0.18, 0.18, 1.1, 6);
   const trunkMat = makeMat(0x7a5030, 0.88);
   [[-10, -6], [10, -5], [-11, 2], [11, 3], [-9, 7], [9, 8]].forEach(([tx, tz]) => {
-    const t = new THREE.Mesh(treeGeo, treeMat); t.position.set(tx, 2.8, tz); scene.add(t);
+    const t  = new THREE.Mesh(treeGeo,  treeMat);  t.position.set(tx, 2.8,  tz); scene.add(t);
+    const t2 = new THREE.Mesh(treeGeo2, treeMat2); t2.position.set(tx, 4.6, tz); scene.add(t2);
     const tk = new THREE.Mesh(trunkGeo, trunkMat); tk.position.set(tx, 0.55, tz); scene.add(tk);
   });
 
+  // Trees cast shadows
+  scene.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+
   // Lights
-  scene.add(new THREE.AmbientLight(0xfff8f0, 1.2));
-  const sun = new THREE.DirectionalLight(0xfff3c0, 2.0);
-  sun.position.set(5, 16, 9);
+  scene.add(new THREE.AmbientLight(0xdff0ff, 0.85));
+  const sun = new THREE.DirectionalLight(0xfff3c0, 2.4);
+  sun.position.set(8, 18, 10);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.left = -18; sun.shadow.camera.right = 18;
+  sun.shadow.camera.top = 18;  sun.shadow.camera.bottom = -18;
+  sun.shadow.camera.near = 1;  sun.shadow.camera.far = 60;
+  sun.shadow.bias = -0.0015;
   scene.add(sun);
-  const fill = new THREE.DirectionalLight(0xe0f0ff, 0.4);
-  fill.position.set(-6, 5, -4);
+  const fill = new THREE.DirectionalLight(0xc8e8ff, 0.55);
+  fill.position.set(-8, 6, -5);
   scene.add(fill);
 
   // Pest mesh pool
@@ -1771,12 +1797,25 @@ function mountPestBlaster3D(host) {
   });
 
   // Particle pool
-  const PCOLS = [0xffd700, 0xff6b35, 0x4ecdc4, 0x96e6a1, 0xf8b500, 0xff9ff3];
-  const pGeo = new THREE.SphereGeometry(0.12, 4, 3);
+  // Pesticide-green spray droplets
+  const PCOLS = [0xaaffc8, 0x88eebb, 0xccffe8, 0x99ddaa, 0xddfff2, 0x77cc99];
+  const pGeo = new THREE.SphereGeometry(0.10, 4, 3);
   const partPool = Array.from({ length: 70 }, (_, i) => {
     const m = new THREE.Mesh(pGeo, new THREE.MeshBasicMaterial({ color: PCOLS[i % PCOLS.length], transparent: true, opacity: 1 }));
     m.visible = false; scene.add(m); return m;
   });
+
+  // Spray puddles — wet patches left on ground after spraying
+  const sprayPatches = Array.from({ length: 14 }, () => {
+    const r = 0.45 + Math.random() * 0.4;
+    const m = new THREE.Mesh(
+      new THREE.CircleGeometry(r, 10),
+      new THREE.MeshBasicMaterial({ color: 0x44bb77, transparent: true, opacity: 0.38, depthWrite: false })
+    );
+    m.rotation.x = -Math.PI / 2; m.position.y = 0.014; m.visible = false; m.userData.life = 0;
+    scene.add(m); return m;
+  });
+  let _sprayIdx = 0, _lastSprayMs = 0;
 
   // Raycaster
   const raycaster = new THREE.Raycaster();
@@ -1792,6 +1831,32 @@ function mountPestBlaster3D(host) {
     if (!raycaster.ray.intersectPlane(groundPlane, hitPt)) return null;
     return { x: hitPt.x * SCALE + CX, y: hitPt.z * SCALE + CZ };
   }
+
+  // 3D spray-gun cursor — floats at mouse position for realistic pest-control feel
+  const spGrp = new THREE.Group();
+  const spTankMat = new THREE.MeshStandardMaterial({ color: 0xfdd835, roughness: 0.38, metalness: 0.06 });
+  const spTank = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.58, 9), spTankMat);
+  spTank.rotation.z = Math.PI / 2; spTank.position.set(-0.12, 0.38, 0); spGrp.add(spTank);
+  const spHandMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.55 });
+  const spHandle = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.17, 0.18), spHandMat);
+  spHandle.position.set(0.28, 0.26, 0); spGrp.add(spHandle);
+  const spBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.070, 0.44, 7), spHandMat);
+  spBarrel.rotation.z = Math.PI / 2; spBarrel.position.set(0.54, 0.26, 0); spGrp.add(spBarrel);
+  const spTipMat = new THREE.MeshStandardMaterial({ color: 0x44ee88, emissive: 0x22cc55, emissiveIntensity: 0.5, roughness: 0.28 });
+  const spTip = new THREE.Mesh(new THREE.ConeGeometry(0.105, 0.22, 7), spTipMat);
+  spTip.rotation.z = -Math.PI / 2; spTip.position.set(0.78, 0.26, 0); spGrp.add(spTip);
+  spGrp.visible = false;
+  scene.add(spGrp);
+  renderer.domElement.addEventListener('mousemove', evt => {
+    const gc = getClickGameCoords(evt);
+    if (gc) { spGrp.position.set(toX(gc.x), 0.09, toZ(gc.y)); spGrp.visible = true; }
+    else { spGrp.visible = false; }
+  });
+  renderer.domElement.addEventListener('mouseleave', () => { spGrp.visible = false; });
+  renderer.domElement.addEventListener('click', () => {
+    if (!spGrp.visible) return;
+    spTipMat.emissiveIntensity = 3.0; setTimeout(() => { spTipMat.emissiveIntensity = 0.5; }, 110);
+  });
 
   function syncState({ pests = [], particles: parts = [] }) {
     const counters = { "🐀": 0, "🐛": 0, "🍄": 0 };
@@ -1821,6 +1886,36 @@ function mountPestBlaster3D(host) {
       m.material.opacity = frac;
     });
     dangerRing.material.opacity = 0.3 + 0.25 * Math.sin(Date.now() * 0.003);
+
+    // Granary alarm: shake building + red glow when pests breach the safety perimeter
+    const threatened = pests.some(p => p.alpha > 0.1 && Math.hypot(p.x - W / 2, p.y - H * 0.41) < 62);
+    if (threatened) {
+      const shT = Date.now() * 0.014;
+      granary.position.x = Math.sin(shT * 3.5) * 0.07;
+      gWalls.material.emissive.setHex(0x550000);
+      gWalls.material.emissiveIntensity = 0.35 + 0.25 * Math.sin(shT * 5);
+    } else {
+      granary.position.x = 0;
+      gWalls.material.emissive.setHex(0x000000);
+      gWalls.material.emissiveIntensity = 0;
+    }
+
+    // Spray puddles: place at fresh-burst locations, then fade slowly
+    const nowMs = Date.now();
+    const freshPart = parts.find(p => !p.txt && (p.life / p.max) > 0.84);
+    if (freshPart && nowMs - _lastSprayMs > 160) {
+      const sp = sprayPatches[_sprayIdx++ % sprayPatches.length];
+      sp.position.set(toX(freshPart.x), 0.014, toZ(freshPart.y));
+      sp.visible = true; sp.userData.life = 1.0;
+      _lastSprayMs = nowMs;
+    }
+    sprayPatches.forEach(sp => {
+      if (!sp.visible) return;
+      sp.userData.life -= 0.004;
+      if (sp.userData.life <= 0) { sp.visible = false; return; }
+      sp.material.opacity = 0.38 * sp.userData.life;
+    });
+
     renderer.render(scene, camera);
   }
 
@@ -1868,88 +1963,260 @@ function mountFarmRaider3D(host, resources) {
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   host.appendChild(renderer.domElement);
 
   // Ground + paths
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 32), makeMat(0x5a9a3a, 0.88));
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 32), makeMat(0x5a9a3a, 0.85, 0.0));
   ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
   scene.add(ground);
-  const dirtMat = makeMat(0xc4a870, 0.85);
+  const dirtMat = makeMat(0xc4a870, 0.82, 0.0);
   const hPath = new THREE.Mesh(new THREE.BoxGeometry(40, 0.04, 1.8), dirtMat);
-  hPath.position.y = 0.01; scene.add(hPath);
+  hPath.position.y = 0.01; hPath.receiveShadow = true; scene.add(hPath);
   const vPath = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.04, 32), dirtMat);
-  vPath.position.y = 0.01; scene.add(vPath);
+  vPath.position.y = 0.01; vPath.receiveShadow = true; scene.add(vPath);
+
+  // Atmospheric fog
+  scene.fog = new THREE.Fog(0xc8dfa0, 24, 58);
+
+  // Crop rows on the field
+  const cropRowMat = makeMat(0x3d8a28, 0.78);
+  for (let z = -14; z <= 14; z += 1.4) {
+    if (Math.abs(z) < 1.2) continue;
+    const row = new THREE.Mesh(new THREE.BoxGeometry(36, 0.18, 0.32), cropRowMat);
+    row.position.set(0, 0.09, z); row.receiveShadow = true; row.castShadow = true;
+    scene.add(row);
+  }
 
   // Farmhouse
-  const fhWall = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.5, 3.0), makeMat(0xe8d5aa, 0.7));
-  fhWall.position.set(-7, 1.25, -5.5); scene.add(fhWall);
-  const fhRoof = new THREE.Mesh(new THREE.ConeGeometry(2.8, 1.6, 4), makeMat(0x8b3a1a, 0.72));
-  fhRoof.position.set(-7, 3.3, -5.5); fhRoof.rotation.y = Math.PI / 4; scene.add(fhRoof);
+  const fhWall = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.5, 3.0), makeMat(0xe8d5aa, 0.65, 0.05));
+  fhWall.position.set(-7, 1.25, -5.5);
+  fhWall.castShadow = true; fhWall.receiveShadow = true; scene.add(fhWall);
+  const fhRoof = new THREE.Mesh(new THREE.ConeGeometry(2.8, 1.6, 4), makeMat(0x8b3a1a, 0.7, 0.05));
+  fhRoof.position.set(-7, 3.3, -5.5); fhRoof.rotation.y = Math.PI / 4;
+  fhRoof.castShadow = true; scene.add(fhRoof);
+
+  // Per-resource node top specs: [geoFn, rough, metalness]
+  const nodeTopSpec = {
+    crop:    () => new THREE.ConeGeometry(0.42, 1.22, 5),             // pointed wheat sheaf
+    feed:    () => { const g = new THREE.SphereGeometry(0.54, 10, 7); g.scale(0.86, 1.12, 0.86); return g; }, // upright feed sack
+    manure:  () => { const g = new THREE.SphereGeometry(0.56, 9, 6);  g.scale(1.35, 0.46, 1.35); return g; }, // wide flat mound
+    compost: () => new THREE.TorusGeometry(0.42, 0.16, 8, 14),        // compost ring
+    pond:    () => new THREE.CylinderGeometry(0.92, 0.74, 0.15, 18),  // water-surface disc
+    food:    () => new THREE.BoxGeometry(0.74, 0.62, 0.60),            // food package/crate
+  };
+  const nodeTopMetal = { pond: 0.08, food: 0.14 };
 
   // Resource nodes
   const nodeMeshes = {};
   resources.forEach(r => {
     const px = toX(r.x), pz = toZ(r.y);
     const col = new THREE.Color(r.color).getHex();
+    const mutedCol = new THREE.Color(r.color).lerp(new THREE.Color(0x888888), 0.52).getHex();
 
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.2, 0.55, 12), makeMat(0x999999, 0.7));
-    base.position.set(px, 0.28, pz); scene.add(base);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.2, 0.55, 12), makeMat(0x888888, 0.72));
+    base.position.set(px, 0.28, pz);
+    base.castShadow = true; base.receiveShadow = true; scene.add(base);
 
-    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.7, 1.8, 10), makeMat(col, 0.65));
-    pillar.position.set(px, 1.45, pz); scene.add(pillar);
+    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.65, 1.85, 10), makeMat(mutedCol, 0.62, 0.08));
+    pillar.position.set(px, 1.5, pz);
+    pillar.castShadow = true; pillar.receiveShadow = true; scene.add(pillar);
 
-    const top = new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 7), makeMat(col, 0.5));
-    top.position.set(px, 2.55, pz); scene.add(top);
+    const topGeoFn = nodeTopSpec[r.id] || (() => new THREE.SphereGeometry(0.52, 10, 7));
+    const topMat = r.id === 'pond'
+      ? new THREE.MeshPhysicalMaterial({ color: 0x1a6eb8, roughness: 0.05, metalness: 0.06, transmission: 0.55, transparent: true, clearcoat: 1.0, clearcoatRoughness: 0.04, emissive: 0x082848, emissiveIntensity: 0.25 })
+      : makeMat(mutedCol, 0.5, nodeTopMetal[r.id] || 0.08);
+    const top = new THREE.Mesh(topGeoFn(), topMat);
+    // Pillar top is at y = 1.5 + 1.85/2 = 2.425; rest shapes just above that
+    const topY = (r.id === "compost" || r.id === "pond") ? 2.52 : 2.62;
+    top.position.set(px, topY, pz);
+    top.castShadow = true; scene.add(top);
 
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.1, 8, 22),
-      new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.7 }));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.11, 8, 24),
+      new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.75 }));
     ring.rotation.x = Math.PI / 2;
     ring.position.set(px, 0.05, pz); scene.add(ring);
 
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 2.2, 6), makeMat(0xdddddd, 0.5));
-    pole.position.set(px, 3.75, pz); pole.visible = false; scene.add(pole);
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 2.2, 6), makeMat(0xdddddd, 0.45, 0.3));
+    pole.position.set(px, 3.75, pz); pole.visible = false;
+    pole.castShadow = true; scene.add(pole);
 
-    const flag = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 0.06), makeMat(col, 0.6));
-    flag.position.set(px + 0.45, 4.5, pz); flag.visible = false; scene.add(flag);
+    const flag = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 0.06), makeMat(col, 0.55));
+    flag.position.set(px + 0.45, 4.5, pz); flag.visible = false;
+    flag.castShadow = true; scene.add(flag);
 
-    nodeMeshes[r.id] = { base, pillar, top, ring, pole, flag };
+    // Label billboard sprite
+    const lCvs = document.createElement("canvas");
+    lCvs.width = 224; lCvs.height = 64;
+    const lCtx = lCvs.getContext("2d");
+    lCtx.fillStyle = "rgba(8,22,14,0.84)";
+    lCtx.beginPath(); lCtx.roundRect(0, 0, 224, 64, 10); lCtx.fill();
+    lCtx.font = "30px sans-serif";
+    lCtx.textAlign = "left"; lCtx.textBaseline = "middle";
+    lCtx.fillText(r.emoji, 10, 32);
+    lCtx.font = "bold 18px sans-serif";
+    lCtx.fillStyle = "#" + new THREE.Color(r.color).getHexString();
+    lCtx.fillText(r.label, 56, 32);
+    const label = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: new THREE.CanvasTexture(lCvs), transparent: true
+    }));
+    label.position.set(px, 4.2, pz);
+    label.scale.set(4.2, 1.2, 1);
+    scene.add(label);
+
+    nodeMeshes[r.id] = { base, pillar, top, ring, pole, flag, label };
   });
 
-  // Trees
-  const tGeo = new THREE.ConeGeometry(1.15, 2.9, 7), tMat = makeMat(0x2d7a2d, 0.82);
+  // Trees — two-tier for fuller pine look
+  const tGeo  = new THREE.ConeGeometry(1.15, 2.9, 7);
+  const tGeo2 = new THREE.ConeGeometry(0.70, 2.0, 7);
+  const tMat  = makeMat(0x2d7a2d, 0.78, 0.0);
+  const tMat2 = makeMat(0x388e38, 0.74, 0.0);
   const tkGeo = new THREE.CylinderGeometry(0.19, 0.19, 1.1, 6), tkMat = makeMat(0x7a5030, 0.88);
   [[-12, -9], [12, -9], [-13, 5], [13, 5]].forEach(([tx, tz]) => {
-    const t = new THREE.Mesh(tGeo, tMat); t.position.set(tx, 2.9, tz); scene.add(t);
-    const tk = new THREE.Mesh(tkGeo, tkMat); tk.position.set(tx, 0.55, tz); scene.add(tk);
+    const t  = new THREE.Mesh(tGeo, tMat);  t.position.set(tx, 2.9,  tz); t.castShadow = true; t.receiveShadow = true; scene.add(t);
+    const t2 = new THREE.Mesh(tGeo2, tMat2); t2.position.set(tx, 4.85, tz); t2.castShadow = true; scene.add(t2);
+    const tk = new THREE.Mesh(tkGeo, tkMat); tk.position.set(tx, 0.55, tz); tk.castShadow = true; scene.add(tk);
   });
 
   // Tractor group
   const tractorGroup = new THREE.Group();
-  const tBody = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.85, 1.5), makeMat(0xe65100, 0.55));
-  tBody.position.y = 0.72; tractorGroup.add(tBody);
-  const tHood = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.65, 1.4), makeMat(0xbf360c, 0.6));
-  tHood.position.set(0.9, 0.72, 0); tractorGroup.add(tHood);
-  const tCab = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.9, 1.25), makeMat(0x37474f, 0.65));
-  tCab.position.set(-0.3, 1.57, 0); tractorGroup.add(tCab);
-  const tWind = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.72, 1.05),
-    new THREE.MeshStandardMaterial({ color: 0xb0d4f0, roughness: 0.2, transparent: true, opacity: 0.6 }));
-  tWind.position.set(0.17, 1.57, 0); tractorGroup.add(tWind);
-  const wMat = makeMat(0x1a1a1a, 0.9);
-  const rimMat = makeMat(0x888888, 0.4, 0.4);
-  const rearWGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.42, 14);
-  const frontWGeo = new THREE.CylinderGeometry(0.36, 0.36, 0.3, 12);
-  const wheelMeshes = [];
-  [[-0.75, 0.55, 0.88], [-0.75, 0.55, -0.88]].forEach(([wx, wy, wz]) => {
-    const w = new THREE.Mesh(rearWGeo, wMat); w.rotation.z = Math.PI / 2; w.position.set(wx, wy, wz); tractorGroup.add(w); wheelMeshes.push(w);
-    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.44, 8), rimMat); rim.rotation.z = Math.PI / 2; rim.position.set(wx, wy, wz); tractorGroup.add(rim);
+  // Main body
+  const tBody = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.9, 1.6), makeMat(0xe65100, 0.45, 0.12));
+  tBody.position.y = 0.75; tractorGroup.add(tBody);
+  // Engine hood (slightly raised, bevelled feel)
+  const tHood = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.72, 1.5), makeMat(0xbf360c, 0.5, 0.15));
+  tHood.position.set(0.92, 0.78, 0); tractorGroup.add(tHood);
+  // Grill detail on front of hood
+  const tGrill = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.52, 1.2), makeMat(0x212121, 0.3, 0.6));
+  tGrill.position.set(1.47, 0.78, 0); tractorGroup.add(tGrill);
+  // Cab
+  const tCab = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.3), makeMat(0x37474f, 0.55, 0.2));
+  tCab.position.set(-0.28, 1.65, 0); tractorGroup.add(tCab);
+  // Windshield glass
+  const tWind = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.8, 1.1),
+    new THREE.MeshPhysicalMaterial({ color: 0xa8d8f4, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.55, transmission: 0.5 }));
+  tWind.position.set(0.22, 1.65, 0); tractorGroup.add(tWind);
+  // Headlights — emissive yellow spheres on front of hood
+  const hlMat = new THREE.MeshPhysicalMaterial({ color: 0xffee66, emissive: 0xffcc00, emissiveIntensity: 1.8, roughness: 0.1 });
+  const hlGeo = new THREE.SphereGeometry(0.11, 8, 6);
+  [0.52, -0.52].forEach(hlz => {
+    const hl = new THREE.Mesh(hlGeo, hlMat);
+    hl.position.set(1.47, 0.78, hlz); tractorGroup.add(hl);
   });
-  [[0.82, 0.36, 0.78], [0.82, 0.36, -0.78]].forEach(([wx, wy, wz]) => {
-    const w = new THREE.Mesh(frontWGeo, wMat); w.rotation.z = Math.PI / 2; w.position.set(wx, wy, wz); tractorGroup.add(w); wheelMeshes.push(w);
+  // Exhaust pipe
+  const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.078, 0.078, 1.0, 7), makeMat(0x2a2a2a, 0.7, 0.5));
+  pipe.position.set(0.7, 1.55, 0.6); tractorGroup.add(pipe);
+  // Wheels — group-based so spinGroup.rotation.y rolls the wheel around the axle
+  const tyreMat = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.92 });
+  const rimMatW = new THREE.MeshStandardMaterial({ color: 0xb0b0b0, roughness: 0.25, metalness: 0.75 });
+  const hubMatW = new THREE.MeshStandardMaterial({ color: 0x606060, roughness: 0.3, metalness: 0.8 });
+  const wheelSpinGroups = [];
+
+  function buildWheel(radius, height, numLugs) {
+    const spinGrp = new THREE.Group();
+    // Tyre barrel
+    const tyre = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, height, 18), tyreMat);
+    tyre.castShadow = true; spinGrp.add(tyre);
+    // Tread lugs that stick out radially in the X-Z plane of the spinGrp
+    const lugD = radius * 0.22;
+    for (let i = 0; i < numLugs; i++) {
+      const a = (i / numLugs) * Math.PI * 2;
+      const lug = new THREE.Mesh(
+        new THREE.BoxGeometry(radius * 0.3, height * 0.84, lugD),
+        tyreMat
+      );
+      lug.position.set(Math.cos(a) * (radius + lugD * 0.5), 0, Math.sin(a) * (radius + lugD * 0.5));
+      lug.rotation.y = Math.PI / 2 - a;
+      spinGrp.add(lug);
+    }
+    // Metal rim disc
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.5, radius * 0.5, height + 0.04, 10), rimMatW);
+    rim.castShadow = true; spinGrp.add(rim);
+    // Hub cap
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.2, radius * 0.2, height + 0.06, 8), hubMatW);
+    spinGrp.add(hub);
+    // Orientation wrapper: rotate X by π/2 so cylinder axis (Y) aligns with world Z (axle)
+    const oriGrp = new THREE.Group();
+    oriGrp.rotation.x = Math.PI / 2;
+    oriGrp.add(spinGrp);
+    wheelSpinGroups.push(spinGrp);
+    return oriGrp;
+  }
+
+  [[-0.72, 0.58, 0.92], [-0.72, 0.58, -0.92]].forEach(([wx, wy, wz]) => {
+    const w = buildWheel(0.58, 0.46, 10); w.position.set(wx, wy, wz); tractorGroup.add(w);
   });
-  const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.9, 6), makeMat(0x424242, 0.75));
-  pipe.position.set(0.9, 1.44, 0.52); tractorGroup.add(pipe);
+  [[0.85, 0.38, 0.82], [0.85, 0.38, -0.82]].forEach(([wx, wy, wz]) => {
+    const w = buildWheel(0.38, 0.32, 8); w.position.set(wx, wy, wz); tractorGroup.add(w);
+  });
+  // Mudguards arching over each rear wheel
+  const fenderMat = makeMat(0xbf360c, 0.5, 0.12);
+  [-0.92, 0.92].forEach(fz => {
+    const f = new THREE.Mesh(new THREE.BoxGeometry(1.32, 0.1, 0.60), fenderMat);
+    f.position.set(-0.72, 1.22, fz);
+    tractorGroup.add(f);
+    // Small side skirt hanging down from fender edge
+    const sk = new THREE.Mesh(new THREE.BoxGeometry(1.32, 0.28, 0.06), fenderMat);
+    sk.position.set(-0.72, 1.08, fz + (fz > 0 ? 0.3 : -0.3));
+    tractorGroup.add(sk);
+  });
+  // Wooden flatbed trailer — cargo fills in as resources are collected
+  const trailerGrp = new THREE.Group();
+  trailerGrp.position.set(-2.3, 0, 0);
+  const bedWoodMat = makeMat(0x7a5a28, 0.84);
+  const tBed = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.13, 1.52), bedWoodMat);
+  tBed.position.y = 0.52; trailerGrp.add(tBed);
+  for (let pz = -0.60; pz <= 0.60; pz += 0.30) {
+    const plk = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.06, 0.21), makeMat(0x9a7040, 0.88));
+    plk.position.set(0, 0.61, pz); trailerGrp.add(plk);
+  }
+  const tRailMat = makeMat(0x5a3c10, 0.85);
+  [-0.78, 0.78].forEach(rz => {
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.32, 0.10), tRailMat);
+    rail.position.set(0, 0.73, rz); trailerGrp.add(rail);
+  });
+  const tRearRail = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.32, 1.52), tRailMat);
+  tRearRail.position.set(-1.05, 0.73, 0); trailerGrp.add(tRearRail);
+  const twMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+  const twHubMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.3, metalness: 0.6 });
+  [-0.8, 0.8].forEach(tz => {
+    const tw = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.18, 10), twMat);
+    tw.rotation.x = Math.PI / 2; tw.position.set(0.2, 0.22, tz); trailerGrp.add(tw);
+    const rh = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.20, 6), twHubMat);
+    rh.rotation.x = Math.PI / 2; rh.position.set(0.2, 0.22, tz); trailerGrp.add(rh);
+  });
+  const hitch = new THREE.Mesh(new THREE.BoxGeometry(0.94, 0.08, 0.12), makeMat(0x2a2a2a, 0.4, 0.7));
+  hitch.position.set(1.05, 0.46, 0); trailerGrp.add(hitch);
+  // 6 cargo items — one per resource, shown as each is collected
+  const CARGO_SLOTS = [
+    [-0.55, 0.89,  0.44], [-0.55, 0.89, -0.44],
+    [ 0.02, 0.89,  0.44], [ 0.02, 0.89, -0.44],
+    [ 0.56, 0.89,  0.44], [ 0.56, 0.89, -0.44],
+  ];
+  const CARGO_GEOS = [
+    new THREE.BoxGeometry(0.44, 0.40, 0.36),        // crop — box/bale
+    new THREE.CylinderGeometry(0.19, 0.19, 0.40, 8), // feed — barrel
+    new THREE.SphereGeometry(0.21, 8, 6),             // manure — mound
+    new THREE.TorusGeometry(0.15, 0.09, 6, 10),       // compost — ring
+    new THREE.CylinderGeometry(0.22, 0.18, 0.35, 10), // pond — bucket
+    new THREE.BoxGeometry(0.40, 0.38, 0.38),          // food — crate
+  ];
+  const cargoMats = CARGO_GEOS.map(() =>
+    new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.6, clearcoat: 0.2 })
+  );
+  const cargoMeshes = CARGO_SLOTS.map(([cx, cy, cz], i) => {
+    const cm = new THREE.Mesh(CARGO_GEOS[i], cargoMats[i]);
+    cm.position.set(cx, cy, cz); cm.visible = false;
+    trailerGrp.add(cm); return cm;
+  });
+  tractorGroup.add(trailerGrp);
+
+  tractorGroup.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
   tractorGroup.position.set(0, 0, 0);
   scene.add(tractorGroup);
 
@@ -1962,9 +2229,18 @@ function mountFarmRaider3D(host, resources) {
   });
 
   // Lights
-  scene.add(new THREE.AmbientLight(0xfff8f0, 1.2));
-  const sun = new THREE.DirectionalLight(0xfff3c0, 1.8);
-  sun.position.set(6, 16, 8); scene.add(sun);
+  scene.add(new THREE.AmbientLight(0xd8f0e0, 0.8));
+  const sun = new THREE.DirectionalLight(0xfff5c0, 2.2);
+  sun.position.set(8, 18, 10);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.left = -22; sun.shadow.camera.right = 22;
+  sun.shadow.camera.top = 22;  sun.shadow.camera.bottom = -22;
+  sun.shadow.camera.near = 1;  sun.shadow.camera.far = 70;
+  sun.shadow.bias = -0.0012;
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xb8deff, 0.5);
+  fill.position.set(-10, 8, -8); scene.add(fill);
 
   // Raycaster
   const raycaster = new THREE.Raycaster();
@@ -1988,20 +2264,24 @@ function mountFarmRaider3D(host, resources) {
     _lastSync = now;
 
     tractorGroup.position.set(toX(player.x), 0, toZ(player.y));
-    tractorGroup.rotation.y = -player.angle + Math.PI / 2;
+    tractorGroup.rotation.y = -player.angle;
     const spd3D = Math.hypot(player.vx || 0, player.vy || 0) / SCALE;
-    wheelMeshes.forEach(w => { w.rotation.x += spd3D * 1.8 * dt; });
+    wheelSpinGroups.forEach(sg => { sg.rotation.y += spd3D * 2.8 * dt; });
 
     resources.forEach(r => {
       const done = collected.has(r.id);
       const n = nodeMeshes[r.id]; if (!n) return;
       const col = new THREE.Color(r.color).getHex();
-      n.pillar.material.color.setHex(done ? col : 0x999999);
-      n.pillar.material.emissive.setHex(done ? new THREE.Color(r.color).multiplyScalar(0.2).getHex() : 0x000000);
-      n.top.material.color.setHex(done ? col : 0xaaaaaa);
+      const mutedCol = new THREE.Color(r.color).lerp(new THREE.Color(0x888888), 0.52).getHex();
+      n.pillar.material.color.setHex(done ? col : mutedCol);
+      n.pillar.material.emissive.setHex(done ? new THREE.Color(r.color).multiplyScalar(0.22).getHex() : 0x000000);
+      n.top.material.color.setHex(done ? col : mutedCol);
+      n.top.material.emissive.setHex(done ? new THREE.Color(r.color).multiplyScalar(0.18).getHex() : 0x000000);
       n.ring.visible = !done;
+      n.ring.material.opacity = 0.5 + 0.35 * Math.sin(Date.now() * 0.003 + r.x);
       n.pole.visible = done;
       n.flag.visible = done;
+      n.label.material.opacity = done ? 0.3 : 1.0;
     });
 
     partPool.forEach(m => { m.visible = false; });
@@ -2014,6 +2294,13 @@ function mountFarmRaider3D(host, resources) {
       m.position.set(toX(p.x), 0.15 + (1 - frac) * 1.5, toZ(p.y));
       m.scale.setScalar(Math.max(0.02, (p.r / SCALE) * frac));
       m.material.opacity = frac * 0.85;
+    });
+
+    // Trailer cargo: show one item per collected resource, tinted to its colour
+    const collectedArr = resources.filter(r => collected.has(r.id));
+    cargoMeshes.forEach((cm, i) => {
+      cm.visible = i < collectedArr.length;
+      if (cm.visible) cargoMats[i].color.set(collectedArr[i].color);
     });
 
     renderer.render(scene, camera);
@@ -2062,12 +2349,14 @@ function mountFlourFrenzy3D(host, products) {
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
   host.appendChild(renderer.domElement);
 
   // Factory wall
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(32, 13, 0.5), makeMat(0x607d8b, 0.9));
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(32, 13, 0.5), makeMat(0x546e7a, 0.82, 0.1));
   wall.position.set(0, 4.5, -0.9); scene.add(wall);
 
   // Windows
@@ -2093,8 +2382,54 @@ function mountFlourFrenzy3D(host, products) {
   }
 
   // Floor
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(32, 14), makeMat(0x8d6e4a, 0.88));
-  floor.rotation.x = -Math.PI / 2; floor.position.y = -0.5; scene.add(floor);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(32, 14), makeMat(0x7a7060, 0.88, 0.08));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -0.5;
+  floor.receiveShadow = true; scene.add(floor);
+
+  // Industrial ceiling light fixtures
+  const lhMat = makeMat(0x3a3a3a, 0.55, 0.6);
+  const lbMat = new THREE.MeshStandardMaterial({ color: 0xfff8e0, emissive: 0xffe090, emissiveIntensity: 2.5, roughness: 0.1 });
+  [-8, -3, 3, 8].forEach(lx => {
+    const housing = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.62, 0.32, 8), lhMat);
+    housing.position.set(lx, 9.6, 1.5); scene.add(housing);
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), lbMat);
+    bulb.position.set(lx, 9.25, 1.5); scene.add(bulb);
+    const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 3.5, 4), lhMat);
+    cord.position.set(lx, 11.28, 1.5); scene.add(cord);
+  });
+  // Horizontal pipe duct on wall
+  const ductMat = makeMat(0x546e7a, 0.55, 0.45);
+  const duct = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 28, 8), ductMat);
+  duct.rotation.z = Math.PI / 2; duct.position.set(0, 7.8, -0.55); scene.add(duct);
+  // Vertical pipes
+  [-11, -5, 5, 11].forEach(px => {
+    const vp = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 6, 7), ductMat);
+    vp.position.set(px, 5, -0.6); scene.add(vp);
+  });
+
+  wall.castShadow = true; wall.receiveShadow = true;
+
+  // Control panel on left wall section
+  const cpBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.6, 0.18), makeMat(0x2c3e50, 0.55, 0.3));
+  cpBase.position.set(-9, 3.5, -0.72); scene.add(cpBase);
+  const cpScreen = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 0.06),
+    new THREE.MeshStandardMaterial({ color: 0x00e5ff, emissive: 0x00b8d4, emissiveIntensity: 1.0, roughness: 0.1 }));
+  cpScreen.position.set(-9, 3.65, -0.62); scene.add(cpScreen);
+  // Red & green indicator lights on panel
+  [[0.55, 2.95, 0xff1744, 1.8], [0.55, 3.0, 0x00e676, 1.8]].forEach(([ox, oy, col, ei], i) => {
+    const btn = new THREE.Mesh(new THREE.SphereGeometry(0.1, 7, 5),
+      new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: ei }));
+    btn.position.set(-9 + ox - i * 0.32, oy, -0.63); scene.add(btn);
+  });
+
+  // Yellow caution stripes on floor around belt base
+  const cautionYellow = new THREE.MeshStandardMaterial({ color: 0xffd600, roughness: 0.8 });
+  const cautionBlack  = new THREE.MeshStandardMaterial({ color: 0x212121, roughness: 0.8 });
+  for (let i = 0; i < 10; i++) {
+    const cs = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.005, 1.8),
+      i % 2 === 0 ? cautionYellow : cautionBlack);
+    cs.position.set(-10.2 + i * 1.1, -0.495, 2.2); scene.add(cs);
+  }
 
   // Belt
   const beltMat = makeMat(0x424242, 0.6);
@@ -2133,7 +2468,7 @@ function mountFlourFrenzy3D(host, products) {
   }
   const prodTextures = (products || []).map(p => makeProductTex(p));
 
-  const BOX_GEO = new THREE.BoxGeometry(1.45, 1.45, 1.45);
+  const BOX_GEO = new THREE.BoxGeometry(1.15, 1.72, 0.90); // taller-than-wide bag/sack profile
   const neutralCol = 0xf5f0e8, correctCol = 0x2ea85a, wrongCol = 0xe53935;
   const boxPool = Array.from({ length: 20 }, () => {
     const mats = Array.from({ length: 6 }, (_, fi) =>
@@ -2145,10 +2480,34 @@ function mountFlourFrenzy3D(host, products) {
     m.visible = false; scene.add(m); return m;
   });
 
+  // Floating flour dust — tiny white motes rising off the belt
+  const flourDustMat = new THREE.MeshBasicMaterial({ color: 0xf8f4ee, transparent: true, opacity: 0.42 });
+  const flourDustGeo = new THREE.SphereGeometry(0.055, 4, 3);
+  const flourDust = Array.from({ length: 24 }, () => {
+    const d = new THREE.Mesh(flourDustGeo, flourDustMat.clone());
+    d.position.set((Math.random() - 0.5) * 20, BELT_Y + 0.4 + Math.random() * 2.5, (Math.random() - 0.5) * 1.1);
+    d.userData.vx = (Math.random() - 0.5) * 0.016;
+    d.userData.vy = 0.008 + Math.random() * 0.014;
+    d.userData.phase = Math.random() * Math.PI * 2;
+    scene.add(d); return d;
+  });
+
+  // Cast shadows on belt and boxes
+  scene.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+
   // Lights
-  scene.add(new THREE.AmbientLight(0xffe0c0, 1.1));
-  const fl = new THREE.DirectionalLight(0xfff8f0, 1.8);
-  fl.position.set(2, 12, 10); scene.add(fl);
+  scene.add(new THREE.AmbientLight(0xffe8d0, 0.9));
+  const fl = new THREE.DirectionalLight(0xfff8f0, 2.2);
+  fl.position.set(4, 14, 12);
+  fl.castShadow = true;
+  fl.shadow.mapSize.set(1024, 1024);
+  fl.shadow.camera.left = -16; fl.shadow.camera.right = 16;
+  fl.shadow.camera.top = 12;  fl.shadow.camera.bottom = -4;
+  fl.shadow.camera.near = 1;  fl.shadow.camera.far = 40;
+  fl.shadow.bias = -0.001;
+  scene.add(fl);
+  const fill2 = new THREE.DirectionalLight(0xddeeff, 0.55);
+  fill2.position.set(-6, 4, 6); scene.add(fill2);
 
   function syncState({ items = [] }) {
     const t = Date.now() * 0.001;
@@ -2184,6 +2543,19 @@ function mountFlourFrenzy3D(host, products) {
           mesh.material[fi].color.setHex(col);
         }
       }
+    });
+
+    // Animate flour dust motes
+    flourDust.forEach(d => {
+      d.position.x += d.userData.vx + Math.sin(t * 0.65 + d.userData.phase) * 0.003;
+      d.position.y += d.userData.vy;
+      if (d.position.y > BELT_Y + 5 || d.position.x < -11 || d.position.x > 11) {
+        d.position.set((Math.random() - 0.5) * 18, BELT_Y + 0.25, (Math.random() - 0.5) * 1.0);
+        d.userData.vx = (Math.random() - 0.5) * 0.016;
+        d.userData.vy = 0.008 + Math.random() * 0.014;
+      }
+      const rise = Math.min(1, (d.position.y - BELT_Y) / 4.5);
+      d.material.opacity = 0.42 * (1 - rise) * (0.5 + 0.5 * Math.sin(t * 1.4 + d.userData.phase));
     });
 
     renderer.render(scene, camera);
@@ -2228,31 +2600,74 @@ function mountLeftoverSortScene(host) {
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
   host.appendChild(renderer.domElement);
 
   // Back wall
+  scene.fog = new THREE.Fog(0xf0e8dc, 18, 38);
   const bwall = new THREE.Mesh(new THREE.BoxGeometry(18, 8, 0.3), makeMat(0xe8dcc8, 0.88));
   bwall.position.set(0, 3, -2.2);
+  bwall.receiveShadow = true;
   scene.add(bwall);
   // Counter top
   const cTop = new THREE.Mesh(new THREE.BoxGeometry(16, 0.4, 4), makeMat(0xd4b896, 0.68));
   cTop.position.set(0, 1.6, 0);
+  cTop.castShadow = true; cTop.receiveShadow = true;
   scene.add(cTop);
   // Counter base
   const cBase = new THREE.Mesh(new THREE.BoxGeometry(16, 3.0, 3.6), makeMat(0xb08060, 0.82));
   cBase.position.set(0, 0.1, 0.1);
+  cBase.castShadow = true; cBase.receiveShadow = true;
   scene.add(cBase);
+
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 12), makeMat(0xc9b59d, 0.9));
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -1.42;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  // Wall tiles and kitchen fixtures
+  const groutMat = makeMat(0xd5c7b8, 0.92);
+  for (let x = -8; x <= 8; x += 1.05) {
+    const line = new THREE.Mesh(new THREE.BoxGeometry(0.025, 2.4, 0.035), groutMat);
+    line.position.set(x, 3.2, -2.0);
+    scene.add(line);
+  }
+  for (let y = 2.1; y <= 4.6; y += 0.58) {
+    const line = new THREE.Mesh(new THREE.BoxGeometry(17, 0.025, 0.035), groutMat);
+    line.position.set(0, y, -1.98);
+    scene.add(line);
+  }
+
+  const fridge = new THREE.Mesh(new THREE.BoxGeometry(2.0, 4.4, 1.0), makeMat(0xf2f6f8, 0.42, 0.06));
+  fridge.position.set(-7.0, 1.05, -1.35);
+  fridge.castShadow = true; fridge.receiveShadow = true;
+  scene.add(fridge);
+  const fridgeHandle = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.5, 0.08), makeMat(0xb7c3c8, 0.28, 0.45));
+  fridgeHandle.position.set(-6.25, 1.2, -0.78);
+  scene.add(fridgeHandle);
+
+  const sink = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.18, 0.95), makeMat(0xb9c7c7, 0.2, 0.35));
+  sink.position.set(-0.2, 1.92, -0.62);
+  sink.castShadow = true; scene.add(sink);
+  const faucet = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.035, 8, 20, Math.PI), makeMat(0xcbd5d8, 0.18, 0.55));
+  faucet.position.set(-0.2, 2.32, -0.75);
+  faucet.rotation.x = Math.PI / 2;
+  scene.add(faucet);
 
   // Four zone containers on counter
   const ZONE_COLORS = [0x1e7a45, 0x1565c0, 0xe65100, 0xc62828];
   [-5.5, -1.7, 2.1, 5.9].forEach((cx, i) => {
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.88, 1.6, 10), makeMat(ZONE_COLORS[i], 0.6));
     body.position.set(cx, 2.68, 0.3);
+    body.castShadow = true; body.receiveShadow = true;
     scene.add(body);
     const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.2, 10), makeMat(ZONE_COLORS[i], 0.4, 0.2));
     lid.position.set(cx, 3.58, 0.3);
+    lid.castShadow = true;
     scene.add(lid);
   });
   // Bowl and plate decoration
@@ -2260,12 +2675,53 @@ function mountLeftoverSortScene(host) {
   [-3.8, 4.4].forEach(bx => {
     const b = new THREE.Mesh(bowlGeo, makeMat(0xffffff, 0.3, 0.1));
     b.position.set(bx, 1.96, -0.5);
+    b.castShadow = true;
     scene.add(b);
   });
+
+  const containerMat = new THREE.MeshPhysicalMaterial({
+    color: 0xd8f0ff, roughness: 0.18, metalness: 0.02, transparent: true, opacity: 0.58, transmission: 0.35,
+  });
+  [-2.7, 0.9, 3.25].forEach((cx, i) => {
+    const tub = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.48, 0.82), containerMat.clone());
+    tub.position.set(cx, 2.04, 1.05);
+    tub.castShadow = true; tub.receiveShadow = true;
+    scene.add(tub);
+    const food = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.10, 0.60), makeMat([0xf3bc6a, 0xe7d185, 0x8fcf65][i], 0.76));
+    food.position.set(cx, 2.33, 1.05);
+    scene.add(food);
+    const cover = new THREE.Mesh(new THREE.BoxGeometry(1.18, 0.06, 0.90), makeMat(0xffffff, 0.32, 0.08));
+    cover.position.set(cx, 2.44, 1.05);
+    cover.castShadow = true;
+    scene.add(cover);
+  });
+
+  const cuttingBoard = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.08, 0.92), makeMat(0xc79858, 0.82));
+  cuttingBoard.position.set(-4.55, 1.88, 0.98);
+  cuttingBoard.castShadow = true; scene.add(cuttingBoard);
+  const knife = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.035, 0.09), makeMat(0xd0d5d8, 0.22, 0.65));
+  knife.position.set(-4.55, 1.96, 0.98);
+  knife.rotation.y = -0.35;
+  scene.add(knife);
+
+  const steamPuffs = [];
+  const steamMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.28, depthWrite: false });
+  for (let i = 0; i < 7; i++) {
+    const puff = new THREE.Mesh(new THREE.SphereGeometry(0.12 + i * 0.018, 8, 6), steamMat.clone());
+    puff.position.set(4.4 + (Math.random() - 0.5) * 0.35, 2.35 + i * 0.18, -0.5);
+    puff.userData.baseY = puff.position.y;
+    puff.userData.phase = Math.random() * Math.PI * 2;
+    scene.add(puff);
+    steamPuffs.push(puff);
+  }
 
   scene.add(new THREE.AmbientLight(0xfff5ea, 1.3));
   const oh = new THREE.DirectionalLight(0xfff8f0, 1.8);
   oh.position.set(0, 9, 6);
+  oh.castShadow = true;
+  oh.shadow.mapSize.set(1024, 1024);
+  oh.shadow.camera.left = -10; oh.shadow.camera.right = 10;
+  oh.shadow.camera.top = 10;  oh.shadow.camera.bottom = -6;
   scene.add(oh);
 
   function resize() {
@@ -2282,6 +2738,12 @@ function mountLeftoverSortScene(host) {
     _t = ts * 0.0003;
     camera.position.x = Math.sin(_t * 0.5) * 0.6;
     camera.lookAt(0, 1.8, 0);
+    steamPuffs.forEach((puff, i) => {
+      const t = ts * 0.001 + puff.userData.phase;
+      puff.position.y = puff.userData.baseY + ((t * 0.22) % 0.8);
+      puff.position.x = 4.4 + Math.sin(t * 1.2 + i) * 0.18;
+      puff.material.opacity = 0.28 * (1 - ((puff.position.y - puff.userData.baseY) / 0.9));
+    });
     renderer.render(scene, camera);
   });
   const ctrl = {

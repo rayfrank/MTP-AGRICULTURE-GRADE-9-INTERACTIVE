@@ -111,6 +111,54 @@ function confettiBurst(originX, originY, count = 28) {
 
 /* ── End Effects System ──────────────────────────────────────── */
 
+/* ── In-game tutorial hint ───────────────────────────────────── */
+function showGameHint(stage, msg, ms = 5500) {
+  if (!stage) return;
+  const existing = stage.querySelector(".game-tutorial-hint");
+  if (existing) existing.remove();
+  const el = document.createElement("div");
+  el.className = "game-tutorial-hint";
+  el.textContent = msg;
+  stage.appendChild(el);
+  setTimeout(() => { el.classList.add("gone"); setTimeout(() => el.remove(), 550); }, ms);
+}
+
+/* ── Visual step-by-step tutorial ───────────────────────────── */
+function showVisualTutorial(stage, steps, onDone) {
+  let idx = 0;
+  const wrap = document.createElement("div");
+  wrap.className = "vis-tutorial-overlay";
+  stage.appendChild(wrap);
+
+  function render() {
+    const s = steps[idx];
+    const dots = steps.map((_, i) =>
+      `<span class="vt-dot${i === idx ? ' on' : i < idx ? ' past' : ''}"></span>`
+    ).join('');
+    wrap.innerHTML = `
+      <div class="vt-card">
+        <div class="vt-dots">${dots}</div>
+        <div class="vt-art">${s.art}</div>
+        <div class="vt-title">${s.title}</div>
+        <p class="vt-desc">${s.desc}</p>
+        <div style="display:flex;gap:8px;justify-content:center;align-items:center">
+          ${idx > 0 ? '<button class="secondary-button vt-back" style="min-width:70px;padding:8px 12px">← Back</button>' : ''}
+          <button class="primary-button vt-next" style="min-width:130px">
+            ${idx < steps.length - 1 ? 'Next →' : '🎮 Play!'}
+          </button>
+        </div>
+      </div>
+    `;
+    wrap.querySelector(".vt-next").onclick = () => {
+      if (idx < steps.length - 1) { idx++; render(); }
+      else { wrap.classList.add("vt-out"); setTimeout(() => wrap.remove(), 300); onDone(); }
+    };
+    const back = wrap.querySelector(".vt-back");
+    if (back) back.onclick = () => { idx--; render(); };
+  }
+  render();
+}
+
 const MODULES = [
   {
     id: "hay",
@@ -713,6 +761,38 @@ const MODULES = [
 
 const STORAGE_KEY = "agriNutritionGrade9Progress";
 const THEME_KEY = "agriNutritionGrade9Theme";
+const ACCOUNT_KEY = "agriNutritionGrade9Accounts";
+const SESSION_KEY = "agriNutritionGrade9ActiveAccount";
+const OBSERVED_LEARNER_KEY = "agriNutritionGrade9ObservedLearner";
+const LEGACY_PROGRESS_MIGRATED_KEY = "agriNutritionGrade9ProgressMigratedToProfiles";
+
+const ACCOUNT_ROLES = {
+  student: {
+    label: "Student",
+    action: "Learn, play, answer quizzes, and save progress.",
+    dashboard: "My progress",
+  },
+  teacher: {
+    label: "Teacher",
+    action: "View local student progress and compare shared codes.",
+    dashboard: "Teacher dashboard",
+  },
+  parent: {
+    label: "Parent",
+    action: "View a learner's progress and support revision at home.",
+    dashboard: "Parent view",
+  },
+};
+
+const DEFAULT_ACCOUNTS = [
+  { id: "student-demo", role: "student", name: "Student" },
+  { id: "teacher-demo", role: "teacher", name: "Teacher" },
+  { id: "parent-demo", role: "parent", name: "Parent" },
+];
+
+const SHOULD_PROMPT_LOGIN = !localStorage.getItem(SESSION_KEY);
+let offlineAccounts = [];
+let currentProfile = null;
 
 const STRINGS = {
   en: {
@@ -1463,64 +1543,678 @@ function scheduleReminder() {
   }, 4 * 60 * 60 * 1000);
 }
 
-/* ── Teacher Dashboard ───────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────
+   Role dashboards — Teacher / Parent / Student
+   ───────────────────────────────────────────────────────────────── */
 function showTeacherDashboard() {
+  const role = currentProfile?.role || "student";
+  if (role === "teacher") { _showTeacherView(); return; }
+  if (role === "parent")  { _showParentView();  return; }
+  _showStudentView();
+}
+
+/* ── Teacher Dashboard ─────────────────────────────────────────── */
+function _showTeacherView(activeClass) {
+  const teacherClasses = currentProfile.classCodes || [];
+  // Determine which class to show; null = "All students"
+  const showingClass = activeClass !== undefined ? activeClass
+    : teacherClasses.length ? teacherClasses[0] : null;
+
+  const students = showingClass
+    ? getStudentsInClass(showingClass)
+    : getTeacherStudents(currentProfile);
+  const allProgress = students.map(s => ({ profile: s, p: loadProgress(s.id) }));
+
+  const makeStudentCard = ({ profile, p }) => {
+    const scores   = Object.values(p.quizScores || {}).filter(Boolean);
+    const avg      = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+    const learned  = Object.keys(p.learned || {}).length;
+    const games    = Object.keys(p.games || {}).length;
+    const total    = MODULES.length;
+    const isWatching = activeLearnerProfileId() === profile.id;
+    const atRisk   = scores.length > 1 && avg < 40;
+    const dots     = MODULES.map(m => {
+      const s = p.quizScores?.[m.id] || 0;
+      const g = p.games?.[m.id]; const l = p.learned?.[m.id];
+      const cls = (s >= 70 || (l && g)) ? "done" : (s > 0 || g || l) ? "part" : "none";
+      return `<div class="dash-module-dot ${cls}" title="${escapeHTML(ml(m,"title").split(":")[0])} — ${s?s+"%":cls}"></div>`;
+    }).join("");
+    const classBadge = profile.classCode
+      ? `<span class="class-badge">${escapeHTML(profile.classCode)}</span>` : "";
+    return `
+      <div class="dash-student-card ${atRisk?"at-risk":""} ${isWatching?"watching":""}">
+        ${atRisk ? `<span class="dash-student-risk">⚠ Needs help</span>` : ""}
+        <div class="dash-student-top">
+          <span class="account-avatar account-avatar-student">${escapeHTML(profile.name.charAt(0).toUpperCase())}</span>
+          <div>
+            <h4>${escapeHTML(profile.name)} ${classBadge}</h4>
+            <small>${learned}/${total} learned · ${games}/${total} games · avg ${avg||0}%</small>
+          </div>
+        </div>
+        <div class="dash-bar-row">
+          <div class="dash-bar-label">Quiz average <span>${avg||0}%</span></div>
+          <div class="dash-bar-track"><div class="dash-bar-fill ${avg<40?"red":avg<70?"amber":""}" style="width:${avg}%"></div></div>
+        </div>
+        <div class="dash-module-grid">${dots}</div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="secondary-button" style="font-size:0.75rem;padding:5px 10px" data-view-learner="${profile.id}">👁 View progress</button>
+        </div>
+      </div>
+    `;
+  };
+
+  const studentCards = allProgress.map(makeStudentCard).join("");
+  const allScores    = allProgress.flatMap(({p}) => Object.values(p.quizScores||{}).filter(Boolean));
+  const classAvg     = allScores.length ? Math.round(allScores.reduce((a,b)=>a+b,0)/allScores.length) : 0;
+  const atRiskCount  = allProgress.filter(({p}) => {
+    const sc = Object.values(p.quizScores||{}).filter(Boolean);
+    return sc.length > 1 && sc.reduce((a,b)=>a+b,0)/sc.length < 40;
+  }).length;
+  const topModule = (() => {
+    const counts = {}; MODULES.forEach(m => { counts[m.id] = allProgress.filter(({p}) => p.quizScores?.[m.id] >= 70).length; });
+    const best = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+    const mod = best ? MODULES.find(m=>m.id===best[0]) : null;
+    return mod ? ml(mod,"title").split(":")[0] : "—";
+  })();
+
+  // Class switcher tabs
+  const classTabs = teacherClasses.length > 0 ? `
+    <div class="dash-tab-row" id="classTabRow">
+      <button class="dash-tab ${!showingClass?"active":""}" data-class-tab="">All students</button>
+      ${teacherClasses.map(c=>`<button class="dash-tab ${showingClass===c?"active":""}" data-class-tab="${escapeHTML(c)}">${escapeHTML(c)}</button>`).join("")}
+    </div>
+  ` : "";
+
+  const emptyMsg = teacherClasses.length
+    ? `No students in ${showingClass ? `class ${showingClass}` : "your classes"} yet. Students must set their class code to <strong>${teacherClasses[0]}</strong> when creating their account.`
+    : `No student accounts on this device. To monitor specific classes, add your class codes in <em>⚙ My account</em>.`;
+
   const modal = document.createElement("div");
   modal.className = "share-modal-overlay";
   modal.style.display = "flex";
   modal.innerHTML = `
-    <div class="share-modal" style="width:min(700px,96vw)">
-      <h3>📋 Teacher Dashboard</h3>
-      <p style="color:var(--muted);font-size:0.88rem;margin-bottom:12px">Paste up to 6 student progress codes (one per line) to compare scores.</p>
-      <textarea id="teacherCodesInput" rows="6" placeholder="Paste student codes here, one per line…"
-        style="width:100%;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,0.18);color:inherit;padding:10px 12px;font-family:monospace;font-size:0.78rem;resize:vertical;box-sizing:border-box;margin-bottom:12px"></textarea>
-      <div style="display:flex;gap:8px;margin-bottom:16px">
-        <button class="primary-button" id="teacherAnalyseBtn">Analyse</button>
-        <button class="secondary-button" id="closeTeacherModal">Close</button>
+    <div class="share-modal account-dashboard-modal role-dashboard">
+      <div class="account-modal-head">
+        <div><p class="eyebrow">Teacher</p><h3>📋 Teacher Dashboard</h3></div>
+        <button class="icon-button" id="closeTeacherModal" aria-label="Close">×</button>
       </div>
-      <div id="teacherResults"></div>
+      <div class="role-dash-hero role-dash-hero-teacher">
+        <div class="role-dash-hero-avatar">📋</div>
+        <div style="flex:1">
+          <h3>${escapeHTML(currentProfile.name)}</h3>
+          <p>${teacherClasses.length ? `Classes: ${teacherClasses.join(", ")}` : "No classes set"} · ${students.length} student${students.length!==1?"s":""} · avg ${classAvg}%</p>
+        </div>
+        <button class="secondary-button" id="teacherSettingsBtn" style="font-size:0.75rem;padding:5px 10px;white-space:nowrap">⚙ Settings</button>
+      </div>
+      <div class="dash-stats-row">
+        <div class="dash-stat-card"><div class="dash-stat-num">${students.length}</div><div class="dash-stat-label">Students</div></div>
+        <div class="dash-stat-card"><div class="dash-stat-num blue">${classAvg}%</div><div class="dash-stat-label">Class Avg</div></div>
+        <div class="dash-stat-card"><div class="dash-stat-num amber">${atRiskCount}</div><div class="dash-stat-label">Need Help</div></div>
+        <div class="dash-stat-card"><div class="dash-stat-num" style="font-size:0.9rem;padding-top:6px">${escapeHTML(topModule)}</div><div class="dash-stat-label">Top Module</div></div>
+      </div>
+      ${classTabs}
+      <p class="dash-section-title">Students — click "View progress" to observe</p>
+      <div class="dash-student-grid">
+        ${studentCards || `<p style="color:var(--muted);font-size:0.85rem">${emptyMsg}</p>`}
+      </div>
+      <p class="dash-section-title">Compare shared progress codes</p>
+      <div class="dash-compare-area">
+        <textarea id="teacherCodesInput" rows="4" placeholder="Paste student export codes here, one per line…"></textarea>
+        <button class="primary-button" id="teacherAnalyseBtn">Analyse codes</button>
+        <div id="teacherResults" style="margin-top:14px"></div>
+      </div>
     </div>
   `;
   document.body.appendChild(modal);
-  modal.querySelector("#closeTeacherModal").addEventListener("click", () => modal.remove());
+  modal.querySelector("#closeTeacherModal")?.addEventListener("click", () => modal.remove());
   modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
-  modal.querySelector("#teacherAnalyseBtn").addEventListener("click", () => {
-    const lines = modal.querySelector("#teacherCodesInput").value.trim().split("\n").filter(Boolean).slice(0, 6);
-    if (!lines.length) return;
-    const results = lines.map((code, i) => {
-      try {
-        const d = JSON.parse(atob(code.trim()));
-        return { label: `Student ${i + 1}`, scores: d.scores || {}, learned: d.learned || {}, games: d.games || {} };
-      } catch { return null; }
+  modal.querySelector("#teacherSettingsBtn")?.addEventListener("click", () => { modal.remove(); showAccountSettings(); });
+  modal.querySelectorAll("[data-view-learner]").forEach(btn => {
+    btn.addEventListener("click", () => { selectLearnerForViewer(btn.dataset.viewLearner); modal.remove(); });
+  });
+  modal.querySelectorAll("[data-class-tab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      modal.remove();
+      _showTeacherView(btn.dataset.classTab || null);
+    });
+  });
+  modal.querySelector("#teacherAnalyseBtn")?.addEventListener("click", () => {
+    const codeLines = modal.querySelector("#teacherCodesInput").value.trim().split("\n").filter(Boolean).slice(0,6);
+    if (!codeLines.length) return;
+    const results = codeLines.map((code, i) => {
+      try { const d = JSON.parse(atob(code.trim())); return { label: d.name||`Student ${i+1}`, scores: d.scores||{}, learned: d.learned||{}, games: d.games||{} }; }
+      catch { return null; }
     }).filter(Boolean);
-    if (!results.length) { showToast("❌ No valid codes found.", "warn"); return; }
+    if (!results.length) { showToast("No valid codes found.", "warn"); return; }
     const host = modal.querySelector("#teacherResults");
-    const rows = MODULES.map((m) => {
-      const cells = results.map((r) => {
-        const s = r.scores[m.id] || 0;
-        const color = s >= 70 ? "#4ade80" : s > 0 ? "#fbbf24" : "rgba(255,255,255,0.25)";
-        return `<td style="text-align:center;padding:7px 10px;color:${color}">${s > 0 ? s + "%" : "—"}</td>`;
-      }).join("");
-      return `<tr style="border-top:1px solid rgba(255,255,255,0.07)">
-        <td style="padding:7px 10px;font-weight:600">${escapeHTML(ml(m, "title").split(":")[0])}</td>${cells}
-      </tr>`;
+    const rows = MODULES.map(m => {
+      const cells = results.map(r => { const s=r.scores[m.id]||0; const color=s>=70?"#4ade80":s>0?"#fbbf24":"rgba(255,255,255,0.25)"; return `<td style="text-align:center;padding:6px 10px;color:${color}">${s>0?s+"%":"-"}</td>`; }).join("");
+      return `<tr style="border-top:1px solid rgba(255,255,255,0.07)"><td style="padding:6px 10px;font-weight:600">${escapeHTML(ml(m,"title").split(":")[0])}</td>${cells}</tr>`;
     }).join("");
-    const avgCells = results.map((r) => {
-      const vals = Object.values(r.scores).filter(Boolean);
-      const avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
-      return `<td style="text-align:center;padding:7px 10px">${avg > 0 ? avg + "%" : "—"}</td>`;
-    }).join("");
+    const avgCells = results.map(r => { const vals=Object.values(r.scores).filter(Boolean); const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):0; return `<td style="text-align:center;padding:6px 10px">${avg>0?avg+"%":"-"}</td>`; }).join("");
     host.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.82rem">
-      <thead><tr style="background:rgba(255,255,255,0.07)">
-        <th style="text-align:left;padding:8px 10px">Module</th>
-        ${results.map((r) => `<th style="padding:8px 10px">${escapeHTML(r.label)}</th>`).join("")}
-      </tr></thead>
+      <thead><tr style="background:rgba(255,255,255,0.07)"><th style="text-align:left;padding:8px 10px">Module</th>${results.map(r=>`<th style="padding:8px 10px">${escapeHTML(r.label)}</th>`).join("")}</tr></thead>
       <tbody>${rows}</tbody>
-      <tfoot><tr style="background:rgba(255,255,255,0.06);font-weight:700">
-        <td style="padding:7px 10px">Average</td>${avgCells}
-      </tr></tfoot>
+      <tfoot><tr style="background:rgba(255,255,255,0.06);font-weight:700"><td style="padding:6px 10px">Average</td>${avgCells}</tr></tfoot>
     </table></div>`;
   });
+}
+
+/* ── Parent View ───────────────────────────────────────────────── */
+function _showParentView() {
+  const linkedStudents = getLinkedStudents(currentProfile);
+  const learnerProfile = currentLearnerProfile();
+  const p         = loadProgress(activeLearnerProfileId());
+  const scores    = p.quizScores || {};
+  const scoreVals = Object.values(scores).filter(Boolean);
+  const avg    = scoreVals.length ? Math.round(scoreVals.reduce((a,b)=>a+b,0)/scoreVals.length) : 0;
+  const learned = Object.keys(p.learned||{}).length;
+  const games   = Object.keys(p.games||{}).length;
+  const total   = MODULES.length;
+  const streak  = p.streak?.count || 0;
+  const pct     = Math.round(((learned + games) / (total * 2)) * 100);
+
+  const R = 52, circ = 2 * Math.PI * R;
+  const dash = circ * (pct / 100);
+  const ring = `<svg width="128" height="128" viewBox="0 0 128 128">
+    <circle cx="64" cy="64" r="${R}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"/>
+    <circle cx="64" cy="64" r="${R}" fill="none" stroke="url(#prg)" stroke-width="10"
+      stroke-dasharray="${dash} ${circ}" stroke-linecap="round" transform="rotate(-90 64 64)"/>
+    <defs><linearGradient id="prg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#17c964"/><stop offset="100%" stop-color="#5ec880"/>
+    </linearGradient></defs>
+    <text x="64" y="60" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor">${pct}%</text>
+    <text x="64" y="78" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.55)">OVERALL</text>
+  </svg>`;
+
+  const moduleRows = MODULES.map(m => {
+    const s = scores[m.id] || 0;
+    const g = p.games?.[m.id] ? "✅" : "○";
+    const l = p.learned?.[m.id] ? "✅" : "○";
+    return `
+      <div class="dash-bar-row">
+        <div class="dash-bar-label">
+          ${escapeHTML(ml(m,"title").split(":")[0])}
+          <span>Learn ${l} · Game ${g} · Quiz ${s?s+"%":"—"}</span>
+        </div>
+        <div class="dash-bar-track"><div class="dash-bar-fill ${s<70?"amber":""}" style="width:${s}%"></div></div>
+      </div>
+    `;
+  }).join("");
+
+  const nextMod = MODULES.find(m => !p.learned?.[m.id] || !p.games?.[m.id] || !(p.quizScores?.[m.id] >= 70));
+  const recommendation = nextMod
+    ? `<div class="dash-recommendation"><strong>📚 Next to revise: ${escapeHTML(ml(nextMod,"title").split(":")[0])}</strong>${escapeHTML(ml(nextMod,"summary")||"Complete the lesson, game, and quiz.")}</div>`
+    : `<div class="dash-recommendation"><strong>🎉 All modules completed!</strong> Encourage a full review before exams.</div>`;
+
+  // Child switcher tabs (only linked children)
+  const childTabs = linkedStudents.length > 1 ? `
+    <div class="dash-tab-row">
+      ${linkedStudents.map(s=>`<button class="dash-tab ${s.id===activeLearnerProfileId()?"active":""}" data-child-id="${s.id}">${escapeHTML(s.name)}</button>`).join("")}
+    </div>
+  ` : "";
+
+  // No child linked yet
+  const noChildPanel = !linkedStudents.length ? `
+    <div class="dash-recommendation" style="border-left-color:#f59e0b;background:rgba(245,158,11,0.1)">
+      <strong>👪 No child linked yet</strong>
+      Ask your child for their 6-letter family code, then add it in your account settings.
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input id="quickLinkCode" type="text" maxlength="6" placeholder="Child's family code" autocomplete="off"
+          style="flex:1;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--control);color:inherit;text-transform:uppercase;letter-spacing:0.08em">
+        <button class="primary-button" id="quickLinkBtn" style="white-space:nowrap">Link child</button>
+      </div>
+    </div>
+  ` : "";
+
+  const modal = document.createElement("div");
+  modal.className = "share-modal-overlay";
+  modal.style.display = "flex";
+  modal.innerHTML = `
+    <div class="share-modal account-dashboard-modal role-dashboard">
+      <div class="account-modal-head">
+        <div><p class="eyebrow">Parent</p><h3>👪 Parent View</h3></div>
+        <button class="icon-button" id="closeTeacherModal" aria-label="Close">×</button>
+      </div>
+      <div class="role-dash-hero role-dash-hero-parent">
+        <div class="role-dash-hero-avatar">👪</div>
+        <div style="flex:1">
+          <h3>${escapeHTML(currentProfile.name)}</h3>
+          <p>${linkedStudents.length ? `${linkedStudents.length} child${linkedStudents.length!==1?"ren":""} linked · Viewing: ${escapeHTML(learnerProfile?.name||"—")}` : "No children linked yet"}</p>
+        </div>
+        <button class="secondary-button" id="parentSettingsBtn" style="font-size:0.75rem;padding:5px 10px;white-space:nowrap">⚙ Settings</button>
+      </div>
+      ${noChildPanel}
+      ${linkedStudents.length ? `
+        ${childTabs}
+        <div class="dash-stats-row">
+          <div class="dash-stat-card"><div class="dash-stat-num">${learned}/${total}</div><div class="dash-stat-label">Lessons done</div></div>
+          <div class="dash-stat-card"><div class="dash-stat-num blue">${games}/${total}</div><div class="dash-stat-label">Games played</div></div>
+          <div class="dash-stat-card"><div class="dash-stat-num ${avg<50?"red":avg<70?"amber":""}">${avg||0}%</div><div class="dash-stat-label">Quiz average</div></div>
+          <div class="dash-stat-card"><div class="dash-stat-num">${streak}🔥</div><div class="dash-stat-label">Day streak</div></div>
+        </div>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-bottom:18px">
+          <div class="dash-progress-ring-wrap">${ring}
+            <div class="dash-progress-ring-label"><span>Course completion</span></div>
+          </div>
+          <div style="flex:1;min-width:220px">${recommendation}</div>
+        </div>
+        <p class="dash-section-title">Module-by-module progress</p>
+        <div style="padding:4px 0">${moduleRows}</div>
+      ` : ""}
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector("#closeTeacherModal")?.addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+  modal.querySelector("#parentSettingsBtn")?.addEventListener("click", () => { modal.remove(); showAccountSettings(); });
+  modal.querySelectorAll("[data-child-id]").forEach(btn => {
+    btn.addEventListener("click", () => { selectLearnerForViewer(btn.dataset.childId); modal.remove(); setTimeout(_showParentView, 60); });
+  });
+  modal.querySelector("#quickLinkBtn")?.addEventListener("click", () => {
+    const code = modal.querySelector("#quickLinkCode")?.value.trim().toUpperCase();
+    if (!code) return;
+    const result = linkParentToStudent(currentProfile.id, code);
+    if (!result) { showToast("Family code not found. Check the code with your child.", "warn"); return; }
+    showToast(`Linked to ${result.name}!`, "success");
+    modal.remove(); setTimeout(_showParentView, 60);
+  });
+}
+
+/* ── Student Self-Dashboard ────────────────────────────────────── */
+function _showStudentView() {
+  const p   = progress;
+  const scores    = p.quizScores || {};
+  const scoreVals = Object.values(scores).filter(Boolean);
+  const avg    = scoreVals.length ? Math.round(scoreVals.reduce((a,b)=>a+b,0)/scoreVals.length) : 0;
+  const learned = Object.keys(p.learned||{}).length;
+  const games   = Object.keys(p.games||{}).length;
+  const total   = MODULES.length;
+  const streak  = p.streak?.count || 0;
+  const pct     = Math.round(((learned + games) / (total * 2)) * 100);
+
+  // Ring SVG
+  const R = 52, circ = 2 * Math.PI * R;
+  const dash = circ * (pct / 100);
+  const ring = `<svg width="128" height="128" viewBox="0 0 128 128">
+    <circle cx="64" cy="64" r="${R}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"/>
+    <circle cx="64" cy="64" r="${R}" fill="none" stroke="url(#srg)" stroke-width="10"
+      stroke-dasharray="${dash} ${circ}" stroke-linecap="round" transform="rotate(-90 64 64)"/>
+    <defs><linearGradient id="srg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#17c964"/><stop offset="100%" stop-color="#5ec880"/>
+    </linearGradient></defs>
+    <text x="64" y="60" text-anchor="middle" font-size="18" font-weight="900" fill="currentColor">${pct}%</text>
+    <text x="64" y="78" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.55)">DONE</text>
+  </svg>`;
+
+  const nextMod = MODULES.find(m => !p.learned?.[m.id] || !p.games?.[m.id] || !(p.quizScores?.[m.id] >= 70));
+  const recommendation = nextMod
+    ? `<div class="dash-recommendation"><strong>🎯 Up next: ${escapeHTML(ml(nextMod,"title").split(":")[0])}</strong>${escapeHTML(ml(nextMod,"summary")||"")}</div>`
+    : `<div class="dash-recommendation"><strong>🏆 You've completed everything!</strong> Well done — review before exams.</div>`;
+
+  const badges = (p.badges || []);
+  const badgeHTML = badges.length
+    ? badges.map(b=>`<div class="dash-badge-chip">🏅 ${escapeHTML(b)}</div>`).join("")
+    : `<p style="color:var(--muted);font-size:0.8rem;margin:0">Complete quizzes and games to earn badges!</p>`;
+
+  const moduleRows = MODULES.map(m => {
+    const s = scores[m.id] || 0;
+    const g = p.games?.[m.id]; const l = p.learned?.[m.id];
+    const status = (s >= 70 && g && l) ? "✅ Complete" : (s > 0 || g || l) ? "🔄 In progress" : "○ Not started";
+    return `
+      <div class="dash-bar-row">
+        <div class="dash-bar-label">
+          ${escapeHTML(ml(m,"title").split(":")[0])}
+          <span>${status} · ${s?s+"%":"no quiz"}</span>
+        </div>
+        <div class="dash-bar-track"><div class="dash-bar-fill ${s<70&&s>0?"amber":s===0&&(g||l)?"amber":""}" style="width:${Math.max(s, (l?30:0)+(g?30:0))}%"></div></div>
+      </div>
+    `;
+  }).join("");
+
+  const modal = document.createElement("div");
+  modal.className = "share-modal-overlay";
+  modal.style.display = "flex";
+  modal.innerHTML = `
+    <div class="share-modal account-dashboard-modal role-dashboard">
+      <div class="account-modal-head">
+        <div><p class="eyebrow">Student</p><h3>🎓 My Dashboard</h3></div>
+        <button class="icon-button" id="closeTeacherModal" aria-label="Close">×</button>
+      </div>
+      <div class="role-dash-hero role-dash-hero-student">
+        <div class="role-dash-hero-avatar">🎓</div>
+        <div>
+          <h3>Hi, ${escapeHTML(currentProfile.name)}!</h3>
+          <p>${streak > 0 ? `🔥 ${streak}-day streak — keep it up!` : "Start learning to build your streak!"}</p>
+        </div>
+      </div>
+      <div class="dash-stats-row">
+        <div class="dash-stat-card"><div class="dash-stat-num">${learned}/${total}</div><div class="dash-stat-label">Lessons done</div></div>
+        <div class="dash-stat-card"><div class="dash-stat-num blue">${games}/${total}</div><div class="dash-stat-label">Games played</div></div>
+        <div class="dash-stat-card"><div class="dash-stat-num ${avg<50?"red":avg<70?"amber":""}">${avg||0}%</div><div class="dash-stat-label">Quiz average</div></div>
+        <div class="dash-stat-card"><div class="dash-stat-num">${streak}🔥</div><div class="dash-stat-label">Day streak</div></div>
+      </div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+        <div class="dash-progress-ring-wrap">${ring}
+          <div class="dash-progress-ring-label"><span>Course completion</span></div>
+        </div>
+        <div style="flex:1;min-width:220px">
+          ${recommendation}
+          <p class="dash-section-title" style="margin-top:14px">Badges earned</p>
+          <div class="dash-badge-row">${badgeHTML}</div>
+        </div>
+      </div>
+      <p class="dash-section-title">All modules</p>
+      <div style="padding:4px 0">${moduleRows}</div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector("#closeTeacherModal")?.addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+}
+
+function parseStoredJSON(key, fallback) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return value == null ? fallback : value;
+  } catch {
+    return fallback;
+  }
+}
+
+function defaultProgress() {
+  return {
+    learned: {}, games: {}, quizScores: {}, notes: {},
+    quizHistory: {}, quizMisses: {}, streak: { count: 0, lastDate: "" },
+    weeklyGoal: { target: 3, weekStart: "", done: [] },
+    fontScale: 1, language: "en", badges: [],
+  };
+}
+
+function normalizeProgress(saved) {
+  const base = defaultProgress();
+  if (!saved || typeof saved !== "object") return base;
+  return {
+    learned:      saved.learned      || base.learned,
+    games:        saved.games        || base.games,
+    quizScores:   saved.quizScores   || base.quizScores,
+    notes:        saved.notes        || base.notes,
+    quizHistory:  saved.quizHistory  || base.quizHistory,
+    quizMisses:   saved.quizMisses   || base.quizMisses,
+    streak:       saved.streak       || base.streak,
+    weeklyGoal:   saved.weeklyGoal   || base.weeklyGoal,
+    fontScale:    saved.fontScale    ?? base.fontScale,
+    language:     saved.language     || base.language,
+    badges:       saved.badges       || base.badges,
+  };
+}
+
+function profileProgressKey(profileId) {
+  return `${STORAGE_KEY}:${profileId}`;
+}
+
+function saveAccounts() {
+  localStorage.setItem(ACCOUNT_KEY, JSON.stringify(offlineAccounts));
+}
+
+function ensureOfflineAccounts() {
+  const saved = parseStoredJSON(ACCOUNT_KEY, null);
+  offlineAccounts = Array.isArray(saved) && saved.length
+    ? saved.filter((account) => account && account.id && ACCOUNT_ROLES[account.role])
+    : DEFAULT_ACCOUNTS.map((account) => ({ ...account }));
+
+  DEFAULT_ACCOUNTS.forEach((defaultAccount) => {
+    if (!offlineAccounts.some((account) => account.id === defaultAccount.id)) {
+      offlineAccounts.push({ ...defaultAccount });
+    }
+  });
+  if (!offlineAccounts.some((account) => account.role === "student")) {
+    offlineAccounts.unshift({ ...DEFAULT_ACCOUNTS[0] });
+  }
+  saveAccounts();
+  migrateLegacyProgressToProfiles();
+  return offlineAccounts;
+}
+
+function migrateLegacyProgressToProfiles() {
+  if (localStorage.getItem(LEGACY_PROGRESS_MIGRATED_KEY)) return;
+  const legacy = parseStoredJSON(STORAGE_KEY, null);
+  const defaultStudent = offlineAccounts.find((account) => account.role === "student");
+  if (legacy && defaultStudent && !localStorage.getItem(profileProgressKey(defaultStudent.id))) {
+    localStorage.setItem(profileProgressKey(defaultStudent.id), JSON.stringify(normalizeProgress(legacy)));
+  }
+  localStorage.setItem(LEGACY_PROGRESS_MIGRATED_KEY, "1");
+}
+
+function getStudentProfiles() {
+  return offlineAccounts.filter((account) => account.role === "student");
+}
+
+function getProfile(profileId) {
+  return offlineAccounts.find((account) => account.id === profileId) || null;
+}
+
+function loadActiveProfile() {
+  ensureOfflineAccounts();
+  const savedId = localStorage.getItem(SESSION_KEY);
+  const saved = getProfile(savedId);
+  const fallback = getStudentProfiles()[0] || offlineAccounts[0];
+  const profile = saved || fallback;
+  localStorage.setItem(SESSION_KEY, profile.id);
+  return profile;
+}
+
+function activeLearnerProfileId() {
+  if (!currentProfile) return getStudentProfiles()[0]?.id || DEFAULT_ACCOUNTS[0].id;
+  if (currentProfile.role === "student") return currentProfile.id;
+
+  // Parent: only from their linked children
+  if (currentProfile.role === "parent") {
+    const linked = getLinkedStudents(currentProfile).map(a => a.id);
+    const saved = localStorage.getItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`);
+    if (saved && linked.includes(saved)) return saved;
+    const fallback = linked[0] || getStudentProfiles()[0]?.id || currentProfile.id;
+    localStorage.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, fallback);
+    return fallback;
+  }
+
+  // Teacher: from students in their classes, else any student
+  if (currentProfile.role === "teacher") {
+    const classStudents = getTeacherStudents(currentProfile).map(a => a.id);
+    const pool = classStudents.length ? classStudents : getStudentProfiles().map(a => a.id);
+    const saved = localStorage.getItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`);
+    if (saved && pool.includes(saved)) return saved;
+    const fallback = pool[0] || currentProfile.id;
+    localStorage.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, fallback);
+    return fallback;
+  }
+
+  const learnerIds = getStudentProfiles().map((account) => account.id);
+  const saved = localStorage.getItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`);
+  if (saved && learnerIds.includes(saved)) return saved;
+  const fallback = learnerIds[0] || currentProfile.id;
+  localStorage.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, fallback);
+  return fallback;
+}
+
+function currentLearnerProfile() {
+  return getProfile(activeLearnerProfileId()) || currentProfile;
+}
+
+function canEditProgress() {
+  return currentProfile?.role === "student";
+}
+
+function guardProgressWrite(action = "save progress") {
+  if (canEditProgress()) return true;
+  const role = ACCOUNT_ROLES[currentProfile?.role]?.label || "Viewer";
+  showToast(`${role} view is read-only. Switch to a student account to ${action}.`, "warn");
+  return false;
+}
+
+function switchProfile(profileId, silent = false) {
+  const next = getProfile(profileId);
+  if (!next) return;
+  currentProfile = next;
+  localStorage.setItem(SESSION_KEY, next.id);
+  progress = loadProgress(activeLearnerProfileId());
+  state.quizAnswers = {};
+  if (canEditProgress()) {
+    checkStreak();
+    checkBadges();
+  }
+  if (!silent) showToast(`Signed in as ${next.name} (${ACCOUNT_ROLES[next.role].label}).`, "success");
+  render();
+}
+
+function selectLearnerForViewer(learnerId) {
+  if (!currentProfile || currentProfile.role === "student" || !getProfile(learnerId)) return;
+  localStorage.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, learnerId);
+  progress = loadProgress(activeLearnerProfileId());
+  state.quizAnswers = {};
+  showToast(`Viewing ${currentLearnerProfile()?.name || "student"} progress.`, "info");
+  render();
+}
+
+function createOfflineAccount(name, role, extras = {}) {
+  const cleanName = String(name || "").trim().slice(0, 36) || ACCOUNT_ROLES[role]?.label || "Learner";
+  const cleanRole = ACCOUNT_ROLES[role] ? role : "student";
+  const id = `${cleanRole}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  const account = { id, name: cleanName, role: cleanRole };
+  if (extras.pin)                account.pin              = String(extras.pin).slice(0, 8);
+  if (cleanRole === "student")   account.classCode        = String(extras.classCode  || "").trim().toUpperCase().slice(0, 10);
+  if (cleanRole === "teacher")   account.classCodes       = (extras.classCodes || []).map(c => String(c).trim().toUpperCase()).filter(Boolean);
+  if (cleanRole === "parent")    account.linkedStudentIds = extras.linkedStudentIds || [];
+  offlineAccounts.push(account);
+  saveAccounts();
+  if (cleanRole === "student") {
+    localStorage.setItem(profileProgressKey(id), JSON.stringify(defaultProgress()));
+  }
+  switchProfile(id);
+}
+
+/* ── Account relationship helpers ─────────────────────────────── */
+function getFamilyCode(studentId) {
+  return studentId.replace(/[^a-z0-9]/gi, "").slice(-6).toUpperCase();
+}
+
+function getStudentsInClass(classCode) {
+  return offlineAccounts.filter(a => a.role === "student" && a.classCode === classCode.toUpperCase());
+}
+
+function getTeacherStudents(teacherAccount) {
+  const codes = teacherAccount?.classCodes || [];
+  if (!codes.length) return getStudentProfiles();
+  return offlineAccounts.filter(a => a.role === "student" && codes.includes(a.classCode));
+}
+
+function getLinkedStudents(parentAccount) {
+  return (parentAccount?.linkedStudentIds || []).map(id => getProfile(id)).filter(Boolean);
+}
+
+function linkParentToStudent(parentId, familyCode) {
+  const code = String(familyCode || "").trim().toUpperCase();
+  const student = offlineAccounts.find(a => a.role === "student" && getFamilyCode(a.id) === code);
+  if (!student) return null;
+  const parent = getProfile(parentId);
+  if (!parent) return null;
+  parent.linkedStudentIds = [...new Set([...(parent.linkedStudentIds || []), student.id])];
+  saveAccounts();
+  return student;
+}
+
+function unlinkParentFromStudent(parentId, studentId) {
+  const parent = getProfile(parentId);
+  if (!parent) return;
+  parent.linkedStudentIds = (parent.linkedStudentIds || []).filter(id => id !== studentId);
+  saveAccounts();
+}
+
+function setAccountPin(accountId, pin) {
+  const account = getProfile(accountId);
+  if (!account) return;
+  account.pin = pin ? String(pin).slice(0, 8) : "";
+  saveAccounts();
+}
+
+function verifyPin(account, entered) {
+  if (!account?.pin) return true;
+  return String(entered) === String(account.pin);
+}
+
+/* ── PIN entry modal ──────────────────────────────────────────── */
+function showPinEntry(account, onSuccess) {
+  const existing = document.getElementById("pinEntryModal");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "pinEntryModal";
+  overlay.className = "share-modal-overlay";
+  overlay.style.cssText = "display:flex;z-index:9100";
+
+  const roleInfo = ACCOUNT_ROLES[account.role] || ACCOUNT_ROLES.student;
+  let entered = "";
+
+  function renderPad() {
+    return `
+      <div class="pin-modal">
+        <div class="pin-modal-avatar account-avatar account-avatar-${account.role}">${roleInfo.label.charAt(0)}</div>
+        <h3 class="pin-modal-name">${escapeHTML(account.name)}</h3>
+        <p class="pin-modal-role">${escapeHTML(roleInfo.label)}</p>
+        <div class="pin-dots">
+          ${[0,1,2,3].map(i=>`<span class="pin-dot ${entered.length>i?"filled":""}"></span>`).join("")}
+        </div>
+        <p class="pin-error" id="pinError" style="visibility:hidden">Wrong PIN — try again</p>
+        <div class="pin-pad">
+          ${[1,2,3,4,5,6,7,8,9,"","0","⌫"].map(k=>`
+            <button class="pin-key ${k===""?"pin-key-empty":""}" data-key="${k}">${k}</button>
+          `).join("")}
+        </div>
+        <button class="secondary-button" id="pinCancelBtn" style="margin-top:12px;width:100%">Cancel</button>
+      </div>
+    `;
+  }
+
+  overlay.innerHTML = renderPad();
+  document.body.appendChild(overlay);
+
+  function refresh() {
+    overlay.innerHTML = renderPad();
+    bindPad();
+  }
+
+  function bindPad() {
+    overlay.querySelectorAll("[data-key]").forEach(btn => {
+      const k = btn.dataset.key;
+      if (!k) return;
+      btn.addEventListener("click", () => {
+        if (k === "⌫") {
+          entered = entered.slice(0, -1);
+        } else if (entered.length < 4) {
+          entered += k;
+        }
+        if (entered.length === 4) {
+          if (verifyPin(account, entered)) {
+            overlay.remove();
+            onSuccess();
+          } else {
+            entered = "";
+            refresh();
+            setTimeout(() => {
+              const err = document.querySelector("#pinError");
+              if (err) err.style.visibility = "visible";
+            }, 10);
+            if (navigator.vibrate) navigator.vibrate([80,40,80]);
+          }
+          return;
+        }
+        refresh();
+      });
+    });
+    overlay.querySelector("#pinCancelBtn")?.addEventListener("click", () => overlay.remove());
+  }
+
+  bindPad();
 }
 
 const state = {
@@ -1550,7 +2244,8 @@ if (params.get("lock") && MODULES.some((m) => m.id === params.get("lock"))) {
   state.moduleId = params.get("lock");
 }
 
-let progress = loadProgress();
+currentProfile = loadActiveProfile();
+let progress = loadProgress(activeLearnerProfileId());
 
 const els = {
   moduleList: document.getElementById("moduleList"),
@@ -1558,6 +2253,8 @@ const els = {
   courseProgressBar: document.getElementById("courseProgressBar"),
   moduleHero: document.getElementById("moduleHero"),
   viewHost: document.getElementById("viewHost"),
+  accountPanel: document.getElementById("accountPanel"),
+  accountMenuButton: document.getElementById("accountMenuButton"),
   globalSearch: document.getElementById("globalSearch"),
   openPdfButton: document.getElementById("openPdfButton"),
   resetProgressButton: document.getElementById("resetProgressButton"),
@@ -1572,33 +2269,8 @@ function applyTheme() {
   });
 }
 
-function loadProgress() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved && typeof saved === "object") {
-      return {
-        learned:      saved.learned      || {},
-        games:        saved.games        || {},
-        quizScores:   saved.quizScores   || {},
-        notes:        saved.notes        || {},
-        quizHistory:  saved.quizHistory  || {},
-        quizMisses:   saved.quizMisses   || {},
-        streak:       saved.streak       || { count: 0, lastDate: "" },
-        weeklyGoal:   saved.weeklyGoal   || { target: 3, weekStart: "", done: [] },
-        fontScale:    saved.fontScale    ?? 1,
-        language:     saved.language     || "en",
-        badges:       saved.badges       || [],
-      };
-    }
-  } catch (error) {
-    console.warn(error);
-  }
-  return {
-    learned: {}, games: {}, quizScores: {}, notes: {},
-    quizHistory: {}, quizMisses: {}, streak: { count: 0, lastDate: "" },
-    weeklyGoal: { target: 3, weekStart: "", done: [] },
-    fontScale: 1, language: "en", badges: [],
-  };
+function loadProgress(profileId = activeLearnerProfileId()) {
+  return normalizeProgress(parseStoredJSON(profileProgressKey(profileId), null));
 }
 
 function todayISO() {
@@ -1644,25 +2316,33 @@ function checkWeeklyGoal(moduleId) {
 }
 
 function saveProgress() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  localStorage.setItem(profileProgressKey(activeLearnerProfileId()), JSON.stringify(progress));
 }
 
 function currentModule() {
   return MODULES.find((module) => module.id === state.moduleId) || MODULES[0];
 }
 
-function moduleCompletion(module) {
+function moduleCompletionFor(module, source = progress) {
   let done = 0;
-  if (progress.learned[module.id]) done += 1;
-  if (progress.games[module.id]) done += 1;
-  if ((progress.quizScores[module.id] || 0) >= 70) done += 1;
+  if (source.learned?.[module.id]) done += 1;
+  if (source.games?.[module.id]) done += 1;
+  if ((source.quizScores?.[module.id] || 0) >= 70) done += 1;
   return done;
 }
 
-function coursePercent() {
+function moduleCompletion(module) {
+  return moduleCompletionFor(module, progress);
+}
+
+function coursePercentFor(source = progress) {
   const total = MODULES.length * 3;
-  const done = MODULES.reduce((sum, module) => sum + moduleCompletion(module), 0);
+  const done = MODULES.reduce((sum, module) => sum + moduleCompletionFor(module, source), 0);
   return Math.round((done / total) * 100);
+}
+
+function coursePercent() {
+  return coursePercentFor(progress);
 }
 
 function escapeHTML(value) {
@@ -1709,6 +2389,7 @@ function render() {
   applyFontScale();
   renderModuleList();
   renderProgress();
+  renderAccountWidgets();
   renderHero();
   renderTabs();
   renderView();
@@ -1776,12 +2457,603 @@ function renderProgress() {
   }
 }
 
+function profileStats(profile) {
+  const source = loadProgress(profile.id);
+  const completed = MODULES.filter((module) => moduleCompletionFor(module, source) === 3).length;
+  const scores = MODULES.map((module) => source.quizScores?.[module.id] || 0);
+  const attempted = scores.filter((score) => score > 0);
+  const avg = attempted.length ? Math.round(attempted.reduce((sum, score) => sum + score, 0) / attempted.length) : 0;
+  const needsModule = MODULES.find((module) => moduleCompletionFor(module, source) < 3);
+  return {
+    progress: source,
+    percent: coursePercentFor(source),
+    completed,
+    avg,
+    badges: (source.badges || []).length,
+    needsModule,
+  };
+}
+
+function renderAccountWidgets() {
+  const role = ACCOUNT_ROLES[currentProfile?.role] || ACCOUNT_ROLES.student;
+  const learner = currentLearnerProfile();
+  const isViewer = currentProfile?.role !== "student";
+  const learners = getStudentProfiles();
+  const learnerPicker = isViewer && learners.length ? `
+    <label class="account-learner-picker">
+      <span class="small-label">Viewing learner</span>
+      <select id="observedLearnerSelect">
+        ${learners.map((account) => `<option value="${account.id}" ${account.id === learner?.id ? "selected" : ""}>${escapeHTML(account.name)}</option>`).join("")}
+      </select>
+    </label>
+  ` : "";
+  const readonly = isViewer
+    ? `<p class="account-note">${role.label} mode is view-only. Student progress is protected.</p>`
+    : `<p class="account-note">Progress saves offline on this device.</p>`;
+
+  if (els.accountMenuButton) {
+    els.accountMenuButton.innerHTML = `
+      <span class="account-avatar account-avatar-${currentProfile?.role || "student"}">${escapeHTML(role.label.charAt(0))}</span>
+      <span class="account-chip-copy">
+        <strong>${escapeHTML(currentProfile?.name || role.label)}</strong>
+        <small>${escapeHTML(role.label)}${isViewer && learner ? ` viewing ${escapeHTML(learner.name)}` : ""}</small>
+      </span>
+    `;
+    els.accountMenuButton.onclick = () => showAccountChooser();
+  }
+
+  if (!els.accountPanel) return;
+  els.accountPanel.innerHTML = `
+    <div class="account-panel-head">
+      <span class="account-avatar account-avatar-${currentProfile?.role || "student"}">${escapeHTML(role.label.charAt(0))}</span>
+      <div>
+        <p class="eyebrow">Offline account</p>
+        <h2>${escapeHTML(currentProfile?.name || role.label)}</h2>
+      </div>
+    </div>
+    <div class="account-role-line">
+      <span>${escapeHTML(role.label)}</span>
+      <strong>${coursePercent()}%</strong>
+    </div>
+    ${learnerPicker}
+    ${readonly}
+    <div class="account-actions">
+      <button class="secondary-button" id="accountSwitchButton">Switch</button>
+      <button class="secondary-button" id="roleDashboardButton">${escapeHTML(role.dashboard)}</button>
+    </div>
+  `;
+  document.getElementById("accountSwitchButton")?.addEventListener("click", showAccountChooser);
+  document.getElementById("roleDashboardButton")?.addEventListener("click", showTeacherDashboard);
+  document.getElementById("observedLearnerSelect")?.addEventListener("change", (event) => {
+    selectLearnerForViewer(event.target.value);
+  });
+}
+
+function renderOfflineLearnerPanel() {
+  const learners = getStudentProfiles();
+  if (!learners.length) return `<div class="empty-state">No student accounts on this device yet.</div>`;
+  return `
+    <div class="offline-learner-grid">
+      ${learners.map((profile) => {
+        const stats = profileStats(profile);
+        const active = currentLearnerProfile()?.id === profile.id;
+        return `
+          <article class="offline-learner-card ${active ? "active" : ""}">
+            <div class="offline-learner-top">
+              <span class="account-avatar account-avatar-student">S</span>
+              <div>
+                <h4>${escapeHTML(profile.name)}</h4>
+                <p>${stats.completed}/${MODULES.length} modules complete</p>
+              </div>
+              <strong>${stats.percent}%</strong>
+            </div>
+            <div class="mini-progress-track"><span style="width:${stats.percent}%"></span></div>
+            <div class="offline-learner-meta">
+              <span>Quiz avg: ${stats.avg || "-"}${stats.avg ? "%" : ""}</span>
+              <span>Badges: ${stats.badges}/${BADGES.length}</span>
+            </div>
+            <p class="account-note">${stats.needsModule ? `Next: ${escapeHTML(ml(stats.needsModule, "title").split(":")[0])}` : "All modules complete."}</p>
+            ${currentProfile?.role !== "student" ? `<button class="secondary-button" data-view-learner="${profile.id}">${active ? "Viewing" : "View progress"}</button>` : ""}
+          </article>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Account creation wizard
+   ───────────────────────────────────────────────────────────────── */
+const ROLE_ICONS = { student: "🎓", teacher: "📋", parent: "👪" };
+
+function _splashDismiss(splash) {
+  splash.style.opacity = "0";
+  splash.style.transition = "opacity 0.28s ease";
+  setTimeout(() => splash.remove(), 300);
+}
+
+function _loginAndDismiss(splash, accountId) {
+  const account = getProfile(accountId);
+  if (!account) return;
+  if (account.pin) {
+    showPinEntry(account, () => {
+      switchProfile(accountId, true);
+      _splashDismiss(splash);
+      showToast(`Welcome back, ${account.name}!`, "success");
+      render();
+    });
+  } else {
+    switchProfile(accountId, true);
+    _splashDismiss(splash);
+    showToast(`Signed in as ${account.name} (${ACCOUNT_ROLES[account.role].label})`, "success");
+    render();
+  }
+}
+
+/* Step: account creation wizard shown inside the splash */
+function _showCreationWizard(splash, role, onBack) {
+  const info = ACCOUNT_ROLES[role];
+  const icon = ROLE_ICONS[role];
+
+  const panel = document.createElement("div");
+  panel.className = "welcome-accounts-panel wizard-panel";
+
+  if (role === "student") {
+    panel.innerHTML = `
+      <div class="welcome-accounts-header">
+        <h3>${icon} New ${info.label} account</h3>
+        <button class="welcome-back-btn" id="wizBack">← Back</button>
+      </div>
+      <div class="wizard-fields">
+        <div class="wizard-field-group">
+          <label>Full name</label>
+          <input id="wName" type="text" maxlength="36" placeholder="e.g. Alice Wanjiru" autocomplete="off">
+        </div>
+        <div class="wizard-field-group">
+          <label>Class code <span class="wizard-hint">(e.g. 9A, 9B — ask your teacher)</span></label>
+          <input id="wClass" type="text" maxlength="10" placeholder="e.g. 9A" autocomplete="off" style="text-transform:uppercase">
+        </div>
+        <div class="wizard-field-group">
+          <label>Set a PIN <span class="wizard-hint">(4 digits — optional, leave blank to skip)</span></label>
+          <input id="wPin" type="password" maxlength="4" pattern="[0-9]{4}" placeholder="••••" inputmode="numeric">
+        </div>
+      </div>
+      <button class="primary-button wizard-submit" id="wSubmit" style="width:100%;margin-top:16px">Create account &amp; sign in</button>
+    `;
+    panel.querySelector("#wizBack").addEventListener("click", onBack);
+    panel.querySelector("#wSubmit").addEventListener("click", () => {
+      const name = panel.querySelector("#wName").value.trim();
+      if (!name) { panel.querySelector("#wName").focus(); return; }
+      const classCode = panel.querySelector("#wClass").value.trim().toUpperCase();
+      const pin = panel.querySelector("#wPin").value.trim();
+      if (pin && !/^\d{4}$/.test(pin)) { showToast("PIN must be exactly 4 digits", "warn"); return; }
+      createOfflineAccount(name, "student", { classCode, pin });
+      _splashDismiss(splash);
+    });
+
+  } else if (role === "teacher") {
+    panel.innerHTML = `
+      <div class="welcome-accounts-header">
+        <h3>${icon} New ${info.label} account</h3>
+        <button class="welcome-back-btn" id="wizBack">← Back</button>
+      </div>
+      <div class="wizard-fields">
+        <div class="wizard-field-group">
+          <label>Full name</label>
+          <input id="wName" type="text" maxlength="36" placeholder="e.g. Mr. Odhiambo" autocomplete="off">
+        </div>
+        <div class="wizard-field-group">
+          <label>Classes you teach <span class="wizard-hint">(comma-separated, e.g. 9A, 9B)</span></label>
+          <input id="wClasses" type="text" maxlength="80" placeholder="9A, 9B" autocomplete="off">
+        </div>
+        <div class="wizard-field-group">
+          <label>Set a PIN <span class="wizard-hint">(4 digits — optional)</span></label>
+          <input id="wPin" type="password" maxlength="4" pattern="[0-9]{4}" placeholder="••••" inputmode="numeric">
+        </div>
+      </div>
+      <button class="primary-button wizard-submit" id="wSubmit" style="width:100%;margin-top:16px">Create account &amp; sign in</button>
+    `;
+    panel.querySelector("#wizBack").addEventListener("click", onBack);
+    panel.querySelector("#wSubmit").addEventListener("click", () => {
+      const name = panel.querySelector("#wName").value.trim();
+      if (!name) { panel.querySelector("#wName").focus(); return; }
+      const classCodes = panel.querySelector("#wClasses").value.split(",").map(c=>c.trim().toUpperCase()).filter(Boolean);
+      const pin = panel.querySelector("#wPin").value.trim();
+      if (pin && !/^\d{4}$/.test(pin)) { showToast("PIN must be exactly 4 digits", "warn"); return; }
+      createOfflineAccount(name, "teacher", { classCodes, pin });
+      _splashDismiss(splash);
+    });
+
+  } else { // parent
+    const students = getStudentProfiles();
+    panel.innerHTML = `
+      <div class="welcome-accounts-header">
+        <h3>${icon} New ${info.label} account</h3>
+        <button class="welcome-back-btn" id="wizBack">← Back</button>
+      </div>
+      <div class="wizard-fields">
+        <div class="wizard-field-group">
+          <label>Your name</label>
+          <input id="wName" type="text" maxlength="36" placeholder="e.g. Mrs. Wanjiru" autocomplete="off">
+        </div>
+        <div class="wizard-field-group">
+          <label>Child's family code <span class="wizard-hint">(ask your child for their 6-letter code)</span></label>
+          <input id="wFamilyCode" type="text" maxlength="6" placeholder="e.g. AB12CD" autocomplete="off" style="text-transform:uppercase;letter-spacing:0.1em">
+          <p class="wizard-hint" style="margin-top:4px">
+            ${students.length ? `Or pick from device: <select id="wStudentPick" style="margin-left:4px;background:var(--control);border:1px solid var(--line);border-radius:6px;padding:3px 6px;color:inherit;font-size:0.8rem"><option value="">— select —</option>${students.map(s=>`<option value="${getFamilyCode(s.id)}">${escapeHTML(s.name)} (${getFamilyCode(s.id)})</option>`).join("")}</select>` : "No students on this device yet — enter the family code manually."}
+          </p>
+        </div>
+        <div class="wizard-field-group">
+          <label>Set a PIN <span class="wizard-hint">(4 digits — optional)</span></label>
+          <input id="wPin" type="password" maxlength="4" pattern="[0-9]{4}" placeholder="••••" inputmode="numeric">
+        </div>
+      </div>
+      <button class="primary-button wizard-submit" id="wSubmit" style="width:100%;margin-top:16px">Create account &amp; sign in</button>
+      <p id="wLinkStatus" style="text-align:center;font-size:0.8rem;color:var(--muted);margin-top:8px"></p>
+    `;
+    panel.querySelector("#wizBack").addEventListener("click", onBack);
+    panel.querySelector("#wStudentPick")?.addEventListener("change", e => {
+      panel.querySelector("#wFamilyCode").value = e.target.value;
+    });
+    panel.querySelector("#wSubmit").addEventListener("click", () => {
+      const name = panel.querySelector("#wName").value.trim();
+      if (!name) { panel.querySelector("#wName").focus(); return; }
+      const pin = panel.querySelector("#wPin").value.trim();
+      if (pin && !/^\d{4}$/.test(pin)) { showToast("PIN must be exactly 4 digits", "warn"); return; }
+      const familyCode = panel.querySelector("#wFamilyCode").value.trim().toUpperCase();
+      // Create account first so we have the ID
+      const cleanName = name.slice(0, 36);
+      const id = `parent-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const account = { id, name: cleanName, role: "parent", pin: pin || "", linkedStudentIds: [] };
+      offlineAccounts.push(account);
+      saveAccounts();
+      // Link child if code given
+      if (familyCode) {
+        const linked = linkParentToStudent(id, familyCode);
+        if (!linked) {
+          showToast("Family code not found — you can link a child later from your dashboard.", "warn");
+        } else {
+          showToast(`Linked to ${linked.name}!`, "success");
+        }
+      }
+      switchProfile(id, true);
+      _splashDismiss(splash);
+    });
+  }
+
+  return panel;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Welcome Splash — full login/create screen shown on first visit
+   ───────────────────────────────────────────────────────────────── */
+function showWelcomeSplash() {
+  const splash = document.createElement("div");
+  splash.id = "welcomeSplash";
+  splash.className = "welcome-splash";
+
+  const roleDescriptions = {
+    student: "Learn lessons, play games, take quizzes and save your progress.",
+    teacher: "Monitor your classes, view each student's progress and compare results.",
+    parent:  "See your child's progress, quiz scores and what to practise next.",
+  };
+
+  function buildBrand() {
+    return `
+      <div class="welcome-brand">
+        <img src="mtplogo.png" alt="MTP Logo" onerror="this.style.display='none'">
+        <h1>Agriculture &amp; Nutrition</h1>
+        <p>Grade 9 · MTP Digital</p>
+      </div>
+    `;
+  }
+
+  function buildAccountsPanel(role) {
+    const accounts = offlineAccounts.filter(a => a.role === role);
+    const info = ACCOUNT_ROLES[role];
+    const icon = ROLE_ICONS[role];
+
+    const accountSubtitle = (a) => {
+      if (a.pin) return "🔒 PIN protected";
+      if (role === "student") {
+        const p = loadProgress(a.id); const done = Object.keys(p.quizScores||{}).length;
+        const avg = done ? Math.round(Object.values(p.quizScores).reduce((s,v)=>s+v,0)/done) : 0;
+        const cls = a.classCode ? ` · Class ${a.classCode}` : "";
+        return done ? `${done} modules · avg ${avg}%${cls}` : `Ready to start${cls}`;
+      }
+      if (role === "teacher") return (a.classCodes||[]).length ? `Classes: ${a.classCodes.join(", ")}` : info.action;
+      if (role === "parent") {
+        const linked = getLinkedStudents(a);
+        return linked.length ? `Linked: ${linked.map(s=>s.name).join(", ")}` : "No child linked yet";
+      }
+      return info.action;
+    };
+
+    return `
+      <div class="welcome-accounts-panel" id="splashAccountsPanel">
+        <div class="welcome-accounts-header">
+          <h3>${icon} ${escapeHTML(info.label)} accounts</h3>
+          <button class="welcome-back-btn" id="splashBackBtn">← Back</button>
+        </div>
+        <div class="welcome-account-grid">
+          ${accounts.map(a => `
+            <button class="welcome-account-btn role-${a.role}" data-login-id="${a.id}">
+              <span class="account-avatar account-avatar-${a.role}">${escapeHTML(a.name.charAt(0).toUpperCase())}</span>
+              <span>
+                <span class="welcome-account-name">${escapeHTML(a.name)}</span>
+                <span class="welcome-account-sub">${escapeHTML(accountSubtitle(a))}</span>
+              </span>
+              ${a.pin ? `<span class="pin-lock-badge">🔒</span>` : ""}
+            </button>
+          `).join("")}
+          ${!accounts.length ? `<p class="welcome-empty">No ${info.label.toLowerCase()} accounts yet — create one below.</p>` : ""}
+        </div>
+        <div class="welcome-create-section">
+          <label>New ${escapeHTML(info.label.toLowerCase())} account</label>
+          <button class="secondary-button" id="splashOpenWizardBtn" style="width:100%;margin-top:6px">+ Create new ${escapeHTML(info.label.toLowerCase())} account</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderRoleStep() {
+    splash.innerHTML = `
+      <div class="welcome-inner">
+        ${buildBrand()}
+        <p class="welcome-prompt">Who's learning today?</p>
+        <div class="welcome-role-cards">
+          ${Object.entries(ACCOUNT_ROLES).map(([key, info]) => `
+            <button class="role-card role-card-${key}" data-role="${key}">
+              <span class="role-card-icon">${ROLE_ICONS[key]}</span>
+              <strong>${escapeHTML(info.label)}</strong>
+              <p>${escapeHTML(roleDescriptions[key])}</p>
+            </button>
+          `).join("")}
+        </div>
+        <p class="welcome-note">🔒 All data stored privately on this device</p>
+      </div>
+    `;
+    splash.querySelectorAll("[data-role]").forEach(btn => {
+      btn.addEventListener("click", () => { btn.classList.add("active"); setTimeout(() => renderAccountStep(btn.dataset.role), 120); });
+    });
+  }
+
+  function renderAccountStep(role) {
+    const inner = splash.querySelector(".welcome-inner") || (() => {
+      const d = document.createElement("div"); d.className = "welcome-inner"; splash.appendChild(d); return d;
+    })();
+    inner.innerHTML = buildBrand() + buildAccountsPanel(role) + `<p class="welcome-note">🔒 All data stored privately on this device</p>`;
+
+    inner.querySelectorAll("[data-login-id]").forEach(btn => {
+      btn.addEventListener("click", () => _loginAndDismiss(splash, btn.dataset.loginId));
+    });
+    inner.querySelector("#splashBackBtn")?.addEventListener("click", renderRoleStep);
+    inner.querySelector("#splashOpenWizardBtn")?.addEventListener("click", () => renderWizardStep(role));
+  }
+
+  function renderWizardStep(role) {
+    const inner = splash.querySelector(".welcome-inner");
+    if (!inner) return;
+    const wizardPanel = _showCreationWizard(splash, role, () => renderAccountStep(role));
+    inner.innerHTML = buildBrand();
+    inner.appendChild(wizardPanel);
+    inner.insertAdjacentHTML("beforeend", `<p class="welcome-note">🔒 All data stored privately on this device</p>`);
+  }
+
+  splash.innerHTML = `<div class="welcome-inner"></div>`;
+  document.body.appendChild(splash);
+  renderRoleStep();
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Account Chooser — switch account from sidebar (with PIN gate)
+   ───────────────────────────────────────────────────────────────── */
+function showAccountChooser() {
+  const modal = document.createElement("div");
+  modal.className = "share-modal-overlay account-modal-overlay";
+
+  const accountSubLine = (a) => {
+    if (a.role === "student") return a.classCode ? `Class ${a.classCode}` : "Student";
+    if (a.role === "teacher") return (a.classCodes||[]).length ? `Classes: ${a.classCodes.join(", ")}` : "Teacher";
+    if (a.role === "parent") {
+      const linked = getLinkedStudents(a);
+      return linked.length ? linked.map(s=>s.name).join(", ") : "No child linked";
+    }
+    return ACCOUNT_ROLES[a.role]?.label || "";
+  };
+
+  const grouped = Object.keys(ACCOUNT_ROLES).map(role => {
+    const accounts = offlineAccounts.filter(a => a.role === role);
+    const info = ACCOUNT_ROLES[role];
+    if (!accounts.length) return "";
+    return `
+      <div style="margin-bottom:14px">
+        <p class="small-label" style="margin:0 0 7px">${ROLE_ICONS[role]} ${escapeHTML(info.label)}s</p>
+        <div style="display:grid;gap:7px">
+          ${accounts.map(a => `
+            <button class="account-choice ${a.id === currentProfile?.id ? "active" : ""}" data-login-profile="${a.id}">
+              <span class="account-avatar account-avatar-${a.role}">${escapeHTML(a.name.charAt(0).toUpperCase())}</span>
+              <span>
+                <strong>${escapeHTML(a.name)}</strong>
+                <small>${escapeHTML(accountSubLine(a))}${a.pin ? " 🔒" : ""}</small>
+              </span>
+              ${a.id === currentProfile?.id ? `<span style="margin-left:auto;font-size:0.68rem;color:var(--leaf);font-weight:800;white-space:nowrap">● Active</span>` : ""}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  modal.innerHTML = `
+    <div class="share-modal account-modal">
+      <div class="account-modal-head">
+        <div><p class="eyebrow">Offline accounts</p><h3>Switch account</h3></div>
+        <button class="icon-button" id="closeAccountModal" aria-label="Close">×</button>
+      </div>
+      <div class="account-choice-list">${grouped}</div>
+      <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:10px;flex-wrap:wrap">
+        <button class="secondary-button" id="openWelcomeSplashBtn" style="flex:1">+ Add account</button>
+        <button class="secondary-button" id="openAccountSettingsBtn" style="flex:1">⚙ My settings</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector("#closeAccountModal")?.addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+  modal.querySelectorAll("[data-login-profile]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const account = getProfile(btn.dataset.loginProfile);
+      if (!account) return;
+      if (account.pin && account.id !== currentProfile?.id) {
+        modal.remove();
+        showPinEntry(account, () => { switchProfile(account.id); });
+      } else {
+        switchProfile(account.id);
+        modal.remove();
+      }
+    });
+  });
+  modal.querySelector("#openWelcomeSplashBtn")?.addEventListener("click", () => {
+    modal.remove();
+    showWelcomeSplash();
+  });
+  modal.querySelector("#openAccountSettingsBtn")?.addEventListener("click", () => {
+    modal.remove();
+    showAccountSettings();
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Account Settings — change PIN, manage class / linked children
+   ───────────────────────────────────────────────────────────────── */
+function showAccountSettings() {
+  const account = currentProfile;
+  if (!account) return;
+  const role = account.role;
+
+  const linkedSection = role === "parent" ? (() => {
+    const linked = getLinkedStudents(account);
+    return `
+      <div class="wizard-field-group">
+        <label>Linked children</label>
+        ${linked.length ? linked.map(s=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="account-avatar account-avatar-student" style="width:28px;height:28px;font-size:0.75rem">${s.name.charAt(0).toUpperCase()}</span>
+            <span style="flex:1;font-size:0.85rem">${escapeHTML(s.name)} <small style="color:var(--muted)">(${getFamilyCode(s.id)})</small></span>
+            <button class="secondary-button" data-unlink="${s.id}" style="font-size:0.72rem;padding:3px 9px">Unlink</button>
+          </div>
+        `).join("") : `<p class="wizard-hint">No children linked yet.</p>`}
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="settLinkCode" type="text" maxlength="6" placeholder="Child's family code" style="flex:1;text-transform:uppercase;letter-spacing:0.08em" autocomplete="off">
+          <button class="primary-button" id="settLinkBtn" style="white-space:nowrap">Link child</button>
+        </div>
+      </div>
+    `;
+  })() : "";
+
+  const classSection = role === "teacher" ? `
+    <div class="wizard-field-group">
+      <label>Classes you teach <span class="wizard-hint">(comma-separated)</span></label>
+      <input id="settClasses" type="text" maxlength="80" value="${escapeHTML((account.classCodes||[]).join(", "))}" placeholder="9A, 9B">
+    </div>
+  ` : role === "student" ? `
+    <div class="wizard-field-group">
+      <label>Class code</label>
+      <input id="settClass" type="text" maxlength="10" value="${escapeHTML(account.classCode||"")}" placeholder="e.g. 9A" style="text-transform:uppercase">
+      <p class="wizard-hint" style="margin-top:4px">Your family code (give this to your parent): <strong>${getFamilyCode(account.id)}</strong></p>
+    </div>
+  ` : "";
+
+  const modal = document.createElement("div");
+  modal.className = "share-modal-overlay";
+  modal.style.display = "flex";
+  modal.innerHTML = `
+    <div class="share-modal account-modal">
+      <div class="account-modal-head">
+        <div><p class="eyebrow">Settings</p><h3>⚙ My account</h3></div>
+        <button class="icon-button" id="closeSettingsModal" aria-label="Close">×</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0 16px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:16px">
+        <span class="account-avatar account-avatar-${role}" style="width:48px;height:48px;font-size:1.2rem">${account.name.charAt(0).toUpperCase()}</span>
+        <div>
+          <strong style="font-size:1rem">${escapeHTML(account.name)}</strong>
+          <p style="margin:2px 0 0;color:var(--muted);font-size:0.78rem">${ROLE_ICONS[role]} ${ACCOUNT_ROLES[role]?.label}</p>
+        </div>
+      </div>
+      <div class="wizard-fields">
+        ${classSection}
+        ${linkedSection}
+        <div class="wizard-field-group">
+          <label>${account.pin ? "Change PIN" : "Set a PIN"} <span class="wizard-hint">(4 digits — leave blank to remove)</span></label>
+          <input id="settPin" type="password" maxlength="4" pattern="[0-9]{4}" placeholder="••••" inputmode="numeric">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="primary-button" id="settSaveBtn" style="flex:1">Save changes</button>
+        <button class="secondary-button" id="settDeleteBtn" style="color:#f31260;border-color:rgba(243,18,96,0.35)">Delete account</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector("#closeSettingsModal")?.addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+
+  modal.querySelectorAll("[data-unlink]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      unlinkParentFromStudent(account.id, btn.dataset.unlink);
+      modal.remove(); showAccountSettings();
+    });
+  });
+
+  modal.querySelector("#settLinkBtn")?.addEventListener("click", () => {
+    const code = modal.querySelector("#settLinkCode")?.value.trim().toUpperCase();
+    if (!code) return;
+    const result = linkParentToStudent(account.id, code);
+    if (!result) { showToast("Family code not found. Ask your child for their 6-letter code.", "warn"); return; }
+    showToast(`Linked to ${result.name}!`, "success");
+    modal.remove(); showAccountSettings();
+  });
+
+  modal.querySelector("#settSaveBtn")?.addEventListener("click", () => {
+    const pin = modal.querySelector("#settPin")?.value.trim();
+    if (pin && !/^\d{4}$/.test(pin)) { showToast("PIN must be exactly 4 digits", "warn"); return; }
+    if (modal.querySelector("#settPin")?.value !== "") setAccountPin(account.id, pin);
+    if (role === "teacher") {
+      const codes = (modal.querySelector("#settClasses")?.value||"").split(",").map(c=>c.trim().toUpperCase()).filter(Boolean);
+      account.classCodes = codes; saveAccounts();
+    }
+    if (role === "student") {
+      const cls = (modal.querySelector("#settClass")?.value||"").trim().toUpperCase();
+      account.classCode = cls; saveAccounts();
+    }
+    showToast("Settings saved.", "success");
+    modal.remove();
+    render();
+  });
+
+  modal.querySelector("#settDeleteBtn")?.addEventListener("click", () => {
+    if (!confirm(`Delete account "${account.name}"? This cannot be undone.`)) return;
+    offlineAccounts = offlineAccounts.filter(a => a.id !== account.id);
+    saveAccounts();
+    localStorage.removeItem(profileProgressKey(account.id));
+    const fallback = getStudentProfiles()[0] || offlineAccounts[0];
+    if (fallback) switchProfile(fallback.id, true);
+    modal.remove(); showToast("Account deleted.", "info");
+    render();
+  });
+}
+
 
 function renderHero() {
   const module = currentModule();
   const learnDone = progress.learned[module.id];
   const gameDone  = progress.games[module.id];
   const quizScore = progress.quizScores[module.id] || 0;
+  const learner = currentLearnerProfile();
+  const rolePill = canEditProgress()
+    ? ""
+    : `<span class="pill" title="Read-only role view">${escapeHTML(ACCOUNT_ROLES[currentProfile?.role]?.label || "Viewer")} viewing ${escapeHTML(learner?.name || "student")}</span>`;
   els.moduleHero.innerHTML = `
     <div class="hero-copy">
       <p class="eyebrow">MTP Digital &mdash; ${escapeHTML(ml(module, "strand"))}</p>
@@ -1792,6 +3064,7 @@ function renderHero() {
         <span class="pill ${learnDone ? "pill-done" : ""}" title="Click Learn tab">${learnDone ? "✅" : "📚"} Learn ${learnDone ? "done" : "open"}</span>
         <span class="pill ${gameDone  ? "pill-done" : ""}" title="Click Simulate tab">${gameDone  ? "✅" : "🎮"} Game ${gameDone  ? "done" : "open"}</span>
         <span class="pill ${quizScore >= 70 ? "pill-done" : ""}" title="Click Quiz tab">${quizScore >= 70 ? "✅" : "🏆"} Quiz ${quizScore}%</span>
+        ${rolePill}
       </div>
     </div>
     <div class="scene-card" aria-hidden="true">${sceneSvg(module)}</div>
@@ -1905,7 +3178,7 @@ function renderLearn(module) {
         <p class="eyebrow">✅ Checkpoint</p>
         <h3>${progress.learned[module.id] ? "Learning marked ✅" : "Mark after review"}</h3>
         <p>Read pages ${module.pages[0]}–${module.pages[1]}, complete the lesson cards, then mark this section before trying the simulation and quiz.</p>
-        <button class="primary-button" id="markLearnedButton">${progress.learned[module.id] ? "🔄 " + t("reviewAgain") : "✅ " + t("markLearned")}</button>
+        <button class="primary-button" id="markLearnedButton" ${canEditProgress() ? "" : "disabled"}>${canEditProgress() ? (progress.learned[module.id] ? "🔄 " + t("reviewAgain") : "✅ " + t("markLearned")) : "Read-only view"}</button>
         <button class="secondary-button" id="printSummaryButton" style="margin-top:8px">🖨️ ${t("printSummary")}</button>
       </article>
     </div>
@@ -2016,7 +3289,7 @@ function renderQuiz(module) {
           <p class="progress-answered" style="margin:4px 0 0;font-size:0.82rem;color:var(--muted)">${answered} of ${module.quiz.length} ${t("answered")}</p>
           <p style="margin:6px 0 0;font-size:0.80rem;color:var(--muted)">Score ≥70% to earn the quiz badge.</p>
         </div>
-        <button class="primary-button" id="submitQuizButton" style="margin-top:4px">${t("submitQuiz")}</button>
+        <button class="primary-button" id="submitQuizButton" style="margin-top:4px" ${canEditProgress() ? "" : "disabled"}>${canEditProgress() ? t("submitQuiz") : "Read-only view"}</button>
         <button class="secondary-button" id="clearQuizButton">${t("clearAnswers")}</button>
         <button class="secondary-button ${state.timedMode ? "active" : ""}" id="toggleTimedMode" style="margin-top:4px">⏱ ${t("timedMode")}</button>
         <button class="secondary-button" id="startAssessmentButton" style="margin-top:4px">📋 ${t("startAssessment")}</button>
@@ -2112,13 +3385,13 @@ function renderJournal(module) {
         <p class="eyebrow">Portfolio prompt</p>
         <h3>${escapeHTML(ml(module, "title"))}</h3>
         <p>${escapeHTML(ml(module, "journal"))}</p>
-        <textarea id="journalText" placeholder="Write your notes here">${escapeHTML(note)}</textarea>
+        <textarea id="journalText" placeholder="Write your notes here" ${canEditProgress() ? "" : "readonly"}>${escapeHTML(note)}</textarea>
         <div id="journalPromptStrip" class="prompt-strip" style="display:none">
           <p class="eyebrow">💬 ${t("promptsHeading")}</p>
           ${(ml(module, "prompts") || []).map((p) => `<button class="activity-chip prompt-chip" data-prompt="${escapeHTML(p)}">${escapeHTML(p)}</button>`).join("")}
         </div>
         <div class="journal-actions">
-          <button class="primary-button" id="saveJournalButton">${t("saveNote")}</button>
+          <button class="primary-button" id="saveJournalButton" ${canEditProgress() ? "" : "disabled"}>${canEditProgress() ? t("saveNote") : "Read-only view"}</button>
           <button class="secondary-button" id="exportProgressButton">${t("exportProgress")}</button>
           <button class="secondary-button" id="shareProgressButton">${t("shareProgress")}</button>
         </div>
@@ -2130,7 +3403,7 @@ function renderJournal(module) {
           <div class="badges-grid" id="badgesGrid"></div>
           <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
             <button class="secondary-button" id="generateReportCardButton">📊 Report card</button>
-            <button class="secondary-button" id="teacherViewButton">📋 Teacher view</button>
+            <button class="secondary-button" id="teacherViewButton">📋 ${escapeHTML(ACCOUNT_ROLES[currentProfile?.role]?.dashboard || "Progress view")}</button>
           </div>
           <div style="margin-top:14px">
             <p class="eyebrow">Import code</p>
@@ -2335,7 +3608,7 @@ function generateCertificate() {
 /* ── Share / Import Code ─────────────────────────────────────── */
 function generateShareCode() {
   try {
-    const data = { scores: progress.quizScores, learned: progress.learned, games: progress.games };
+    const data = { name: currentLearnerProfile()?.name || currentProfile?.name || "Student", scores: progress.quizScores, learned: progress.learned, games: progress.games };
     return btoa(JSON.stringify(data));
   } catch { return ""; }
 }
@@ -2579,7 +3852,7 @@ function renderWordSearch(mount, module) {
   });
 }
 
-function renderHayLab(mount, module) {
+function renderHayLab(mount, _module) {
   mount.innerHTML = `
     <div class="game-board">
       <article class="tool-card control-stack">
@@ -2892,7 +4165,7 @@ function farmLoopSvg(count) {
   `;
 }
 
-function renderGardenPlanner(mount, module) {
+function renderGardenPlanner(mount, _module) {
   const crops = {
     kale: { name: "Kale", short: "K", color: "#4d934d", days: 5 },
     spinach: { name: "Spinach", short: "S", color: "#2f7d4f", days: 4 },
@@ -3177,7 +4450,7 @@ function gardenPlotTemplate(plot, index, crops) {
   `;
 }
 
-function renderStorageInspector(mount, module) {
+function renderStorageInspector(mount, _module) {
   const checks = [
     ["removeOld", "Remove previous crop remains", 14],
     ["sweep", "Sweep and remove dust", 14],
@@ -3247,7 +4520,7 @@ function storageSvg(score) {
   `;
 }
 
-function renderFlourMixer(mount, module) {
+function renderFlourMixer(mount, _module) {
   mount.innerHTML = `
     <div class="game-board">
       <article class="tool-card control-stack">
@@ -3612,7 +4885,7 @@ function graftSvg(count) {
   `;
 }
 
-function renderSunDryer(mount, module) {
+function renderSunDryer(mount, _module) {
   const checks = [
     ["frame", "Strong frame"],
     ["tray", "Wire mesh tray"],
@@ -3727,15 +5000,59 @@ function dryerSvg(score, temp) {
 /* ── Canvas Game: Pest Blaster (Storage module) ──────────────── */
 function renderPestBlaster(mount, module) {
   const W = 520, H = 360;
+
+  const PEST_TUT = [
+    {
+      art: `<div class='vt-scene'>
+  <span style='position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-size:2.6rem;z-index:2'>🏚️</span>
+  <div class='vt-ring-anim' style='width:68px;height:68px;border:2.5px solid rgba(220,60,60,0.85)'></div>
+  <span class='vt-march-anim' style='font-size:1.7rem;top:12%;right:5%;animation-delay:0s'>🐀</span>
+  <span class='vt-march-anim' style='font-size:1.5rem;top:60%;right:9%;animation-delay:0.65s'>🐛</span>
+  <span class='vt-march-anim' style='font-size:1.6rem;top:34%;right:1%;animation-delay:1.25s'>🍄</span>
+  <div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.88)'>REAL FARM THREAT — pests destroy stored grain</div>
+</div>`,
+      title: "Protect Your Grain Store",
+      desc: "Just like real farmers, defend the granary! Rats eat grain, caterpillars destroy crops, and fungi spread rot. Stop all three from reaching your store."
+    },
+    {
+      art: `<div class='vt-scene'>
+  <span style='position:absolute;left:44%;top:60%;font-size:2.4rem'>🐛</span>
+  <span class='vt-cursor-anim' style='font-size:2rem;left:52%;top:50%'>🔫</span>
+  <span class='vt-burst-anim' style='font-size:1.7rem;top:28%;left:48%;animation-delay:1.0s'>💦</span>
+  <div style='position:absolute;right:8%;top:12%;font-size:0.72rem;color:rgba(100,255,160,0.95);line-height:1.55'>🖱️ hover to aim<br>🖱️ click to spray</div>
+  <div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>backpack sprayer — your real pest-control tool</div>
+</div>`,
+      title: "Use Your Spray Gun",
+      desc: "Move your mouse to aim the pesticide nozzle. Click to spray — exactly like a real backpack sprayer! Some pests need multiple sprays to neutralise."
+    },
+    {
+      art: `<div class='vt-scene'>
+  <span style='position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-size:2.4rem;z-index:2'>🏚️</span>
+  <div style='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:70px;height:70px;border-radius:50%;border:3px solid rgba(220,60,60,0.92);animation:vt-ring-expand 1.2s infinite'></div>
+  <span style='position:absolute;right:14%;top:38%;font-size:1.4rem' class='vt-glow-anim'>🐀</span>
+  <span style='position:absolute;right:14%;top:22%;font-size:1.3rem'>🚫</span>
+  <div style='position:absolute;right:10%;top:58%;font-size:0.65rem;color:rgba(255,100,100,0.95);text-align:right'>❤️❤️❤️<br>3 lives</div>
+  <div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,100,100,0.95)'>the red ring = farm perimeter — your last line of defence!</div>
+</div>`,
+      title: "Guard the Farm Perimeter",
+      desc: "The red ring is the granary's outer wall. Any pest crossing it steals one life ❤️. Lose all 3 lives and the harvest is ruined — the granary falls!"
+    }
+  ];
+
   mount.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:14px">
       <div class="canvas-game-wrap" style="position:relative;aspect-ratio:520/360">
         <div id="pestThreeStage" style="position:absolute;inset:0"></div>
         <div class="game-overlay" id="pestOverlay">
-          <div style="font-size:3.2rem">🌾</div>
+          <div style="font-size:2.8rem">🌾</div>
           <h2>Pest Blaster</h2>
-          <p>Click pests before they reach the grain store. Don't let them breach the defence!</p>
-          <button class="primary-button" id="pestStart" style="min-width:160px">Start Game</button>
+          <div class="tutorial-steps">
+            <div class="tut-step"><span class="tut-num">1</span>Rats 🐀, caterpillars 🐛 &amp; fungi 🍄 march toward your grain store — just like on a real farm</div>
+            <div class="tut-step"><span class="tut-num">2</span><strong>Hover</strong> to aim your spray gun · <strong>Click</strong> to spray pesticide on each pest</div>
+            <div class="tut-step"><span class="tut-num">3</span>Stop every pest <strong>before it crosses the red danger ring</strong> — each breach costs one ❤️</div>
+            <div class="tut-step"><span class="tut-num">4</span>Score <strong>500 points</strong> across all waves to save the harvest!</div>
+          </div>
+          <button class="primary-button" id="pestStart" style="min-width:160px">Play Now</button>
         </div>
       </div>
       <div class="canvas-hud">
@@ -3774,7 +5091,7 @@ function renderPestBlaster(mount, module) {
     else { x = -22; y = 30 + Math.random() * (H - 60); }
     const tx = W / 2, ty = H * 0.41;
     const dx = tx - x, dy = ty - y, dist = Math.hypot(dx, dy);
-    const spd = t.spd * (0.8 + Math.random() * 0.4) * (1 + wave * 0.09);
+    const spd = t.spd * (0.55 + Math.random() * 0.35) * (1 + wave * 0.08);
     pests.push({ x, y, vx: (dx / dist) * spd, vy: (dy / dist) * spd, r: t.r, emoji: t.emoji, pts: t.pts, hp: 1 + Math.floor(wave / 3), alpha: 1, wobble: Math.random() * 6 });
   }
 
@@ -3836,6 +5153,7 @@ function renderPestBlaster(mount, module) {
     document.getElementById("pestWave").textContent = 1;
     document.getElementById("pestFeedback").innerHTML = "";
     gameActive = true;
+    showGameHint(pestStage, "🔫 Hover to aim your spray gun · Click to spray pests!");
     window._activeGameCleanup = () => { gameActive = false; if (animId) cancelAnimationFrame(animId); };
     animId = requestAnimationFrame(loop);
   }
@@ -3848,7 +5166,7 @@ function renderPestBlaster(mount, module) {
     let hit = false;
     pests.forEach(p => {
       if (p.alpha <= 0) return;
-      if (Math.hypot(mx - p.x, my - p.y) < p.r * 2.4) {
+      if (Math.hypot(mx - p.x, my - p.y) < p.r * 3.0) {
         hit = true; p.hp--;
         if (p.hp <= 0) {
           burstAt(p.x, p.y, p.pts); score += p.pts; p.alpha = 0;
@@ -3860,7 +5178,10 @@ function renderPestBlaster(mount, module) {
     if (!hit) particles.push({ x: mx, y: my, vx: 0, vy: -1, r: 14, life: 18, max: 18, txt: null });
   });
 
-  document.getElementById("pestStart").addEventListener("click", startGame, { once: true });
+  document.getElementById("pestStart").addEventListener("click", () => {
+    overlay.style.display = "none";
+    showVisualTutorial(pestStage, PEST_TUT, startGame);
+  }, { once: true });
 }
 
 /* ── Canvas Game: Farm Raider (Integrated Farming module) ─────── */
@@ -3875,9 +5196,49 @@ function renderFarmRaider(mount, module) {
     { id: "food",    label: "Household Food", emoji: "🍽️", color: "#e65100", x: 260, y: 60  },
   ];
 
+  const RAID_TUT = [
+    {
+      art: `<div class='vt-scene'>
+  <div style='position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;padding:9px;gap:5px'>
+    <div style='background:rgba(77,147,77,0.28);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.35rem' class='vt-glow-anim'>🌾</div>
+    <div style='background:rgba(154,104,32,0.28);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.35rem' class='vt-glow-anim'>🐄</div>
+    <div style='background:rgba(34,107,143,0.28);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.35rem' class='vt-glow-anim'>♻️</div>
+    <div style='background:rgba(230,81,0,0.28);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.35rem' class='vt-glow-anim'>🍽️</div>
+  </div>
+  <div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.88)'>real integrated farm — everything is connected</div>
+</div>`,
+      title: "An Integrated Farm",
+      desc: "A real farm links ALL resources: crops feed animals 🐄, animals make manure 💩, manure enriches compost ♻️, compost grows crops 🌾 — a full cycle! Collect all 6 to complete it."
+    },
+    {
+      art: `<div class='vt-scene'>
+  <div style='position:absolute;bottom:22px;left:5%;right:5%;height:5px;background:rgba(196,168,112,0.45);border-radius:3px'></div>
+  <span class='vt-drive-anim' style='font-size:2.8rem;top:21%'>🚜</span>
+  <div style='position:absolute;right:7%;top:14%;text-align:right;line-height:1.7'>
+    <div style='font-size:0.64rem;color:rgba(255,215,0,0.92)'>🖱️ Mouse = steer</div>
+    <div style='font-size:0.64rem;color:rgba(100,200,255,0.88)'>AUTO → nearest resource</div>
+  </div>
+  <div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>drive OVER a glowing pillar → loads into trailer</div>
+</div>`,
+      title: "Drive & Load the Trailer",
+      desc: "Your tractor auto-drives to the nearest resource pillar. Move your mouse over the field to steer manually. Drive through a resource to collect it — it loads into the trailer behind!"
+    },
+    {
+      art: `<div class='vt-scene' style='display:flex;align-items:center;justify-content:center'>
+  <div style='text-align:center'>
+    <div style='font-size:0.7rem;color:rgba(255,215,0,0.85);margin-bottom:5px;letter-spacing:1px'>🚜 TRAILER FILLING UP</div>
+    <div style='font-size:1.45rem;letter-spacing:5px' class='vt-glow-anim'>🌾 🐄 💩</div>
+    <div style='font-size:0.95rem;margin:4px 0;color:rgba(255,215,0,0.65)'>⟲  integrated cycle ⟲</div>
+    <div style='font-size:1.45rem;letter-spacing:5px' class='vt-glow-anim'>♻️ 🐟 🍽️</div>
+    <div style='margin-top:9px;font-size:0.68rem;color:#ffd700;font-weight:800;letter-spacing:1.5px'>COLLECT ALL 6 — CLOSE THE LOOP!</div>
+  </div>
+</div>`,
+      title: "Close the Farming Cycle",
+      desc: "Collect all 6 resources and watch the trailer load up — just like a real farm collecting its harvest! All 6 must be gathered to complete the integrated farming cycle."
+    }
+  ];
+
   const player = { x: 260, y: 190, vx: 0, vy: 0, angle: 0 };
-  const keys = {};
-  let touchTarget = null;
   let collected = new Set(), particles = [];
   let animId = null, gameActive = false, lastTime = 0;
 
@@ -3886,11 +5247,15 @@ function renderFarmRaider(mount, module) {
       <div class="canvas-game-wrap" style="position:relative;aspect-ratio:520/380">
         <div id="raidThreeStage" style="position:absolute;inset:0"></div>
         <div class="game-overlay" id="raidOverlay">
-          <div style="font-size:3.2rem">🚜</div>
+          <div style="font-size:2.8rem">🚜</div>
           <h2>Farm Raider</h2>
-          <p>Drive your tractor to collect all 6 farm resources and complete the integration loop!</p>
-          <div class="wasd-hint"><span class="key-chip">W</span><span class="key-chip">A</span><span class="key-chip">S</span><span class="key-chip">D</span> <span style="margin:0 4px">or</span> <span class="key-chip">↑</span><span class="key-chip">↓</span><span class="key-chip">←</span><span class="key-chip">→</span> &nbsp;or tap to move</div>
-          <button class="primary-button" id="raidStart" style="min-width:160px">Start Game</button>
+          <div class="tutorial-steps">
+            <div class="tut-step"><span class="tut-num">1</span>Real farms need ALL resources connected — crops 🌾, livestock 🐄, manure 💩, compost ♻️, fish 🐟 &amp; food 🍽️</div>
+            <div class="tut-step"><span class="tut-num">2</span>Tractor <strong>auto-drives</strong> to the nearest resource · <strong>Move mouse</strong> over the field to steer manually</div>
+            <div class="tut-step"><span class="tut-num">3</span>Drive <strong>through each glowing pillar</strong> to collect it — watch the trailer fill up!</div>
+            <div class="tut-step"><span class="tut-num">4</span>Gather all <strong>6 resources</strong> to complete the integrated farming cycle!</div>
+          </div>
+          <button class="primary-button" id="raidStart" style="min-width:160px">Play Now</button>
         </div>
       </div>
       <div class="canvas-hud">
@@ -3908,16 +5273,22 @@ function renderFarmRaider(mount, module) {
   }
   const overlay = document.getElementById("raidOverlay");
 
-  const KEY_MAP = { ArrowUp: "u", ArrowDown: "d", ArrowLeft: "l", ArrowRight: "r", w: "u", s: "d", a: "l", d: "r", W: "u", S: "d", A: "l", D: "r" };
-  const onKey = (e, val) => { if (KEY_MAP[e.key]) { keys[KEY_MAP[e.key]] = val; if (val) e.preventDefault(); } };
-  const _onKeyDown = (e) => onKey(e, true);
-  const _onKeyUp   = (e) => onKey(e, false);
+  let mouseGamePos = null, mouseOnStage = false;
 
-  raidStage.addEventListener("click", (e) => {
+  raidStage.addEventListener("mousemove", (e) => {
     if (!gameActive || !gameCtrl) return;
     const gc = gameCtrl.getClickGameCoords(e);
-    if (gc) touchTarget = { x: gc.x, y: gc.y };
+    if (gc) mouseGamePos = gc;
+    mouseOnStage = true;
   });
+  raidStage.addEventListener("mouseleave", () => { mouseOnStage = false; });
+  raidStage.addEventListener("touchmove", (e) => {
+    if (!gameActive || !gameCtrl) return;
+    e.preventDefault();
+    const gc = gameCtrl.getClickGameCoords(e.touches[0]);
+    if (gc) { mouseGamePos = gc; mouseOnStage = true; }
+  }, { passive: false });
+  raidStage.addEventListener("touchend", () => { mouseOnStage = false; });
 
   function updateChips() {
     document.getElementById("raidChips").innerHTML = RESOURCES.map(r =>
@@ -3928,14 +5299,20 @@ function renderFarmRaider(mount, module) {
 
   function updatePlayer(dt) {
     let ax = 0, ay = 0;
-    if (touchTarget) {
-      const dx = touchTarget.x - player.x, dy = touchTarget.y - player.y;
+    // Mouse/touch overrides auto-drive; otherwise navigate to nearest uncollected resource
+    let target = mouseOnStage && mouseGamePos ? mouseGamePos : null;
+    if (!target) {
+      let minD = Infinity;
+      RESOURCES.forEach(r => {
+        if (collected.has(r.id)) return;
+        const d = Math.hypot(player.x - r.x, player.y - r.y);
+        if (d < minD) { minD = d; target = { x: r.x, y: r.y }; }
+      });
+    }
+    if (target) {
+      const dx = target.x - player.x, dy = target.y - player.y;
       const d = Math.hypot(dx, dy);
-      if (d < 10) touchTarget = null;
-      else { ax = dx / d; ay = dy / d; }
-    } else {
-      if (keys.u) ay = -1; if (keys.d) ay = 1;
-      if (keys.l) ax = -1; if (keys.r) ax = 1;
+      if (d > 8) { ax = dx / d; ay = dy / d; }
     }
     if (ax || ay) {
       const ta = Math.atan2(ay, ax);
@@ -3944,7 +5321,6 @@ function renderFarmRaider(mount, module) {
       while (da < -Math.PI) da += Math.PI * 2;
       player.angle += da * 4 * dt;
       player.vx += ax * 160 * dt; player.vy += ay * 160 * dt;
-      // Exhaust puff occasionally
       if (Math.random() > 0.72) particles.push({ x: player.x - Math.cos(player.angle) * 14, y: player.y - Math.sin(player.angle) * 14, vx: (Math.random() - 0.5) * 30, vy: (Math.random() - 0.5) * 30 - 18, r: 5, color: "rgba(120,120,120,0.45)", life: 22, max: 22 });
     }
     player.vx *= 0.84; player.vy *= 0.84;
@@ -3992,22 +5368,20 @@ function renderFarmRaider(mount, module) {
     overlay.style.display = "none";
     Object.assign(player, { x: 260, y: 190, vx: 0, vy: 0, angle: 0 });
     collected = new Set(); particles = []; lastTime = performance.now();
-    touchTarget = null; gameActive = true;
+    mouseGamePos = null; mouseOnStage = false; gameActive = true;
     updateChips();
-    window.addEventListener("keydown", _onKeyDown);
-    window.addEventListener("keyup",   _onKeyUp);
-    window._activeGameCleanup = () => {
-      gameActive = false; if (animId) cancelAnimationFrame(animId);
-      window.removeEventListener("keydown", _onKeyDown);
-      window.removeEventListener("keyup",   _onKeyUp);
-    };
+    showGameHint(raidStage, "🚜 Tractor auto-drives · Move mouse to steer · Drive through pillars to collect!");
+    window._activeGameCleanup = () => { gameActive = false; if (animId) cancelAnimationFrame(animId); };
     animId = requestAnimationFrame(loop);
   }
 
-  document.getElementById("raidStart").addEventListener("click", startGame, { once: true });
+  document.getElementById("raidStart").addEventListener("click", () => {
+    overlay.style.display = "none";
+    showVisualTutorial(raidStage, RAID_TUT, startGame);
+  }, { once: true });
   document.getElementById("raidReset").addEventListener("click", () => {
     if (animId) cancelAnimationFrame(animId); gameActive = false;
-    overlay.innerHTML = `<div style="font-size:3.2rem">🚜</div><h2>Farm Raider</h2><p>Drive your tractor to collect all 6 farm resources!</p><div class="wasd-hint"><span class="key-chip">W</span><span class="key-chip">A</span><span class="key-chip">S</span><span class="key-chip">D</span> or tap to move</div><button class="primary-button" id="raidStart" style="min-width:160px">Start Game</button>`;
+    overlay.innerHTML = `<div style="font-size:3.2rem">🚜</div><h2>Farm Raider</h2><p>Move your mouse over the field to steer the tractor!</p><button class="primary-button" id="raidStart" style="min-width:160px">Start Game</button>`;
     overlay.style.display = "flex";
     document.getElementById("raidStart").addEventListener("click", startGame, { once: true });
   });
@@ -4028,6 +5402,60 @@ function renderFlourFrenzy(mount, module) {
   const TYPES = { dough: "Dough", thin_batter: "Thin Batter", thick_batter: "Thick Batter" };
   const T_COL  = { dough: "#e65100", thin_batter: "#f9a825", thick_batter: "#1565c0" };
 
+  const FRENZY_TUT = [
+    {
+      art: `<div class='vt-scene'>
+  <div style='position:absolute;left:6%;right:6%;top:54%;height:28px;background:rgba(55,55,55,0.9);border-radius:4px;display:flex;align-items:center;overflow:hidden'>
+    <div class='vt-belt-anim' style='font-size:1.8rem;padding:0 10px;flex-shrink:0'>🫓</div>
+    <div class='vt-belt-anim' style='font-size:1.8rem;padding:0 10px;flex-shrink:0;animation-delay:0.9s'>🥞</div>
+    <div class='vt-belt-anim' style='font-size:1.8rem;padding:0 10px;flex-shrink:0;animation-delay:1.7s'>🍟</div>
+  </div>
+  <div style='position:absolute;left:10%;top:16%;font-size:1.9rem'>🌾</div>
+  <div style='position:absolute;left:40%;top:12%;font-size:0.9rem;color:rgba(255,255,255,0.5)'>→→</div>
+  <div style='position:absolute;right:10%;top:16%;font-size:1.8rem'>🏭</div>
+  <div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.88)'>grain → mill → packaged products on conveyor belt</div>
+</div>`,
+      title: "Welcome to the Flour Mill",
+      desc: "In a real flour mill, grain is milled into different flour types, which go into different products. Your job as quality sorter: classify each product before it falls off the belt!"
+    },
+    {
+      art: `<div class='vt-scene' style='display:flex;align-items:center;justify-content:center'>
+  <div style='display:flex;flex-direction:column;gap:5px;width:90%'>
+    <div style='display:flex;align-items:center;gap:8px;background:rgba(230,81,0,0.2);border:1.5px solid rgba(230,81,0,0.65);border-radius:8px;padding:5px 10px'>
+      <span style='font-size:1.5rem'>🫓🍩🍞</span>
+      <div><div style='font-size:0.68rem;font-weight:800;color:#e65100'>DOUGH — stiff &amp; kneaded</div><div style='font-size:0.58rem;color:rgba(255,255,255,0.58)'>chapati, mandazi, bread</div></div>
+    </div>
+    <div style='display:flex;align-items:center;gap:8px;background:rgba(249,168,37,0.2);border:1.5px solid rgba(249,168,37,0.65);border-radius:8px;padding:5px 10px'>
+      <span style='font-size:1.5rem'>🥞</span>
+      <div><div style='font-size:0.68rem;font-weight:800;color:#f9a825'>THIN BATTER — pourable &amp; smooth</div><div style='font-size:0.58rem;color:rgba(255,255,255,0.58)'>pancakes</div></div>
+    </div>
+    <div style='display:flex;align-items:center;gap:8px;background:rgba(21,101,192,0.2);border:1.5px solid rgba(21,101,192,0.65);border-radius:8px;padding:5px 10px'>
+      <span style='font-size:1.5rem'>🍟</span>
+      <div><div style='font-size:0.68rem;font-weight:800;color:#6ab3f5'>THICK BATTER — coats &amp; fries</div><div style='font-size:0.58rem;color:rgba(255,255,255,0.58)'>coating &amp; frying</div></div>
+    </div>
+  </div>
+</div>`,
+      title: "3 Real Flour Mixtures",
+      desc: "Dough is stiff — you knead it for baking. Thin Batter is pourable — for pancakes. Thick Batter coats food before frying. Memorise which product uses which!"
+    },
+    {
+      art: `<div class='vt-scene' style='display:flex;align-items:center;justify-content:center'>
+  <div style='display:flex;flex-direction:column;gap:9px;width:88%;align-items:center'>
+    <div style='font-size:2.1rem;border:2px solid rgba(255,255,255,0.28);border-radius:10px;padding:4px 16px;background:rgba(255,255,255,0.05)'>🥞</div>
+    <div style='font-size:0.68rem;color:rgba(255,200,60,0.9)'>↓ identify &amp; click the right type ↓</div>
+    <div style='display:flex;gap:6px'>
+      <div style='padding:5px 10px;border-radius:7px;font-size:0.62rem;background:rgba(230,81,0,0.25);border:1px solid rgba(230,81,0,0.5);color:#e65100'>Dough</div>
+      <div class='vt-btn-flash' style='padding:5px 10px;border-radius:7px;font-size:0.62rem;font-weight:800;border:2px solid #f9a825;color:#f9a825'>✓ Thin Batter</div>
+      <div style='padding:5px 10px;border-radius:7px;font-size:0.62rem;background:rgba(21,101,192,0.25);border:1px solid rgba(21,101,192,0.5);color:#6ab3f5'>Thick Batter</div>
+    </div>
+    <div style='font-size:0.59rem;color:rgba(255,255,255,0.48)'>streak bonus: 2× → 3× → 5× points!</div>
+  </div>
+</div>`,
+      title: "Sort It Before It Falls!",
+      desc: "See a product on the belt? Click its mixture type FAST. Wrong answer turns it red and costs your streak. Chain correct answers for up to 5× bonus points — race the belt!"
+    }
+  ];
+
   let items = [], score = 0, streak = 0, timeLeft = 60, gameActive = false, animId = null, lastTime = 0, spawnTimer = 0;
 
   mount.innerHTML = `
@@ -4035,10 +5463,15 @@ function renderFlourFrenzy(mount, module) {
       <div class="canvas-game-wrap" style="position:relative;aspect-ratio:520/360">
         <div id="frenzyThreeStage" style="position:absolute;inset:0"></div>
         <div class="game-overlay" id="frenzyOverlay">
-          <div style="font-size:3.2rem">🏭</div>
+          <div style="font-size:2.8rem">🏭</div>
           <h2>Flour Frenzy</h2>
-          <p>Products roll in on the belt. Click the correct mixture type before they fall off!</p>
-          <button class="primary-button" id="frenzyStart" style="min-width:160px">Start</button>
+          <div class="tutorial-steps">
+            <div class="tut-step"><span class="tut-num">1</span>You're a quality sorter in a real flour mill — products roll in on the conveyor belt from the right</div>
+            <div class="tut-step"><span class="tut-num">2</span><strong>Dough</strong> = stiff &amp; kneaded (chapati 🫓, bread 🍞) · <strong>Thin Batter</strong> = pourable (pancakes 🥞) · <strong>Thick Batter</strong> = frying coat (🍟)</div>
+            <div class="tut-step"><span class="tut-num">3</span>Click the <strong>correct mixture type</strong> button before each product falls off the belt!</div>
+            <div class="tut-step"><span class="tut-num">4</span>Build a <strong>correct streak</strong> for up to 5× bonus — score <strong>80 points</strong> in 60 seconds!</div>
+          </div>
+          <button class="primary-button" id="frenzyStart" style="min-width:160px">Play Now</button>
         </div>
       </div>
       <div class="canvas-hud">
@@ -4063,7 +5496,7 @@ function renderFlourFrenzy(mount, module) {
 
   function spawnItem() {
     const p = PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)];
-    items.push({ ...p, x: W + 44, y: H * 0.52 + (Math.random() - 0.5) * 38, spd: 62 + score * 0.1, answered: null, shakeT: 0 });
+    items.push({ ...p, x: W + 44, y: H * 0.52 + (Math.random() - 0.5) * 38, spd: 42 + score * 0.08, answered: null, shakeT: 0 });
   }
 
   function checkAnswer(type) {
@@ -4089,7 +5522,7 @@ function renderFlourFrenzy(mount, module) {
     if (timeLeft <= 5) te.style.color = "#ff4444"; else te.style.color = "";
     if (timeLeft <= 0) { endGame(); return; }
     spawnTimer -= dt;
-    if (spawnTimer <= 0) { spawnItem(); spawnTimer = Math.max(0.55, 2.0 - score * 0.0015); }
+    if (spawnTimer <= 0) { spawnItem(); spawnTimer = Math.max(0.7, 2.5 - score * 0.002); }
     items.forEach(i => {
       i.x -= i.spd * dt;
       if (i.shakeT > 0) i.shakeT -= dt;
@@ -4123,6 +5556,7 @@ function renderFlourFrenzy(mount, module) {
     document.getElementById("frenzyTime").textContent = "60s";
     document.getElementById("frenzyTime").style.color = "";
     gameActive = true;
+    showGameHint(frenzyStage, "🏭 Spot the product · Click its mixture type: Dough · Thin Batter · Thick Batter");
     window._activeGameCleanup = () => { gameActive = false; if (animId) cancelAnimationFrame(animId); };
     animId = requestAnimationFrame(loop);
   }
@@ -4131,7 +5565,10 @@ function renderFlourFrenzy(mount, module) {
     const btn = e.target.closest(".frenzy-ans");
     if (btn) checkAnswer(btn.dataset.type);
   });
-  document.getElementById("frenzyStart").addEventListener("click", startGame, { once: true });
+  document.getElementById("frenzyStart").addEventListener("click", () => {
+    overlay.style.display = "none";
+    showVisualTutorial(frenzyStage, FRENZY_TUT, startGame);
+  }, { once: true });
 }
 
 function shuffle(items) {
@@ -4142,6 +5579,7 @@ function shuffle(items) {
 }
 
 function completeGame(moduleId) {
+  if (!guardProgressWrite("save game progress")) return;
   if (!progress.games[moduleId]) {
     progress.games[moduleId] = true;
     saveProgress();
@@ -4190,6 +5628,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (event.target.id === "markLearnedButton") {
+    if (!guardProgressWrite("mark modules learned")) return;
     progress.learned[state.moduleId] = true;
     saveProgress();
     checkWeeklyGoal(state.moduleId);
@@ -4198,6 +5637,7 @@ document.addEventListener("click", (event) => {
     render();
   }
   if (event.target.id === "submitQuizButton") {
+    if (!guardProgressWrite("save quiz scores")) return;
     if (state.timedTimer) { clearInterval(state.timedTimer); state.timedTimer = null; }
     const module = currentModule();
     const answers = state.quizAnswers[module.id] || {};
@@ -4259,6 +5699,7 @@ document.addEventListener("click", (event) => {
     showAssessmentOverlay(currentModule());
   }
   if (event.target.id === "saveJournalButton") {
+    if (!guardProgressWrite("save notes")) return;
     progress.notes[state.moduleId] = document.getElementById("journalText")?.value || "";
     saveProgress();
     checkBadges();
@@ -4283,6 +5724,7 @@ document.addEventListener("click", (event) => {
     setTimeout(() => document.body.classList.remove("printing-module"), 1000);
   }
   if (event.target.id === "importCodeButton") {
+    if (!guardProgressWrite("import progress")) return;
     const code = document.getElementById("importCodeInput")?.value || "";
     if (code) importShareCode(code);
   }
@@ -4352,13 +5794,9 @@ els.openPdfButton.addEventListener("click", () => {
 els.aiAdvisorBtn?.addEventListener("click", () => showAIPanel());
 
 els.resetProgressButton.addEventListener("click", () => {
+  if (!guardProgressWrite("reset progress")) return;
   if (!confirm(t("progressReset"))) return;
-  progress = {
-    learned: {}, games: {}, quizScores: {}, notes: {},
-    quizHistory: {}, quizMisses: {}, streak: { count: 0, lastDate: "" },
-    weeklyGoal: { target: 3, weekStart: "", done: [] },
-    fontScale: 1, language: "en", badges: [],
-  };
+  progress = defaultProgress();
   state.quizAnswers = {};
   saveProgress();
   render();
@@ -4421,8 +5859,11 @@ function renderStreakAndGoal() {
   `;
 }
 
-checkStreak();
-checkBadges();
+if (canEditProgress()) {
+  checkStreak();
+  checkBadges();
+}
 initOfflineIndicator();
 initNotifications();
 render();
+if (SHOULD_PROMPT_LOGIN) setTimeout(() => showWelcomeSplash(), 650);
