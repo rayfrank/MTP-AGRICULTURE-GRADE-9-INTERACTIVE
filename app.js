@@ -2052,6 +2052,14 @@ function guardProgressWrite(action = "save progress") {
   return false;
 }
 
+function logOut() {
+  localStorage.removeItem(SESSION_KEY);
+  currentProfile = null;
+  showToast("Signed out. See you next time!", "info");
+  setTimeout(() => showWelcomeSplash(), 320);
+  render();
+}
+
 function switchProfile(profileId, silent = false) {
   const next = getProfile(profileId);
   if (!next) return;
@@ -2521,9 +2529,11 @@ function renderAccountWidgets() {
       <button class="secondary-button" id="accountSwitchButton">Switch</button>
       <button class="secondary-button" id="roleDashboardButton">${escapeHTML(role.dashboard)}</button>
     </div>
+    <button class="secondary-button" id="logOutSidebarBtn" style="width:100%;margin-top:8px;color:#f31260;border-color:rgba(243,18,96,0.35)">Sign out</button>
   `;
   document.getElementById("accountSwitchButton")?.addEventListener("click", showAccountChooser);
   document.getElementById("roleDashboardButton")?.addEventListener("click", showTeacherDashboard);
+  document.getElementById("logOutSidebarBtn")?.addEventListener("click", logOut);
   document.getElementById("observedLearnerSelect")?.addEventListener("change", (event) => {
     selectLearnerForViewer(event.target.value);
   });
@@ -2895,6 +2905,7 @@ function showAccountChooser() {
       <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:10px;flex-wrap:wrap">
         <button class="secondary-button" id="openWelcomeSplashBtn" style="flex:1">+ Add account</button>
         <button class="secondary-button" id="openAccountSettingsBtn" style="flex:1">⚙ My settings</button>
+        <button class="secondary-button" id="logOutBtn" style="width:100%;color:#f31260;border-color:rgba(243,18,96,0.35)">Sign out</button>
       </div>
     </div>
   `;
@@ -2921,6 +2932,10 @@ function showAccountChooser() {
   modal.querySelector("#openAccountSettingsBtn")?.addEventListener("click", () => {
     modal.remove();
     showAccountSettings();
+  });
+  modal.querySelector("#logOutBtn")?.addEventListener("click", () => {
+    modal.remove();
+    logOut();
   });
 }
 
