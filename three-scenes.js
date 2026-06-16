@@ -477,6 +477,9 @@ function mountGarden(host, garden, crops, onPlot) {
   resizeObs.observe(host);
   resize();
 
+  // Track plot render state so we only rebuild geometry when it actually changes
+  const plotKeys = plotGroups.map(() => '');
+
   function update(nextGarden = garden, nextCrops = crops) {
     const t = performance.now() / 1000;
     plotGroups.forEach((group, index) => {
@@ -484,14 +487,31 @@ function mountGarden(host, garden, crops, onPlot) {
       const bed      = group.userData.bed;
       const cropRoot = group.userData.cropRoot;
 
-      // Soil color from water/fertility
+      // Cheap per-frame: soil colour and hover scale
       bed.material.color.copy(plotColor(plot));
-
-      // Hover highlight overlay (simple scale bounce)
       group.scale.setScalar(index === hovered ? 1.03 : 1);
 
-      // Rebuild crop content
+      // Animate existing plant sway without rebuilding geometry
+      const pr = group.userData.plantRoot;
+      if (pr) {
+        pr.rotation.z = Math.sin(t * 1.6 + plot.stage) * 0.07;
+        pr.rotation.x = Math.sin(t * 0.9 + plot.stage * 0.7) * 0.03;
+        if (plot.stage >= 4) pr.scale.y = 1 + Math.sin(t * 2.8) * 0.025;
+      }
+
+      // Only rebuild meshes when plot state has changed
+      const key = `${plot.crop}|${plot.stage}|${plot.mulch ? 1 : 0}|${Math.floor(plot.weeds / 18)}|${Math.floor(plot.pests / 20)}`;
+      if (plotKeys[index] === key) return;
+      plotKeys[index] = key;
+
+      // Dispose old geometries/materials before clearing to prevent GPU leak
+      cropRoot.traverse((child) => {
+        if (child.geometry) child.geometry.dispose();
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        mats.forEach((m) => m && m.dispose());
+      });
       cropRoot.clear();
+      group.userData.plantRoot = null;
 
       if (plot.mulch) {
         for (let i = 0; i < 4; i++) cropRoot.add(createMulch(i));
@@ -499,6 +519,7 @@ function mountGarden(host, garden, crops, onPlot) {
       if (plot.crop) {
         const plant = createPlant(plot, nextCrops[plot.crop], t);
         cropRoot.add(plant);
+        group.userData.plantRoot = plant;
       }
 
       const weedCount = Math.min(5, Math.floor(plot.weeds / 18));

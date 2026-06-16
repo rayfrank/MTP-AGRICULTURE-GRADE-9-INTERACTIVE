@@ -159,11 +159,29 @@ function showVisualTutorial(stage, steps, onDone) {
   render();
 }
 
+function showInteractionHint(mount) {
+  const el = mount.querySelector(
+    'input[type="range"], input[type="checkbox"], select, ' +
+    'button.sim-tool, [data-garden-tool], [data-plot], ' +
+    'button.secondary-button:not(.vt-back):not(.vt-next)'
+  );
+  if (!el) return;
+  el.classList.add('vt-hint-glow');
+  showGameHint(mount, '👆 Start here — try this control first!', 5000);
+  const clear = () => {
+    mount.querySelectorAll('.vt-hint-glow').forEach((e) => e.classList.remove('vt-hint-glow'));
+  };
+  mount.addEventListener('click', clear, { once: true });
+  mount.addEventListener('input', clear, { once: true });
+  mount.addEventListener('change', clear, { once: true });
+}
+
 function maybeShowTutorial(mount, gameId, steps) {
   if ((progress.tutorialsSeen || []).includes(gameId)) return;
   showVisualTutorial(mount, steps, () => {
     progress.tutorialsSeen = [...(progress.tutorialsSeen || []), gameId];
     saveProgress();
+    showInteractionHint(mount);
   });
 }
 
