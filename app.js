@@ -159,6 +159,25 @@ function showVisualTutorial(stage, steps, onDone) {
   render();
 }
 
+function setupIdleHint(mount, getHintEl, delayMs = 9000) {
+  let timer = null;
+  const showHint = () => {
+    if (!mount.isConnected) return;
+    mount.querySelectorAll('.vt-hint-glow').forEach((e) => e.classList.remove('vt-hint-glow'));
+    const el = typeof getHintEl === 'function' ? getHintEl() : mount.querySelector(getHintEl);
+    if (el) el.classList.add('vt-hint-glow');
+  };
+  const reset = () => {
+    clearTimeout(timer);
+    mount.querySelectorAll('.vt-hint-glow').forEach((e) => e.classList.remove('vt-hint-glow'));
+    if (mount.isConnected) timer = setTimeout(showHint, delayMs);
+  };
+  mount.addEventListener('click', reset);
+  mount.addEventListener('input', reset);
+  mount.addEventListener('change', reset);
+  timer = setTimeout(showHint, delayMs);
+}
+
 function showInteractionHint(mount) {
   const el = mount.querySelector(
     'input[type="range"], input[type="checkbox"], select, ' +
@@ -1649,6 +1668,7 @@ function renderMatchingPairs(mount, module) {
       }, 950);
     }
   });
+  setupIdleHint(mount, () => mount.querySelector('.match-card:not(.match-matched)'));
   maybeShowTutorial(mount, 'matchingPairs', MATCH_TUT);
 }
 
@@ -4082,6 +4102,7 @@ function renderWordSearch(mount, module) {
     }
     draw();
   });
+  setupIdleHint(mount, () => mount.querySelector('.ws-cell[data-cell]'));
   maybeShowTutorial(mount, 'wordSearch', WORDSEARCH_TUT);
 }
 
@@ -4203,6 +4224,7 @@ function renderHayLab(mount, _module) {
     hayThreeCtrl = window.MTPThreeSim.mountHayScene(hayStage, { moisture: 18, storage: "raised", weather: "hot" });
   }
   update();
+  setupIdleHint(mount, () => mount.querySelector('input[type="range"]'));
   maybeShowTutorial(mount, 'hayLab', HAY_TUT);
 }
 
@@ -4357,6 +4379,7 @@ function renderLeftoverSort(mount, module) {
   if (leftoverStage && window.MTPThreeSim?.mountLeftoverSortScene) {
     window.MTPThreeSim.mountLeftoverSortScene(leftoverStage);
   }
+  setupIdleHint(mount, () => mount.querySelector('[data-card]:not([hidden])'));
   maybeShowTutorial(mount, 'leftoverSort', LEFTOVER_TUT);
 }
 
@@ -4448,6 +4471,7 @@ function renderFarmLoop(mount, module) {
     }
   });
   draw();
+  setupIdleHint(mount, () => mount.querySelector('[data-loop-item]'));
   maybeShowTutorial(mount, 'farmLoop', FARMLOOP_TUT);
 }
 
@@ -4786,6 +4810,13 @@ function renderGardenPlanner(mount, _module) {
   });
 
   draw();
+  setupIdleHint(mount, () => {
+    const hasCrop = mount.querySelector('.garden-plot.planted');
+    if (!hasCrop) return mount.querySelector('[data-garden-tool="plant"], .sim-tool');
+    const needsWater = mount.querySelector('.garden-plot.planted');
+    if (needsWater) return mount.querySelector('[data-garden-tool="water"]');
+    return mount.querySelector('.sim-tool');
+  });
   maybeShowTutorial(mount, 'gardenPlanner', GARDEN_TUT);
 }
 
@@ -4904,6 +4935,7 @@ function renderStorageInspector(mount, _module) {
     storageThreeCtrl = window.MTPThreeSim.mountStorageScene(storageStage, { score: 0 });
   }
   update();
+  setupIdleHint(mount, () => mount.querySelector('input[type="checkbox"]:not(:checked)') || mount.querySelector('input[type="checkbox"]'));
   maybeShowTutorial(mount, 'storageInspector', STORAGE_TUT);
 }
 
@@ -5014,6 +5046,7 @@ function renderFlourMixer(mount, _module) {
     flourThreeCtrl = window.MTPThreeSim.mountFlourScene(flourStage, { type: "Dough" });
   }
   update();
+  setupIdleHint(mount, () => mount.querySelector('input[type="range"]'));
   maybeShowTutorial(mount, 'flourMixer', FLOUR_TUT);
 }
 
@@ -5163,6 +5196,7 @@ function renderCleanupOrder(mount, module) {
   }, { signal: _sig });
 
   drawSequence();
+  setupIdleHint(mount, () => mount.querySelector('[data-move="up"]'));
   maybeShowTutorial(mount, 'cleanupOrder', CLEANUP_TUT);
 }
 
@@ -5307,6 +5341,10 @@ function renderDisinfectMatch(mount, module) {
       if (correct >= 4) completeGame(module.id);
     }
   }, { signal: _dsig });
+  setupIdleHint(mount, () => {
+    const selects = [...mount.querySelectorAll('select[data-disinfect]')];
+    return selects.find((s) => !s.value || s.value === '' || s.selectedIndex === 0) || selects[0];
+  });
   maybeShowTutorial(mount, 'disinfectMatch', DISINFECT_TUT);
 }
 
@@ -5408,6 +5446,11 @@ function renderGraftingLab(mount, module) {
     }
   });
   draw();
+  setupIdleHint(mount, () => {
+    const btns = [...mount.querySelectorAll('[data-graft-step]')];
+    const scion = btns.find((b) => b.dataset.graftStep === 'Select scion' || b.textContent.includes('scion') || b.textContent.includes('Scion'));
+    return scion || btns[0];
+  });
   maybeShowTutorial(mount, 'graftingLab', GRAFTING_TUT);
 }
 
@@ -5531,6 +5574,7 @@ function renderSunDryer(mount, _module) {
   mount.addEventListener("input",  update, { signal: _dryerAC.signal });
   mount.addEventListener("change", update, { signal: _dryerAC.signal });
   update();
+  setupIdleHint(mount, () => mount.querySelector('input[type="checkbox"]:not(:checked)') || mount.querySelector('input[type="range"]'));
   maybeShowTutorial(mount, 'sunDryer', SUNDRYER_TUT);
 }
 
