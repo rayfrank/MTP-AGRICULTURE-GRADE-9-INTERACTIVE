@@ -159,6 +159,14 @@ function showVisualTutorial(stage, steps, onDone) {
   render();
 }
 
+function maybeShowTutorial(mount, gameId, steps) {
+  if ((progress.tutorialsSeen || []).includes(gameId)) return;
+  showVisualTutorial(mount, steps, () => {
+    progress.tutorialsSeen = [...(progress.tutorialsSeen || []), gameId];
+    saveProgress();
+  });
+}
+
 const MODULES = [
   {
     id: "hay",
@@ -1497,6 +1505,23 @@ function generateReportCard() {
 }
 
 /* ── Matching Pairs Game ─────────────────────────────────────── */
+const MATCH_TUT = [
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);display:grid;grid-template-columns:1fr 1fr;gap:6px;width:130px'><div style='background:rgba(23,100,150,0.35);border:1.5px solid rgba(100,180,255,0.5);border-radius:7px;height:36px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:white;text-align:center;padding:3px'>Hay</div><div style='background:rgba(23,100,150,0.35);border:1.5px solid rgba(100,180,255,0.5);border-radius:7px;height:36px;display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:rgba(255,255,255,0.7);text-align:center;padding:3px'>?</div><div style='background:rgba(23,100,150,0.35);border:1.5px solid rgba(100,180,255,0.5);border-radius:7px;height:36px;display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:rgba(255,255,255,0.7);text-align:center;padding:3px'>?</div><div style='background:rgba(100,23,150,0.35);border:1.5px solid rgba(200,100,255,0.5);border-radius:7px;height:36px;display:flex;align-items:center;justify-content:center;font-size:0.5rem;color:white;text-align:center;padding:3px'>Cut dried forage...</div></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Match each term to its definition</div></div>`,
+    title: "Term Match",
+    desc: "Flip pairs of cards to match each agriculture term with its correct definition. Test your vocabulary from the module glossary."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);display:grid;grid-template-columns:1fr 1fr;gap:6px;width:130px'><div style='background:rgba(23,201,100,0.35);border:2px solid rgba(23,201,100,0.7);border-radius:7px;height:36px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:white;text-align:center;padding:3px' class='vt-glow-anim'>Hay</div><div style='background:rgba(23,201,100,0.35);border:2px solid rgba(23,201,100,0.7);border-radius:7px;height:36px;display:flex;align-items:center;justify-content:center;font-size:0.5rem;color:white;text-align:center;padding:3px' class='vt-glow-anim'>Cut dried forage...</div><div style='background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.25);border-radius:7px;height:36px'></div><div style='background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.25);border-radius:7px;height:36px'></div></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Matched pair stays face-up (green)</div></div>`,
+    title: "Flip and match",
+    desc: "Click any card to flip it. Then click a second card. If the term and definition belong together, both stay face-up and turn green. If not, they flip back — remember their positions!"
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:1.9rem'>🃏</span><div style='position:absolute;top:46%;left:8%;right:8%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>Up to 6 pairs per round<br>Fewer moves = better score<br>All pairs matched = round complete!</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Study the Learn tab first to boost your memory</div></div>`,
+    title: "Match all pairs to win",
+    desc: "Match all pairs to complete the round. The move counter tracks how many attempts you used — fewer is better. Review the Glossary tab if you get stuck."
+  }
+];
 function renderMatchingPairs(mount, module) {
   const glossary = ml(module, "glossary") || [];
   if (glossary.length < 3) {
@@ -1592,6 +1617,7 @@ function renderMatchingPairs(mount, module) {
       }, 950);
     }
   });
+  maybeShowTutorial(mount, 'matchingPairs', MATCH_TUT);
 }
 
 /* ── Notifications ───────────────────────────────────────────── */
@@ -2020,6 +2046,7 @@ function defaultProgress() {
     weeklyGoal: { target: 3, weekStart: "", done: [] },
     fontScale: 1, language: "en", badges: [],
     xp: 0, visitedModules: [], flashcardsDone: [],
+    tutorialsSeen: [],
   };
 }
 
@@ -2041,6 +2068,7 @@ function normalizeProgress(saved) {
     xp:             saved.xp             ?? base.xp,
     visitedModules: saved.visitedModules  || base.visitedModules,
     flashcardsDone: saved.flashcardsDone  || base.flashcardsDone,
+    tutorialsSeen: saved.tutorialsSeen || base.tutorialsSeen,
   };
 }
 
@@ -3326,7 +3354,7 @@ function renderPlay(module) {
       <button class="game-tab-btn ${altGame === "match" ? "active" : ""}" data-alt-game="match">🃏 Term Match</button>
       <button class="game-tab-btn ${altGame === "wordsearch" ? "active" : ""}" data-alt-game="wordsearch">🔤 Word Search</button>
     </div>
-    <div id="gameMount"></div>
+    <div id="gameMount" style="position:relative"></div>
   `;
   els.viewHost.querySelectorAll("[data-alt-game]").forEach((btn) => {
     btn.addEventListener("click", () => { state.altGame = btn.dataset.altGame; renderPlay(module); });
@@ -3904,6 +3932,23 @@ function generateWordGrid(words, size = 12) {
   return { grid, placed };
 }
 
+const WORDSEARCH_TUT = [
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:110px'>${['H','A','Y','F','O','D','D','E','R','B','M','U','L','C','H','P','A','S','T','U','R','E','S','O','I'].map((l,i)=>`<div style="background:rgba(255,255,255,${i===0||i===1||i===2?'0.3':'0.1'});border-radius:3px;height:18px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:white;font-weight:${i<3?'800':'400'}">${l}</div>`).join('')}</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Vocabulary hidden in the letter grid</div></div>`,
+    title: "Word Search",
+    desc: "Find agriculture and nutrition vocabulary words hidden in the letter grid. Words can run across (left–right), down, or diagonally."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(4,1fr);gap:3px;width:90px'>${['H','A','Y','X','F','O','D','D','E','R','Z','B'].map((l,i)=>`<div style="background:rgba(255,255,255,${i===0?'0.5':i===2?'0.5':'0.1'});border:${i===0||i===2?'1.5px solid rgba(255,215,0,0.8)':'none'};border-radius:3px;height:18px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:white;font-weight:${i===0||i===2?'800':'400'}">${l}</div>`).join('')}</div><div style='position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:0.67rem;color:rgba(100,200,255,0.9)'>Click the FIRST letter of a word<br>then click the LAST letter</div></div>`,
+    title: "Click first → then last",
+    desc: "Click the first letter of a word to start selection. Then click the last letter to complete it. If the letters form a hidden word, it highlights and is marked found."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:1.9rem'>📋</span><div style='position:absolute;top:46%;left:8%;right:8%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>Word list appears on the right side.<br>Found words turn green.<br>Find every word to complete the puzzle!</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>New puzzle → resets with different word positions</div></div>`,
+    title: "Use the word list",
+    desc: "The word list on the right shows all the hidden terms. Found words turn green. Complete all words to finish the module. Press New puzzle for a fresh layout."
+  }
+];
 function renderWordSearch(mount, module) {
   const words = (module.glossary || []).map((g) => g.term.toUpperCase().split(" ")[0]).filter((w) => w.length >= 3 && w.length <= 10).slice(0, 8);
   if (!words.length) { mount.innerHTML = `<div class="empty-state">No glossary words available for word search.</div>`; return; }
@@ -3987,8 +4032,26 @@ function renderWordSearch(mount, module) {
     }
     draw();
   });
+  maybeShowTutorial(mount, 'wordSearch', WORDSEARCH_TUT);
 }
 
+const HAY_TUT = [
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-size:2.8rem'>🌾</span><span style='position:absolute;left:18%;top:58%;font-size:1.5rem'>☀️</span><span style='position:absolute;right:14%;top:58%;font-size:1.5rem'>🏚️</span><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Good hay = cut, dried, stored right</div></div>`,
+    title: "Hay Quality Lab",
+    desc: "Adjust the four settings to dry and store your hay bale correctly. Hit a score of 75 or more to save the result."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:10%;top:22%;right:10%;height:22px;background:rgba(255,255,255,0.1);border-radius:6px;overflow:hidden'><div style='width:58%;height:100%;background:linear-gradient(90deg,#d4a030,#17c964);border-radius:6px'></div></div><div style='position:absolute;left:10%;top:52%;font-size:0.68rem;color:rgba(100,255,150,0.95)'>✓ 15–20% moisture is ideal</div><div style='position:absolute;left:10%;top:65%;font-size:0.68rem;color:rgba(255,100,100,0.9)'>✗ Over 20% → mould risk 🍄</div><div style='position:absolute;left:10%;top:78%;font-size:0.68rem;color:rgba(255,200,60,0.9)'>✗ Under 15% → brittle, low nutrients</div></div>`,
+    title: "Moisture is the key",
+    desc: "Use 2–4 drying days in hot dry weather. A raised, roofed, aerated shed keeps moisture out. Adding lucerne or desmodium gives a small bonus."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:2.2rem'>💾</span><div style='position:absolute;top:50%;left:10%;right:10%;height:16px;background:rgba(23,201,100,0.2);border-radius:5px;overflow:hidden'><div style='width:78%;height:100%;background:#17c964;border-radius:5px'></div></div><div style='position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:0.68rem;color:rgba(100,255,160,0.9)'>Score 75 or above → Save game result ✓</div></div>`,
+    title: "Save when score ≥ 75",
+    desc: "Watch the score bar update as you adjust sliders. Once it reaches 75+, press Save game result to mark the Hay module complete."
+  }
+];
 function renderHayLab(mount, _module) {
   mount.innerHTML = `
     <div class="game-board">
@@ -4076,6 +4139,7 @@ function renderHayLab(mount, _module) {
     hayThreeCtrl = window.MTPThreeSim.mountHayScene(hayStage, { moisture: 18, storage: "raised", weather: "hot" });
   }
   update();
+  maybeShowTutorial(mount, 'hayLab', HAY_TUT);
 }
 
 function haySvg(moisture) {
@@ -4112,6 +4176,23 @@ function haySvg(moisture) {
   `;
 }
 
+const LEFTOVER_TUT = [
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:16%;top:18%;font-size:1.6rem'>🍚</span><span style='position:absolute;left:46%;top:14%;font-size:1.6rem'>🍲</span><span style='position:absolute;right:10%;top:20%;font-size:1.6rem'>🫓</span><span style='position:absolute;left:26%;top:54%;font-size:1.6rem'>🍱</span><span style='position:absolute;right:22%;top:52%;font-size:1.6rem'>🥣</span><span style='position:absolute;left:50%;top:54%;transform:translateX(-50%);font-size:1.6rem'>🍛</span><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>6 leftover food situations to judge</div></div>`,
+    title: "Leftover Safety Sort",
+    desc: "Each card shows a leftover food situation. Your job is to assign every card to the safest action before checking your answers."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:8%;top:12%;padding:5px 9px;background:rgba(255,255,255,0.13);border-radius:8px;font-size:0.66rem;color:white;border:1px solid rgba(255,255,255,0.3)' class='vt-glow-anim'>Rice smells fine...</div><span style='position:absolute;left:46%;top:26%;font-size:1.4rem;color:rgba(100,255,150,0.9)'>→</span><div style='position:absolute;right:6%;top:8%;display:flex;flex-direction:column;gap:4px'><div style='background:rgba(23,201,100,0.28);border-radius:5px;padding:3px 8px;font-size:0.62rem;color:rgba(150,255,180,0.95)'>💾 Store safely</div><div style='background:rgba(255,165,0,0.28);border-radius:5px;padding:3px 8px;font-size:0.62rem;color:rgba(255,210,100,0.95)'>🔥 Reheat / Recook</div><div style='background:rgba(100,150,255,0.28);border-radius:5px;padding:3px 8px;font-size:0.62rem;color:rgba(160,200,255,0.95)'>🤝 Share while fresh</div><div style='background:rgba(255,50,50,0.28);border-radius:5px;padding:3px 8px;font-size:0.62rem;color:rgba(255,130,130,0.95)'>🗑️ Throw away</div></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,200,255,0.9)'>Tap a card → tap a zone to assign it</div></div>`,
+    title: "Tap card → choose zone",
+    desc: "Tap any food card to select it (it highlights). Then tap one of the four coloured action zones. Repeat for all six cards."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);font-size:2.1rem'>✅</span><div style='position:absolute;top:50%;left:8%;right:8%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>Bad smell / odd texture → 🗑️ Throw away<br>Safely stored, still fresh → 🔥 Reheat<br>Clean, unserved, very fresh → 🤝 Share<br>Needs quick cooling → 💾 Store</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>5 or 6 correct → game complete!</div></div>`,
+    title: "Use food safety rules",
+    desc: "Spoilage signs (smell, colour, texture) always mean Discard. Fresh food that has been handled safely can be stored, reheated, or shared. Aim for 80%+."
+  }
+];
 function renderLeftoverSort(mount, module) {
   const cards = [
     ["coldRice", "Rice, beef, and vegetables kept covered in a fridge overnight", "reuse"],
@@ -4198,8 +4279,26 @@ function renderLeftoverSort(mount, module) {
   if (leftoverStage && window.MTPThreeSim?.mountLeftoverSortScene) {
     window.MTPThreeSim.mountLeftoverSortScene(leftoverStage);
   }
+  maybeShowTutorial(mount, 'leftoverSort', LEFTOVER_TUT);
 }
 
+const FARMLOOP_TUT = [
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;border:2px dashed rgba(100,255,150,0.55)'></div><span style='position:absolute;left:50%;top:16%;transform:translateX(-50%);font-size:1.25rem'>🌾</span><span style='position:absolute;left:74%;top:34%;font-size:1.25rem'>🐄</span><span style='position:absolute;left:68%;top:62%;font-size:1.25rem'>💩</span><span style='position:absolute;left:38%;top:70%;font-size:1.25rem'>♻️</span><span style='position:absolute;left:14%;top:58%;font-size:1.25rem'>🌿</span><span style='position:absolute;left:18%;top:28%;font-size:1.25rem'>🍽️</span><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,150,0.9)'>Nothing wasted on an integrated farm</div></div>`,
+    title: "Farm Resource Cycle",
+    desc: "On an integrated farm, outputs from one activity become inputs for another. Crop residues feed animals, manure becomes compost, compost grows food."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:6%;top:18%;display:flex;flex-direction:column;gap:4px'><div style='background:rgba(255,255,255,0.14);border-radius:6px;padding:3px 8px;font-size:0.62rem;color:white' class='vt-glow-anim'>🌾 Crop residues</div><div style='background:rgba(255,255,255,0.08);border-radius:6px;padding:3px 8px;font-size:0.62rem;color:rgba(255,255,255,0.65)'>🐄 Animal feed</div><div style='background:rgba(255,255,255,0.08);border-radius:6px;padding:3px 8px;font-size:0.62rem;color:rgba(255,255,255,0.65)'>💩 Manure</div></div><span style='position:absolute;left:52%;top:44%;font-size:1.6rem;color:rgba(100,255,150,0.9)'>→</span><div style='position:absolute;right:4%;top:18%;display:flex;flex-direction:column;gap:4px'><div style='background:rgba(23,201,100,0.2);border-radius:5px;padding:3px 7px;font-size:0.62rem;color:rgba(150,255,180,0.95)'>1. Crop residues</div><div style='background:rgba(23,201,100,0.12);border-radius:5px;padding:3px 7px;font-size:0.62rem;color:rgba(150,255,180,0.7)'>2. ...</div></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Click buttons → builds your sequence</div></div>`,
+    title: "Click in the right order",
+    desc: "Click resource buttons on the left to build your sequence. Each click adds to the numbered list on the right. Wrong items will cost points — think before you click."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);font-size:1.9rem'>🔍</span><div style='position:absolute;top:48%;left:8%;right:8%;font-size:0.67rem;color:rgba(100,255,160,0.9);text-align:center;line-height:1.7'>Crop residues → Animal feed → Manure<br>→ Compost → Organic garden → Household food</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>6 steps correct → press Check Loop!</div></div>`,
+    title: "All 6 steps, then check",
+    desc: "The correct circular order has 6 steps. Once you have selected all 6, press Check Loop. A perfect cycle completes the module."
+  }
+];
 function renderFarmLoop(mount, module) {
   const correct = ["Crop residues", "Animal feed", "Manure", "Compost", "Organic garden", "Household food"];
   let sequence = [];
@@ -4258,6 +4357,7 @@ function renderFarmLoop(mount, module) {
     }
   });
   draw();
+  maybeShowTutorial(mount, 'farmLoop', FARMLOOP_TUT);
 }
 
 function farmLoopSvg(count) {
@@ -4302,6 +4402,23 @@ function farmLoopSvg(count) {
   `;
 }
 
+const GARDEN_TUT = [
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:120px'>${Array(12).fill('<div style="background:rgba(100,180,80,0.22);border:1px solid rgba(100,200,80,0.35);border-radius:4px;height:22px"></div>').join('')}</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,150,0.9)'>12 organic garden beds to manage</div></div>`,
+    title: "Organic Garden",
+    desc: "You manage 12 growing beds. Choose a crop, apply tools, and advance days to grow and harvest. Aim for a score of 75 to save your garden plan."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:8%;top:14%;display:flex;flex-wrap:wrap;gap:5px;width:84%'><span style='background:rgba(100,200,80,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(150,255,150,0.9)'>🌱 Plant</span><span style='background:rgba(100,150,255,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(150,200,255,0.9)'>💧 Water</span><span style='background:rgba(180,130,50,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(220,190,100,0.9)'>🌿 Compost</span><span style='background:rgba(140,100,50,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(200,170,100,0.9)'>🪨 Mulch</span><span style='background:rgba(200,200,50,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(230,230,100,0.9)'>🌾 Weed</span><span style='background:rgba(200,80,80,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(255,150,150,0.9)'>🐛 Spray</span><span style='background:rgba(255,165,0,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(255,210,100,0.9)'>✂️ Harvest</span></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Select a tool first, then click a bed</div></div>`,
+    title: "Choose a tool, click a bed",
+    desc: "First select your crop from the dropdown. Then pick a tool — Water, Compost, Mulch, Weed, Spray, or Harvest. Finally click any bed in the grid to apply it."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:2.2rem'>📅</span><div style='position:absolute;top:50%;left:8%;right:8%;font-size:0.68rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>💧 Water daily — mulch reduces water loss<br>🌿 Compost boosts soil fertility<br>🌾 Weed before pests spread<br>✂️ Harvest at stage 4 when ready</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Press Next Day to advance time</div></div>`,
+    title: "Advance days to grow",
+    desc: "Each day, crops grow a stage but lose water and gain weeds. Press Next Day to move forward. Harvest mature crops (stage 4+) to earn points. Reach 75 to save."
+  }
+];
 function renderGardenPlanner(mount, _module) {
   const crops = {
     kale: { name: "Kale", short: "K", color: "#4d934d", days: 5 },
@@ -4565,6 +4682,7 @@ function renderGardenPlanner(mount, _module) {
   });
 
   draw();
+  maybeShowTutorial(mount, 'gardenPlanner', GARDEN_TUT);
 }
 
 function gardenPlotTemplate(plot, index, crops) {
@@ -4595,6 +4713,23 @@ function gardenPlotTemplate(plot, index, crops) {
   `;
 }
 
+const STORAGE_TUT = [
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);font-size:2.6rem'>🏚️</span><span style='position:absolute;left:18%;top:20%;font-size:1.4rem'>🐀</span><span style='position:absolute;right:14%;top:24%;font-size:1.4rem'>🍄</span><span style='position:absolute;left:24%;top:62%;font-size:1.4rem'>💧</span><span style='position:absolute;right:20%;top:62%;font-size:1.4rem'>🌡️</span><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Pests, damp, and heat destroy stored food</div></div>`,
+    title: "Storage Inspector",
+    desc: "Inspect a grain or food store. Choose all the good storage practices you would apply to keep food safe from pests, moisture, and spoilage."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:10%;top:14%;right:10%;display:flex;flex-direction:column;gap:6px'><label style='display:flex;align-items:center;gap:6px;font-size:0.68rem;color:white'><span style='width:14px;height:14px;border-radius:3px;background:rgba(23,201,100,0.6);display:inline-flex;align-items:center;justify-content:center;font-size:0.55rem'>✓</span>Raised, aerated storage</label><label style='display:flex;align-items:center;gap:6px;font-size:0.68rem;color:white'><span style='width:14px;height:14px;border-radius:3px;background:rgba(23,201,100,0.6);display:inline-flex;align-items:center;justify-content:center;font-size:0.55rem'>✓</span>Pest-proof containers</label><label style='display:flex;align-items:center;gap:6px;font-size:0.68rem;color:rgba(255,255,255,0.5)'><span style='width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,0.3);display:inline-block'></span>Damp floor storage</label></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,200,255,0.9)'>Tick every practice you would use</div></div>`,
+    title: "Tick the good practices",
+    desc: "Read each storage condition carefully. Check every box that represents a safe, correct practice. Poor options (damp floor, no ventilation) should be left unchecked."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);font-size:2rem'>💾</span><div style='position:absolute;top:48%;left:10%;right:10%;height:16px;background:rgba(23,201,100,0.18);border-radius:5px;overflow:hidden'><div style='width:85%;height:100%;background:#17c964;border-radius:5px'></div></div><div style='position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:0.68rem;color:rgba(100,255,160,0.9)'>Score 80+ → Save inspection ✓</div></div>`,
+    title: "Aim for 80 or above",
+    desc: "Each correct practice adds to your score. Check all the good practices, then press Save inspection when you reach 80 or above to complete the module."
+  }
+];
 function renderStorageInspector(mount, _module) {
   const checks = [
     ["removeOld", "Remove previous crop remains", 14],
@@ -4649,6 +4784,7 @@ function renderStorageInspector(mount, _module) {
     storageThreeCtrl = window.MTPThreeSim.mountStorageScene(storageStage, { score: 0 });
   }
   update();
+  maybeShowTutorial(mount, 'storageInspector', STORAGE_TUT);
 }
 
 function storageSvg(score) {
@@ -4665,6 +4801,23 @@ function storageSvg(score) {
   `;
 }
 
+const FLOUR_TUT = [
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:2.6rem'>🥣</span><span style='position:absolute;left:20%;top:20%;font-size:1.4rem'>🌾</span><span style='position:absolute;right:16%;top:20%;font-size:1.4rem'>💧</span><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Flour + liquid = different consistencies</div></div>`,
+    title: "Flour Mixture Lab",
+    desc: "Mix flour and liquid to create the right consistency for different food products. The ratio of liquid to flour determines whether you get dough, thick batter, or thin batter."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:8%;top:14%;right:8%;display:flex;flex-direction:column;gap:6px'><div style='display:flex;align-items:center;gap:8px'><div style='width:36px;height:12px;background:#e65100;border-radius:3px'></div><span style='font-size:0.65rem;color:rgba(255,180,100,0.95)'>Less liquid → Dough (chapati, mandazi)</span></div><div style='display:flex;align-items:center;gap:8px'><div style='width:24px;height:12px;background:#f9a825;border-radius:3px'></div><span style='font-size:0.65rem;color:rgba(255,220,100,0.95)'>Medium → Thick batter (coating)</span></div><div style='display:flex;align-items:center;gap:8px'><div style='width:14px;height:12px;background:#1565c0;border-radius:3px'></div><span style='font-size:0.65rem;color:rgba(150,200,255,0.95)'>More liquid → Thin batter (pancakes)</span></div></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Watch the Mixture result panel change</div></div>`,
+    title: "Ratio decides the type",
+    desc: "Less liquid gives stiff dough for chapati or mandazi. Medium liquid gives thick batter for coating. More liquid gives thin batter for pancakes. Adjust until it matches your target product."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);font-size:1.8rem'>🎯</span><div style='position:absolute;top:48%;left:8%;right:8%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>1. Choose the target product<br>2. Adjust flour and liquid sliders<br>3. Match the result type → Save</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Score 80+ when type matches → Save mixture</div></div>`,
+    title: "Match, then save",
+    desc: "Select your target product from the dropdown. Slide flour and liquid until the Mixture result shows the correct type. When it matches, press Save mixture."
+  }
+];
 function renderFlourMixer(mount, _module) {
   mount.innerHTML = `
     <div class="game-board">
@@ -4727,6 +4880,7 @@ function renderFlourMixer(mount, _module) {
     flourThreeCtrl = window.MTPThreeSim.mountFlourScene(flourStage, { type: "Dough" });
   }
   update();
+  maybeShowTutorial(mount, 'flourMixer', FLOUR_TUT);
 }
 
 function productLabel(value) {
@@ -4747,6 +4901,23 @@ function flourSvg(type) {
   `;
 }
 
+const CLEANUP_TUT = [
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:22%;top:30%;font-size:2rem'>🗑️</span><span style='position:absolute;left:48%;top:28%;font-size:2rem'>🚿</span><span style='position:absolute;left:72%;top:30%;font-size:2rem'>🏊</span><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Correct cleanup prevents disease spread</div></div>`,
+    title: "Cleanup Sequence",
+    desc: "Cleaning a waste bin, kitchen sink, or open drain correctly stops germs from spreading. The steps must happen in the right order to work."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:10%;top:14%;right:10%;display:flex;flex-direction:column;gap:5px'><div style='display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.1);border-radius:6px;padding:4px 8px'><span style='font-size:0.65rem;color:white'>Remove solid waste</span><span style='display:flex;gap:4px'><span style='background:rgba(255,255,255,0.2);border-radius:3px;padding:1px 5px;font-size:0.6rem;color:rgba(255,200,60,0.9)'>Up</span><span style='background:rgba(255,255,255,0.2);border-radius:3px;padding:1px 5px;font-size:0.6rem;color:rgba(100,200,255,0.9)'>Dn</span></span></div><div style='display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.08);border-radius:6px;padding:4px 8px'><span style='font-size:0.65rem;color:rgba(255,255,255,0.7)'>Rinse with water</span><span style='display:flex;gap:4px'><span style='background:rgba(255,255,255,0.12);border-radius:3px;padding:1px 5px;font-size:0.6rem;color:rgba(255,200,60,0.7)'>Up</span><span style='background:rgba(255,255,255,0.12);border-radius:3px;padding:1px 5px;font-size:0.6rem;color:rgba(100,200,255,0.7)'>Dn</span></span></div></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,200,255,0.9)'>Up / Down buttons reorder each step</div></div>`,
+    title: "Reorder with Up / Down",
+    desc: "The steps are shuffled. Use the Up and Down buttons beside each step to move it into the correct position. Choose the facility first — each has its own correct order."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);font-size:2rem'>✅</span><div style='position:absolute;top:48%;left:8%;right:8%;font-size:0.67rem;color:rgba(100,255,160,0.9);text-align:center;line-height:1.65'>Get all steps in the right order<br>for your chosen facility<br>then press Check Order</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>A perfect sequence = module complete!</div></div>`,
+    title: "Check your order",
+    desc: "When you are happy with the order, press Check Order. All steps correct = game complete. Try different facilities (bin, sink, drain) for extra practice."
+  }
+];
 function renderCleanupOrder(mount, module) {
   const procedures = {
     bin:   ["Wear gloves", "Empty the bin", "Wash with warm soapy water", "Rinse with clean water", "Disinfect", "Dry and line the bin"],
@@ -4834,6 +5005,7 @@ function renderCleanupOrder(mount, module) {
   }, { signal: _sig });
 
   drawSequence();
+  maybeShowTutorial(mount, 'cleanupOrder', CLEANUP_TUT);
 }
 
 function cleanupTemplate(facility, order) {
@@ -4886,6 +5058,23 @@ function cleanupSvg(facility) {
   `;
 }
 
+const DISINFECT_TUT = [
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:22%;top:24%;font-size:1.8rem'>🦠</span><span style='position:absolute;right:16%;top:26%;font-size:1.8rem'>🧴</span><span style='position:absolute;left:50%;top:52%;transform:translateX(-50%);font-size:1.8rem'>☀️</span><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Different items need different disinfection methods</div></div>`,
+    title: "Disinfection Match",
+    desc: "Some fabrics and surfaces are disinfected by boiling, others by sunlight, salt, chemical disinfectant, or ironing. Match each scenario to the safest method."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:8%;top:14%;right:8%;display:flex;flex-direction:column;gap:5px'><div style='background:rgba(255,255,255,0.1);border-radius:6px;padding:4px 8px;display:flex;justify-content:space-between;align-items:center'><span style='font-size:0.64rem;color:white'>White cotton sheets</span><span style='font-size:0.62rem;color:rgba(255,200,60,0.9);background:rgba(255,200,60,0.15);border-radius:4px;padding:2px 6px'>Boiling ▾</span></div><div style='background:rgba(255,255,255,0.08);border-radius:6px;padding:4px 8px;display:flex;justify-content:space-between;align-items:center'><span style='font-size:0.64rem;color:rgba(255,255,255,0.7)'>Delicate fabric</span><span style='font-size:0.62rem;color:rgba(100,200,255,0.9);background:rgba(100,200,255,0.12);border-radius:4px;padding:2px 6px'>Choose ▾</span></div></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,200,255,0.9)'>Use the dropdown next to each scenario</div></div>`,
+    title: "Use the dropdowns",
+    desc: "Each scenario has a dropdown. Select the best method: Boiling, Disinfectant, Sunlight, Salting, or Ironing. Think about the fabric type and any safety concerns."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:1.9rem'>🏆</span><div style='position:absolute;top:46%;left:8%;right:8%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>Boiling → heat-resistant white cotton<br>Sunlight → outdoor UV treatment<br>Salting → moisture removal<br>Disinfectant → delicate / mixed fabrics<br>Ironing → surface heat kills germs</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>4 or 5 correct → press Check Matches</div></div>`,
+    title: "4 out of 5 to pass",
+    desc: "Match all five scenarios correctly, then press Check Matches. Getting 4 or more right completes the module. Press Check Matches to see your score."
+  }
+];
 function renderDisinfectMatch(mount, module) {
   const scenarios = [
     ["whiteTowel", "White cotton towel after infectious skin disease", "Boiling"],
@@ -4943,6 +5132,7 @@ function renderDisinfectMatch(mount, module) {
       if (correct >= 4) completeGame(module.id);
     }
   }, { signal: _dsig });
+  maybeShowTutorial(mount, 'disinfectMatch', DISINFECT_TUT);
 }
 
 function disinfectSvg(count) {
@@ -4957,6 +5147,23 @@ function disinfectSvg(count) {
   `;
 }
 
+const GRAFTING_TUT = [
+  {
+    art: `<div class='vt-scene'><svg viewBox='0 0 120 100' style='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:100px;height:80px'><path d='M60 90 V55' stroke='#7a5830' stroke-width='8' stroke-linecap='round'/><path d='M60 55 L42 35' stroke='#2f7d4f' stroke-width='7' stroke-linecap='round'/><path d='M60 55 L80 35' stroke='#4c9a55' stroke-width='7' stroke-linecap='round'/><ellipse cx='37' cy='30' rx='16' ry='9' fill='#5aa463'/><ellipse cx='84' cy='29' rx='17' ry='9' fill='#4c9a55'/><rect x='44' y='53' width='32' height='10' rx='3' fill='#f1d284'/></svg><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,150,0.9)'>Scion (top) + Rootstock (base) = grafted plant</div></div>`,
+    title: "Grafting Lab",
+    desc: "Grafting joins a scion (the desired top part) to a rootstock (the strong base) to create an improved plant. The steps must be done in the right order."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:6%;top:12%;display:flex;flex-direction:column;gap:4px'><div style='background:rgba(255,255,255,0.14);border-radius:6px;padding:3px 8px;font-size:0.62rem;color:white' class='vt-glow-anim'>Select scion</div><div style='background:rgba(255,255,255,0.08);border-radius:6px;padding:3px 8px;font-size:0.62rem;color:rgba(255,255,255,0.6)'>Select rootstock</div><div style='background:rgba(255,255,255,0.08);border-radius:6px;padding:3px 8px;font-size:0.62rem;color:rgba(255,255,255,0.6)'>Make matching V-cuts</div><div style='background:rgba(255,255,255,0.08);border-radius:6px;padding:3px 8px;font-size:0.62rem;color:rgba(255,255,255,0.6)'>...</div></div><span style='position:absolute;right:10%;top:44%;font-size:1.4rem;color:rgba(100,255,150,0.9)'>→ 1, 2...</span><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Click buttons in the correct order</div></div>`,
+    title: "Click steps in order",
+    desc: "Six grafting steps are shown as buttons — but in a random order. Click them one by one in the correct sequence to build the graft procedure on the right."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:1.9rem'>✅</span><div style='position:absolute;top:46%;left:8%;right:8%;font-size:0.67rem;color:rgba(100,255,160,0.9);text-align:center;line-height:1.65'>1. Select scion → 2. Select rootstock<br>3. Make matching V-cuts → 4. Insert scion<br>5. Tie and seal union → 6. Protect and water</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>All 6 in order → press Check Graft!</div></div>`,
+    title: "All 6, then check",
+    desc: "Add all six steps in the correct order shown above. Press Check Graft to see your result. A perfect graft sequence completes the module."
+  }
+];
 function renderGraftingLab(mount, module) {
   const correct = ["Select scion", "Select rootstock", "Make matching V-cuts", "Insert scion", "Tie and seal union", "Protect and water"];
   let steps = [];
@@ -5013,6 +5220,7 @@ function renderGraftingLab(mount, module) {
     }
   });
   draw();
+  maybeShowTutorial(mount, 'graftingLab', GRAFTING_TUT);
 }
 
 function graftSvg(count) {
@@ -5030,6 +5238,23 @@ function graftSvg(count) {
   `;
 }
 
+const SUNDRYER_TUT = [
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:2.6rem'>☀️</span><span style='position:absolute;left:22%;top:56%;font-size:1.4rem'>🪟</span><span style='position:absolute;right:18%;top:56%;font-size:1.4rem'>🥦</span><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Transparent cover + trays = solar dryer</div></div>`,
+    title: "Sun Dryer Builder",
+    desc: "A sun dryer uses a transparent cover to trap heat, wire mesh trays to hold vegetables, and good sun exposure to dry food without refrigeration."
+  },
+  {
+    art: `<div class='vt-scene'><div style='position:absolute;left:8%;top:12%;right:8%;display:flex;flex-wrap:wrap;gap:5px'><label style='display:flex;align-items:center;gap:5px;font-size:0.64rem;color:white'><span style='width:13px;height:13px;border-radius:3px;background:rgba(23,201,100,0.55);display:inline-flex;align-items:center;justify-content:center;font-size:0.5rem'>✓</span>Strong frame</label><label style='display:flex;align-items:center;gap:5px;font-size:0.64rem;color:white'><span style='width:13px;height:13px;border-radius:3px;background:rgba(23,201,100,0.55);display:inline-flex;align-items:center;justify-content:center;font-size:0.5rem'>✓</span>Wire mesh tray</label><label style='display:flex;align-items:center;gap:5px;font-size:0.64rem;color:white'><span style='width:13px;height:13px;border-radius:3px;background:rgba(23,201,100,0.55);display:inline-flex;align-items:center;justify-content:center;font-size:0.5rem'>✓</span>Transparent cover</label></div><div style='position:absolute;top:54%;left:10%;right:10%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.6'>Then set Sun hours (more = hotter)<br>and Turning checks (more = even drying)</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,200,255,0.9)'>Check all parts, then adjust sliders</div></div>`,
+    title: "Tick parts, adjust sliders",
+    desc: "Tick all six dryer components you have included. Then set the sun exposure hours and the number of times you turn the vegetables. More of each raises your score."
+  },
+  {
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:2rem'>💾</span><div style='position:absolute;top:46%;left:10%;right:10%;height:16px;background:rgba(23,201,100,0.18);border-radius:5px;overflow:hidden'><div style='width:82%;height:100%;background:#17c964;border-radius:5px'></div></div><div style='position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:0.68rem;color:rgba(100,255,160,0.9)'>Score 80+ → Save dryer ✓</div></div>`,
+    title: "Aim for 80, then save",
+    desc: "Every part checked and good sun hours gets you close to 80. Press Save dryer once you hit the target to complete the Sun Dryer module."
+  }
+];
 function renderSunDryer(mount, _module) {
   const checks = [
     ["frame", "Strong frame"],
@@ -5101,6 +5326,7 @@ function renderSunDryer(mount, _module) {
   mount.addEventListener("input",  update, { signal: _dryerAC.signal });
   mount.addEventListener("change", update, { signal: _dryerAC.signal });
   update();
+  maybeShowTutorial(mount, 'sunDryer', SUNDRYER_TUT);
 }
 
 function dryerSvg(score, temp) {
