@@ -1520,6 +1520,20 @@ const MATCH_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:1.9rem'>🃏</span><div style='position:absolute;top:46%;left:8%;right:8%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>Up to 6 pairs per round<br>Fewer moves = better score<br>All pairs matched = round complete!</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Study the Learn tab first to boost your memory</div></div>`,
     title: "Match all pairs to win",
     desc: "Match all pairs to complete the round. The move counter tracks how many attempts you used — fewer is better. Review the Glossary tab if you get stuck."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:5px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>Flip card 1, then find its match:</div>
+  <div style='display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:4px'>
+    <div id='_vtMP1' onclick="document.getElementById('_vtMP1').style.background='rgba(23,100,150,0.5)';document.getElementById('_vtMP1').style.border='2px solid rgba(100,180,255,0.7)';document.getElementById('_vtMP1').innerHTML='<span style=&quot;font-size:0.55rem;color:white&quot;>Hay</span>';window._vtMP1=true;document.getElementById('_vtMPFB').textContent='Hay flipped! Now find its definition.'" style='background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:7px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem'>❓</div>
+    <div onclick="if(window._vtMP1){document.getElementById('_vtMP1').style.background='rgba(23,201,100,0.35)';document.getElementById('_vtMP1').style.borderColor='rgba(23,201,100,0.7)';this.style.background='rgba(23,201,100,0.35)';this.style.borderColor='rgba(23,201,100,0.7)';this.innerHTML='<span style=&quot;font-size:0.45rem;color:white;padding:2px&quot;>Cut dried grass</span>';document.getElementById('_vtMPFB').textContent='Matched! Hay = cut dried grass.';document.getElementById('_vtMPFB').style.color='rgba(100,255,150,0.9)'}else{document.getElementById('_vtMPFB').textContent='Flip card 1 first!'}" style='background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:7px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem'>❓</div>
+    <div onclick="document.getElementById('_vtMPFB').textContent='Not this one — find the definition for Hay.'" style='background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:7px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem'>❓</div>
+    <div onclick="document.getElementById('_vtMPFB').textContent='Not this one — find the definition for Hay.'" style='background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:7px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem'>❓</div>
+  </div>
+  <div style='text-align:center;font-size:0.62rem;margin-top:2px;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtMPFB'>Click card 1 to flip it</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game there are up to 6 pairs. Flip two cards — if they match they stay green. Find all pairs in as few moves as possible."
   }
 ];
 function renderMatchingPairs(mount, module) {
@@ -3947,6 +3961,24 @@ const WORDSEARCH_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:1.9rem'>📋</span><div style='position:absolute;top:46%;left:8%;right:8%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>Word list appears on the right side.<br>Found words turn green.<br>Find every word to complete the puzzle!</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>New puzzle → resets with different word positions</div></div>`,
     title: "Use the word list",
     desc: "The word list on the right shows all the hidden terms. Found words turn green. Complete all words to finish the module. Press New puzzle for a fresh layout."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:5px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>Find HAY — click H then Y:</div>
+  <div style='display:grid;grid-template-columns:repeat(4,1fr);gap:3px;width:96px;margin:4px auto'>
+    <div onclick="window._vtWSStep=1;this.style.background='rgba(255,215,0,0.5)';document.getElementById('_vtWSFB').textContent='H selected! Now click Y.';document.getElementById('_vtWSFB').style.color='rgba(255,200,60,0.9)'" style='background:rgba(255,255,255,0.1);border-radius:4px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:white;cursor:pointer'>H</div>
+    <div style='background:rgba(255,255,255,0.08);border-radius:4px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:rgba(255,255,255,0.5)'>A</div>
+    <div onclick="if(window._vtWSStep===1){this.style.background='rgba(255,215,0,0.5)';document.getElementById('_vtWSFB').textContent='Found HAY! That is how it works.';document.getElementById('_vtWSFB').style.color='rgba(100,255,150,0.9)';window._vtWSStep=0}else{document.getElementById('_vtWSFB').textContent='Click H first to start the word.';document.getElementById('_vtWSFB').style.color='rgba(255,100,100,0.9)'}" style='background:rgba(255,255,255,0.1);border-radius:4px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:white;cursor:pointer'>Y</div>
+    <div style='background:rgba(255,255,255,0.06);border-radius:4px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:rgba(255,255,255,0.3)'>Z</div>
+    <div style='background:rgba(255,255,255,0.06);border-radius:4px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:rgba(255,255,255,0.3)'>X</div>
+    <div style='background:rgba(255,255,255,0.06);border-radius:4px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:rgba(255,255,255,0.3)'>Q</div>
+    <div style='background:rgba(255,255,255,0.06);border-radius:4px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:rgba(255,255,255,0.3)'>R</div>
+    <div style='background:rgba(255,255,255,0.06);border-radius:4px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:rgba(255,255,255,0.3)'>P</div>
+  </div>
+  <div style='text-align:center;font-size:0.62rem;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtWSFB'>Click H to begin — it is the first letter</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real puzzle the grid is 12×12 with many hidden words. Click the first letter, then the last letter of any word to mark it found."
   }
 ];
 function renderWordSearch(mount, module) {
@@ -4050,6 +4082,20 @@ const HAY_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:2.2rem'>💾</span><div style='position:absolute;top:50%;left:10%;right:10%;height:16px;background:rgba(23,201,100,0.2);border-radius:5px;overflow:hidden'><div style='width:78%;height:100%;background:#17c964;border-radius:5px'></div></div><div style='position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:0.68rem;color:rgba(100,255,160,0.9)'>Score 75 or above → Save game result ✓</div></div>`,
     title: "Save when score ≥ 75",
     desc: "Watch the score bar update as you adjust sliders. Once it reaches 75+, press Save game result to mark the Hay module complete."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:8px;display:flex;flex-direction:column;gap:6px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>Move the slider — keep moisture 15–20%:</div>
+  <div style='display:flex;align-items:center;gap:6px'>
+    <span style='font-size:0.6rem;color:white;width:52px'>Moisture</span>
+    <input type='range' min='10' max='30' value='20' style='flex:1;accent-color:#17c964'
+      oninput="var v=+this.value,ok=v>=15&&v<=20;document.getElementById('_vtHayV').textContent=v+'%';document.getElementById('_vtHayR').textContent=ok?'Ideal (15-20%)':'Too '+(v<15?'dry - low nutrients':'moist - mould risk');document.getElementById('_vtHayR').style.color=ok?'rgba(100,255,150,0.9)':'rgba(255,100,100,0.9)'">
+  </div>
+  <div style='text-align:center;font-size:0.8rem;font-weight:700;color:rgba(100,255,150,0.9)' id='_vtHayV'>20%</div>
+  <div style='text-align:center;font-size:0.65rem;color:rgba(100,255,150,0.9)' id='_vtHayR'>Ideal (15-20%)</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game you also control drying days, weather, and shelter. Get a total score of 75 or more to save."
   }
 ];
 function renderHayLab(mount, _module) {
@@ -4191,6 +4237,20 @@ const LEFTOVER_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);font-size:2.1rem'>✅</span><div style='position:absolute;top:50%;left:8%;right:8%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>Bad smell / odd texture → 🗑️ Throw away<br>Safely stored, still fresh → 🔥 Reheat<br>Clean, unserved, very fresh → 🤝 Share<br>Needs quick cooling → 💾 Store</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>5 or 6 correct → game complete!</div></div>`,
     title: "Use food safety rules",
     desc: "Spoilage signs (smell, colour, texture) always mean Discard. Fresh food that has been handled safely can be stored, reheated, or shared. Aim for 80%+."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:5px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center;margin-bottom:2px'>Tap the card, then choose a zone:</div>
+  <div id='_vtLCard' onclick="this.style.border='2px solid rgba(255,215,0,0.9)';this.style.background='rgba(255,215,0,0.15)';document.getElementById('_vtLZones').style.opacity='1';document.getElementById('_vtLZones').style.pointerEvents='auto';document.getElementById('_vtLFB').textContent='Card selected! Now pick a zone.'" style='background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.3);border-radius:7px;padding:5px 8px;font-size:0.64rem;color:white;text-align:center;cursor:pointer'>🍚 Rice cooked this morning — still warm</div>
+  <div id='_vtLZones' style='display:flex;gap:4px;opacity:0.3;pointer-events:none'>
+    <div onclick="document.getElementById('_vtLFB').textContent='Correct! Reheat or store promptly.';document.getElementById('_vtLFB').style.color='rgba(100,255,150,0.9)'" style='flex:1;background:rgba(255,165,0,0.25);border-radius:5px;padding:4px 2px;font-size:0.58rem;color:rgba(255,210,100,0.9);text-align:center;cursor:pointer'>🔥 Reheat</div>
+    <div onclick="document.getElementById('_vtLFB').textContent='Good — store it quickly while hot.';document.getElementById('_vtLFB').style.color='rgba(100,255,150,0.9)'" style='flex:1;background:rgba(23,201,100,0.2);border-radius:5px;padding:4px 2px;font-size:0.58rem;color:rgba(150,255,180,0.9);text-align:center;cursor:pointer'>💾 Store</div>
+    <div onclick="document.getElementById('_vtLFB').textContent='Still good — reheat or store it!';document.getElementById('_vtLFB').style.color='rgba(255,100,100,0.9)'" style='flex:1;background:rgba(255,50,50,0.25);border-radius:5px;padding:4px 2px;font-size:0.58rem;color:rgba(255,130,130,0.9);text-align:center;cursor:pointer'>🗑️ Throw</div>
+  </div>
+  <div style='text-align:center;font-size:0.62rem;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtLFB'>Tap the card above to select it</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game there are 6 different food cards. Assign every card to the safest action and aim for 5 or 6 correct."
   }
 ];
 function renderLeftoverSort(mount, module) {
@@ -4297,6 +4357,19 @@ const FARMLOOP_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);font-size:1.9rem'>🔍</span><div style='position:absolute;top:48%;left:8%;right:8%;font-size:0.67rem;color:rgba(100,255,160,0.9);text-align:center;line-height:1.7'>Crop residues → Animal feed → Manure<br>→ Compost → Organic garden → Household food</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>6 steps correct → press Check Loop!</div></div>`,
     title: "All 6 steps, then check",
     desc: "The correct circular order has 6 steps. Once you have selected all 6, press Check Loop. A perfect cycle completes the module."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:5px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>Click the FIRST step in the farm cycle:</div>
+  <div style='display:flex;flex-direction:column;gap:4px;margin-top:2px'>
+    <button onclick="this.style.background='rgba(23,201,100,0.4)';this.style.borderColor='rgba(23,201,100,0.7)';document.getElementById('_vtFLFB').textContent='Correct! Crop residues start the cycle.';document.getElementById('_vtFLFB').style.color='rgba(100,255,150,0.9)'" style='background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:5px 8px;font-size:0.64rem;color:white;cursor:pointer;text-align:left'>🌾 Crop residues</button>
+    <button onclick="document.getElementById('_vtFLFB').textContent='Compost comes later — what is harvested first?';document.getElementById('_vtFLFB').style.color='rgba(255,100,100,0.9)'" style='background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 8px;font-size:0.64rem;color:rgba(255,255,255,0.7);cursor:pointer;text-align:left'>🌿 Compost</button>
+    <button onclick="document.getElementById('_vtFLFB').textContent='Manure comes after animals eat the residues.';document.getElementById('_vtFLFB').style.color='rgba(255,100,100,0.9)'" style='background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 8px;font-size:0.64rem;color:rgba(255,255,255,0.7);cursor:pointer;text-align:left'>💩 Manure</button>
+  </div>
+  <div style='text-align:center;font-size:0.62rem;margin-top:2px;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtFLFB'>Which step comes first?</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game you must click all 6 steps in the correct circular order. Press Check Loop when done."
   }
 ];
 function renderFarmLoop(mount, module) {
@@ -4417,6 +4490,19 @@ const GARDEN_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:2.2rem'>📅</span><div style='position:absolute;top:50%;left:8%;right:8%;font-size:0.68rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>💧 Water daily — mulch reduces water loss<br>🌿 Compost boosts soil fertility<br>🌾 Weed before pests spread<br>✂️ Harvest at stage 4 when ready</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Press Next Day to advance time</div></div>`,
     title: "Advance days to grow",
     desc: "Each day, crops grow a stage but lose water and gain weeds. Press Next Day to move forward. Harvest mature crops (stage 4+) to earn points. Reach 75 to save."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:5px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>Tool: 💧 Water — click a bed to apply:</div>
+  <div style='display:grid;grid-template-columns:repeat(3,1fr);gap:5px;width:108px;margin:4px auto'>
+    <div onclick="this.style.background='rgba(100,150,255,0.5)';this.textContent='💧';document.getElementById('_vtGPFB').textContent='Bed watered! Repeat for each plot.';document.getElementById('_vtGPFB').style.color='rgba(100,255,150,0.9)'" style='background:rgba(100,180,80,0.22);border:1px solid rgba(100,200,80,0.35);border-radius:5px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.85rem'>🌱</div>
+    <div onclick="this.style.background='rgba(100,150,255,0.5)';this.textContent='💧';document.getElementById('_vtGPFB').textContent='Bed watered! Repeat for each plot.';document.getElementById('_vtGPFB').style.color='rgba(100,255,150,0.9)'" style='background:rgba(100,180,80,0.22);border:1px solid rgba(100,200,80,0.35);border-radius:5px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.85rem'>🌱</div>
+    <div onclick="this.style.background='rgba(100,150,255,0.5)';this.textContent='💧';document.getElementById('_vtGPFB').textContent='Bed watered! Repeat for each plot.';document.getElementById('_vtGPFB').style.color='rgba(100,255,150,0.9)'" style='background:rgba(100,180,80,0.22);border:1px solid rgba(100,200,80,0.35);border-radius:5px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.85rem'>🌱</div>
+  </div>
+  <div style='text-align:center;font-size:0.62rem;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtGPFB'>Click any bed above to water it</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game the grid has 12 beds. Select your crop, pick a tool, click a bed, then press Next Day to advance. Harvest at stage 4+ to score."
   }
 ];
 function renderGardenPlanner(mount, _module) {
@@ -4728,6 +4814,22 @@ const STORAGE_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);font-size:2rem'>💾</span><div style='position:absolute;top:48%;left:10%;right:10%;height:16px;background:rgba(23,201,100,0.18);border-radius:5px;overflow:hidden'><div style='width:85%;height:100%;background:#17c964;border-radius:5px'></div></div><div style='position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:0.68rem;color:rgba(100,255,160,0.9)'>Score 80+ → Save inspection ✓</div></div>`,
     title: "Aim for 80 or above",
     desc: "Each correct practice adds to your score. Check all the good practices, then press Save inspection when you reach 80 or above to complete the module."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:6px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>Tick a practice to see the effect:</div>
+  <label style='display:flex;align-items:center;gap:7px;cursor:pointer;background:rgba(255,255,255,0.07);border-radius:6px;padding:5px 8px'>
+    <input type='checkbox' style='accent-color:#17c964;width:16px;height:16px' onchange="if(this.checked){document.getElementById('_vtSIFB').textContent='Correct! +20 pts — raised storage keeps pests out.';document.getElementById('_vtSIFB').style.color='rgba(100,255,150,0.9)'}else{document.getElementById('_vtSIFB').textContent='Unchecked.';document.getElementById('_vtSIFB').style.color='rgba(255,200,60,0.9)'}">
+    <span style='font-size:0.64rem;color:white'>Store grain on raised platform</span>
+  </label>
+  <label style='display:flex;align-items:center;gap:7px;cursor:pointer;background:rgba(255,255,255,0.07);border-radius:6px;padding:5px 8px'>
+    <input type='checkbox' style='accent-color:#ff4444;width:16px;height:16px' onchange="if(this.checked){document.getElementById('_vtSIFB').textContent='Wrong! -10 pts — damp floors cause mould.';document.getElementById('_vtSIFB').style.color='rgba(255,100,100,0.9)'}else{document.getElementById('_vtSIFB').textContent='Unchecked.';document.getElementById('_vtSIFB').style.color='rgba(255,200,60,0.9)'}">
+    <span style='font-size:0.64rem;color:rgba(255,255,255,0.7)'>Store grain on damp floor</span>
+  </label>
+  <div style='text-align:center;font-size:0.62rem;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtSIFB'>Tick one checkbox above</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game there are 8 practices to judge. Tick all the correct ones, then press Save inspection when you hit 80+."
   }
 ];
 function renderStorageInspector(mount, _module) {
@@ -4816,6 +4918,20 @@ const FLOUR_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);font-size:1.8rem'>🎯</span><div style='position:absolute;top:48%;left:8%;right:8%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>1. Choose the target product<br>2. Adjust flour and liquid sliders<br>3. Match the result type → Save</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Score 80+ when type matches → Save mixture</div></div>`,
     title: "Match, then save",
     desc: "Select your target product from the dropdown. Slide flour and liquid until the Mixture result shows the correct type. When it matches, press Save mixture."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:8px;display:flex;flex-direction:column;gap:6px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>Slide liquid up to change the mix type:</div>
+  <div style='display:flex;align-items:center;gap:6px'>
+    <span style='font-size:0.6rem;color:white;width:40px'>Liquid</span>
+    <input type='range' min='10' max='90' value='30' style='flex:1;accent-color:#17c964'
+      oninput="var v=+this.value,t=v<40?'Stiff dough 🥟':v<65?'Thick batter 🍩':'Thin batter 🥞';document.getElementById('_vtFMT').textContent=t;document.getElementById('_vtFML').textContent=v+'%'">
+  </div>
+  <div style='text-align:center;font-size:0.65rem;color:rgba(100,200,255,0.9)' id='_vtFML'>30%</div>
+  <div style='background:rgba(255,255,255,0.1);border-radius:7px;padding:6px;text-align:center;font-size:0.72rem;font-weight:700;color:white' id='_vtFMT'>Stiff dough 🥟</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game you adjust both flour and liquid to hit the exact type for a chosen product. Reach the right consistency and press Save mixture."
   }
 ];
 function renderFlourMixer(mount, _module) {
@@ -4916,6 +5032,30 @@ const CLEANUP_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);font-size:2rem'>✅</span><div style='position:absolute;top:48%;left:8%;right:8%;font-size:0.67rem;color:rgba(100,255,160,0.9);text-align:center;line-height:1.65'>Get all steps in the right order<br>for your chosen facility<br>then press Check Order</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>A perfect sequence = module complete!</div></div>`,
     title: "Check your order",
     desc: "When you are happy with the order, press Check Order. All steps correct = game complete. Try different facilities (bin, sink, drain) for extra practice."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:5px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>These 2 steps are swapped — fix the order:</div>
+  <div style='display:flex;flex-direction:column;gap:4px;margin-top:2px'>
+    <div style='display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.1);border-radius:6px;padding:4px 8px'>
+      <span style='font-size:0.62rem;color:white' id='_vtCO1'>🪣 Scrub with soapy water</span>
+      <div style='display:flex;gap:3px'>
+        <button onclick="var a=document.getElementById('_vtCO1').textContent,b=document.getElementById('_vtCO2').textContent;document.getElementById('_vtCO1').textContent=b;document.getElementById('_vtCO2').textContent=a;var ok=document.getElementById('_vtCO1').textContent.indexOf('Remove')>=0;document.getElementById('_vtCOFB').textContent=ok?'Correct! Remove solids before scrubbing.':'Keep going...';document.getElementById('_vtCOFB').style.color=ok?'rgba(100,255,150,0.9)':'rgba(255,200,60,0.9)'" style='background:rgba(255,255,255,0.2);border:none;border-radius:4px;padding:2px 6px;font-size:0.6rem;color:rgba(255,200,60,0.9);cursor:pointer'>Up</button>
+        <button onclick="var a=document.getElementById('_vtCO1').textContent,b=document.getElementById('_vtCO2').textContent;document.getElementById('_vtCO1').textContent=b;document.getElementById('_vtCO2').textContent=a;var ok=document.getElementById('_vtCO1').textContent.indexOf('Remove')>=0;document.getElementById('_vtCOFB').textContent=ok?'Correct! Remove solids before scrubbing.':'Keep going...';document.getElementById('_vtCOFB').style.color=ok?'rgba(100,255,150,0.9)':'rgba(255,200,60,0.9)'" style='background:rgba(255,255,255,0.2);border:none;border-radius:4px;padding:2px 6px;font-size:0.6rem;color:rgba(100,200,255,0.9);cursor:pointer'>Dn</button>
+      </div>
+    </div>
+    <div style='display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.08);border-radius:6px;padding:4px 8px'>
+      <span style='font-size:0.62rem;color:rgba(255,255,255,0.7)' id='_vtCO2'>🗑️ Remove solid waste</span>
+      <div style='display:flex;gap:3px'>
+        <button style='background:rgba(255,255,255,0.08);border:none;border-radius:4px;padding:2px 6px;font-size:0.6rem;color:rgba(255,200,60,0.4);cursor:default' disabled>Up</button>
+        <button style='background:rgba(255,255,255,0.08);border:none;border-radius:4px;padding:2px 6px;font-size:0.6rem;color:rgba(100,200,255,0.4);cursor:default' disabled>Dn</button>
+      </div>
+    </div>
+  </div>
+  <div style='text-align:center;font-size:0.62rem;margin-top:2px;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtCOFB'>Press Up on step 1 to move it down</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game there are 5 steps to reorder. Use Up and Down to put them in the right sequence, then press Check Order."
   }
 ];
 function renderCleanupOrder(mount, module) {
@@ -5073,6 +5213,23 @@ const DISINFECT_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:1.9rem'>🏆</span><div style='position:absolute;top:46%;left:8%;right:8%;font-size:0.67rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>Boiling → heat-resistant white cotton<br>Sunlight → outdoor UV treatment<br>Salting → moisture removal<br>Disinfectant → delicate / mixed fabrics<br>Ironing → surface heat kills germs</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>4 or 5 correct → press Check Matches</div></div>`,
     title: "4 out of 5 to pass",
     desc: "Match all five scenarios correctly, then press Check Matches. Getting 4 or more right completes the module. Press Check Matches to see your score."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:6px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>Match this scenario to its method:</div>
+  <div style='background:rgba(255,255,255,0.1);border-radius:7px;padding:5px 8px;font-size:0.64rem;color:white'>🛏️ White cotton bed sheet — full disinfection needed</div>
+  <select onchange="var v=this.value,fb=document.getElementById('_vtDMFB');if(v==='Boiling'){fb.textContent='Correct! Boiling kills all germs in cotton.';fb.style.color='rgba(100,255,150,0.9)'}else if(v){fb.textContent='Not ideal — think about heat resistance of cotton.';fb.style.color='rgba(255,100,100,0.9)'}" style='width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:5px;font-size:0.64rem;color:white;cursor:pointer'>
+    <option value=''>Choose a method...</option>
+    <option value='Boiling'>♨️ Boiling</option>
+    <option value='Sunlight'>☀️ Sunlight</option>
+    <option value='Disinfectant'>🧴 Disinfectant</option>
+    <option value='Salting'>🧂 Salting</option>
+    <option value='Ironing'>🧹 Ironing</option>
+  </select>
+  <div style='text-align:center;font-size:0.62rem;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtDMFB'>Select the best method above</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game there are 5 scenarios. Match all of them using the dropdowns, then press Check Matches. 4 or 5 correct to pass."
   }
 ];
 function renderDisinfectMatch(mount, module) {
@@ -5162,6 +5319,19 @@ const GRAFTING_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:1.9rem'>✅</span><div style='position:absolute;top:46%;left:8%;right:8%;font-size:0.67rem;color:rgba(100,255,160,0.9);text-align:center;line-height:1.65'>1. Select scion → 2. Select rootstock<br>3. Make matching V-cuts → 4. Insert scion<br>5. Tie and seal union → 6. Protect and water</div><div style='position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>All 6 in order → press Check Graft!</div></div>`,
     title: "All 6, then check",
     desc: "Add all six steps in the correct order shown above. Press Check Graft to see your result. A perfect graft sequence completes the module."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:5px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>Click the FIRST grafting step:</div>
+  <div style='display:flex;flex-direction:column;gap:4px;margin-top:2px'>
+    <button onclick="this.style.background='rgba(23,201,100,0.4)';this.style.borderColor='rgba(23,201,100,0.7)';document.getElementById('_vtGLFB').textContent='Correct! Always select the scion first.';document.getElementById('_vtGLFB').style.color='rgba(100,255,150,0.9)'" style='background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:5px 8px;font-size:0.64rem;color:white;cursor:pointer;text-align:left'>🌿 Select scion</button>
+    <button onclick="document.getElementById('_vtGLFB').textContent='Not yet — you need to select the scion first.';document.getElementById('_vtGLFB').style.color='rgba(255,100,100,0.9)'" style='background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 8px;font-size:0.64rem;color:rgba(255,255,255,0.7);cursor:pointer;text-align:left'>✂️ Make matching V-cuts</button>
+    <button onclick="document.getElementById('_vtGLFB').textContent='Select the scion before the rootstock.';document.getElementById('_vtGLFB').style.color='rgba(255,100,100,0.9)'" style='background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:5px 8px;font-size:0.64rem;color:rgba(255,255,255,0.7);cursor:pointer;text-align:left'>🌱 Select rootstock</button>
+  </div>
+  <div style='text-align:center;font-size:0.62rem;margin-top:2px;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtGLFB'>Which step comes first?</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game you click all 6 steps in order. The correct order is: Select scion → Select rootstock → V-cuts → Insert → Tie and seal → Protect and water."
   }
 ];
 function renderGraftingLab(mount, module) {
@@ -5253,6 +5423,23 @@ const SUNDRYER_TUT = [
     art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:2rem'>💾</span><div style='position:absolute;top:46%;left:10%;right:10%;height:16px;background:rgba(23,201,100,0.18);border-radius:5px;overflow:hidden'><div style='width:82%;height:100%;background:#17c964;border-radius:5px'></div></div><div style='position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:0.68rem;color:rgba(100,255,160,0.9)'>Score 80+ → Save dryer ✓</div></div>`,
     title: "Aim for 80, then save",
     desc: "Every part checked and good sun hours gets you close to 80. Press Save dryer once you hit the target to complete the Sun Dryer module."
+  },
+  {
+    art: `<div class='vt-scene' style='padding:8px;display:flex;flex-direction:column;gap:6px'>
+  <div style='font-size:0.62rem;color:rgba(255,200,60,0.9);text-align:center'>Slide sun hours — watch the score bar:</div>
+  <div style='display:flex;align-items:center;gap:6px'>
+    <span style='font-size:0.6rem;color:white;width:46px'>Sun hrs</span>
+    <input type='range' min='1' max='10' value='4' style='flex:1;accent-color:#17c964'
+      oninput="var v=+this.value,w=Math.min(v*8,80);document.getElementById('_vtSDH').textContent=v+'h';document.getElementById('_vtSDBar').style.width=w+'%';document.getElementById('_vtSDTip').textContent=v>=6?'Great drying conditions!':v>=3?'OK — more sun hours help':'Not enough sun — risk of mould';document.getElementById('_vtSDTip').style.color=v>=6?'rgba(100,255,150,0.9)':v>=3?'rgba(255,200,60,0.9)':'rgba(255,100,100,0.9)'">
+  </div>
+  <div style='text-align:center;font-size:0.65rem;color:rgba(100,200,255,0.9)' id='_vtSDH'>4h</div>
+  <div style='height:14px;background:rgba(255,255,255,0.1);border-radius:5px;overflow:hidden'>
+    <div style='width:32%;height:100%;background:linear-gradient(90deg,#17c964,#5fffb0);border-radius:5px;transition:width 0.3s' id='_vtSDBar'></div>
+  </div>
+  <div style='text-align:center;font-size:0.62rem;color:rgba(255,200,60,0.9)' id='_vtSDTip'>OK — more sun hours help</div>
+</div>`,
+    title: "Try it!",
+    desc: "In the real game you tick all 6 dryer parts AND adjust sun hours and turning frequency. Reach 80 or more to save."
   }
 ];
 function renderSunDryer(mount, _module) {
