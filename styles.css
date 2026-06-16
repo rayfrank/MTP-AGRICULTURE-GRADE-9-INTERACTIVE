@@ -2346,6 +2346,15 @@ body { font-size: calc(var(--font-scale) * 15px); }
   font-size: 0.88rem;
   line-height: 1.55;
 }
+.game-help-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 11px;
+}
+.game-tutor-button {
+  width: fit-content;
+}
 .game-help-steps {
   display: grid;
   gap: 7px;
@@ -2387,6 +2396,52 @@ body { font-size: calc(var(--font-scale) * 15px); }
   color: var(--ink-soft);
   font-size: 0.84rem;
   line-height: 1.45;
+}
+.game-tutor-reply {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0,111,238,0.22);
+  background: rgba(0,111,238,0.08);
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  font-weight: 760;
+  line-height: 1.5;
+}
+.game-event-card {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0 12px;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(245,165,36,0.26);
+  background: linear-gradient(135deg, rgba(245,165,36,0.14), rgba(255,255,255,0.42));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.48);
+}
+.game-event-card h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+.game-event-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.80rem;
+  line-height: 1.45;
+}
+.game-event-card small {
+  color: var(--clay);
+  font-size: 0.76rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+.game-event-compact {
+  margin-top: 8px;
+}
+.garden-event-live {
+  margin-bottom: 0;
 }
 
 @media (max-width: 760px) {

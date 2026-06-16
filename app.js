@@ -3396,6 +3396,39 @@ function renderLearn(module) {
   }
 }
 
+function pickGameEvent(events) {
+  if (!Array.isArray(events) || !events.length) return null;
+  return events[Math.floor(Math.random() * events.length)];
+}
+
+function renderGameEventCard(event, className = "") {
+  if (!event) return "";
+  return `
+    <div class="game-event-card ${className}" data-event-id="${escapeHTML(event.id || "event")}">
+      <p class="eyebrow">Real-life event</p>
+      <h4>${escapeHTML(event.title)}</h4>
+      <p>${escapeHTML(event.detail)}</p>
+      ${event.action ? `<small>${escapeHTML(event.action)}</small>` : ""}
+    </div>
+  `;
+}
+
+function defaultTutorAdvice(module, altGame) {
+  const hint = gameHintFor(module, altGame);
+  return `${hint.steps[0]} ${hint.tip || "Try one control, then watch the feedback."}`;
+}
+
+function setupGameTutor(module, altGame, mount) {
+  const button = document.getElementById("gameTutorButton");
+  const reply = document.getElementById("gameTutorReply");
+  if (!button || !reply) return;
+  button.addEventListener("click", () => {
+    const customAdvice = typeof mount._tutorAdvice === "function" ? mount._tutorAdvice() : "";
+    reply.textContent = customAdvice || defaultTutorAdvice(module, altGame);
+    reply.hidden = false;
+  });
+}
+
 const GAME_HINTS = {
   hayLab: {
     title: "Hay Quality Lab",
@@ -3442,7 +3475,7 @@ const GAME_HINTS = {
     goal: "Guide an organic crop from bed preparation to harvest while day and night pass automatically.",
     steps: [
       "Prepare the bed, choose a crop, then plant it.",
-      "As the automatic day/night timer runs, water, compost, mulch, weed, and spray when needed.",
+      "As the automatic day/night timer runs, respond to drought, rain, pests, low fertility, or market demand.",
       "When a crop reaches stage 4, harvest it and save once the garden score reaches 75 points.",
     ],
     tip: "You cannot control time; watch the clock and respond like a real gardener.",
@@ -3584,6 +3617,9 @@ function renderGameHelp(module, altGame) {
         <p class="eyebrow">Beginner guide</p>
         <h3>${escapeHTML(hint.title)}</h3>
         <p>${escapeHTML(hint.goal)}</p>
+        <div class="game-help-actions">
+          <button class="secondary-button game-tutor-button" id="gameTutorButton" type="button">Ask AI tutor</button>
+        </div>
       </div>
       <ol class="game-help-steps">
         ${hint.steps.map((step, index) => `
@@ -3591,6 +3627,7 @@ function renderGameHelp(module, altGame) {
         `).join("")}
       </ol>
       ${hint.tip ? `<p class="game-help-tip">Hint: ${escapeHTML(hint.tip)}</p>` : ""}
+      <p class="game-tutor-reply" id="gameTutorReply" hidden></p>
     </article>
   `;
 }
@@ -3612,8 +3649,8 @@ function renderPlay(module) {
     btn.addEventListener("click", () => { state.altGame = btn.dataset.altGame; renderPlay(module); });
   });
   const mount = document.getElementById("gameMount");
-  if (altGame === "match") { renderMatchingPairs(mount, module); return; }
-  if (altGame === "wordsearch") { renderWordSearch(mount, module); return; }
+  if (altGame === "match") { renderMatchingPairs(mount, module); setupGameTutor(module, altGame, mount); return; }
+  if (altGame === "wordsearch") { renderWordSearch(mount, module); setupGameTutor(module, altGame, mount); return; }
   const games = {
     hayLab: renderHayLab,
     leftoverSort: renderLeftoverSort,
@@ -3633,6 +3670,7 @@ function renderPlay(module) {
   const gameFn = games[module.game];
   if (!gameFn) { mount.innerHTML = `<div class="empty-state">Game not available for this module.</div>`; return; }
   gameFn(mount, module);
+  setupGameTutor(module, altGame, mount);
 }
 
 function renderQuiz(module) {
@@ -4338,11 +4376,32 @@ const HAY_TUT = [
   }
 ];
 function renderHayLab(mount, _module) {
+  const hayEvent = pickGameEvent([
+    {
+      id: "hay-rain",
+      title: "Unexpected rain shower",
+      detail: "A short shower hit the forage during drying, so wet hay and open storage are more dangerous.",
+      action: "Keep moisture near 15 to 20 percent and use raised, roofed storage.",
+    },
+    {
+      id: "hay-shortage",
+      title: "Animal feed shortage",
+      detail: "Livestock need safe feed soon, but storing damp hay would still spoil the whole bale.",
+      action: "Dry for enough days, then store safely instead of rushing wet forage into storage.",
+    },
+    {
+      id: "hay-hotwind",
+      title: "Hot dry wind",
+      detail: "The weather dries forage quickly, but over-drying can make leaves fall and reduce nutrients.",
+      action: "Avoid too many drying days and do not set moisture too low.",
+    },
+  ]);
   mount.innerHTML = `
     <div class="game-board">
       <article class="tool-card control-stack">
         <p class="eyebrow">Hay quality lab</p>
         <h3>Prepare and store a bale</h3>
+        ${renderGameEventCard(hayEvent, "game-event-compact")}
         <div class="field-row">
           <label for="hayMoisture">Moisture at storage: <span id="hayMoistureLabel">18%</span></label>
           <input id="hayMoisture" type="range" min="8" max="40" value="18">
@@ -4402,6 +4461,19 @@ function renderHayLab(mount, _module) {
     if (weather === "rain") score -= 32;
     if (storage === "floor") score -= 24;
     if (storage === "open") score -= 36;
+    if (hayEvent.id === "hay-rain") {
+      if (weather !== "hot") score -= 8;
+      if (storage !== "raised") score -= 8;
+      feedback.push("Event: after rain, protect hay from extra moisture and use a roofed raised shed.");
+    }
+    if (hayEvent.id === "hay-shortage") {
+      if (days < 2 || moisture > 20) score -= 10;
+      feedback.push("Event: feed shortage makes good hay urgent, but damp hay will still mould.");
+    }
+    if (hayEvent.id === "hay-hotwind") {
+      if (days > 4 || moisture < 15) score -= 8;
+      feedback.push("Event: hot wind can over-dry forage, so protect leaves and nutrients.");
+    }
     if (legume) score += 5;
     score = clamp(score, 0, 100);
     document.getElementById("hayMoistureLabel").textContent = `${moisture}%`;
@@ -4419,6 +4491,21 @@ function renderHayLab(mount, _module) {
   mount._gameAC = _hayAC;
   mount.addEventListener("input",  update, { signal: _hayAC.signal });
   mount.addEventListener("change", update, { signal: _hayAC.signal });
+  mount._tutorAdvice = () => {
+    const moisture = Number(document.getElementById("hayMoisture")?.value || 0);
+    const days = Number(document.getElementById("hayDays")?.value || 0);
+    const weather = document.getElementById("hayWeather")?.value;
+    const storage = document.getElementById("hayStorage")?.value;
+    if (moisture > 20) return "Your hay is too wet. Move moisture down to 15 to 20 percent before storage.";
+    if (moisture < 15) return "Your hay is too dry. Raise moisture closer to 15 to 20 percent so leaves and nutrients are not lost.";
+    if (days < 2) return "The forage needs more drying time. Set drying days to at least 2.";
+    if (days > 4) return "The hay has dried too long. Reduce drying days to 2 to 4.";
+    if (weather !== "hot") return "Choose hot and dry weather for safer hay making.";
+    if (storage !== "raised") return "Use raised, roofed, aerated storage so the bale stays dry.";
+    if (hayEvent.id === "hay-rain") return "Rain is the event today, but your setup is safe. Press Save if the score is 75 or more.";
+    if (hayEvent.id === "hay-shortage") return "Feed is needed soon, and your hay is safe. Press Save once the score is 75 or more.";
+    return "This bale is in good condition. Press Save game result if the score is 75 or more.";
+  };
   const hayStage = document.getElementById("hayThreeStage");
   if (window.MTPThreeSim?.mountHayScene) {
     hayThreeCtrl = window.MTPThreeSim.mountHayScene(hayStage, { moisture: 18, storage: "raised", weather: "hot" });
@@ -4494,6 +4581,29 @@ const LEFTOVER_TUT = [
   }
 ];
 function renderLeftoverSort(mount, module) {
+  const leftoverEvent = pickGameEvent([
+    {
+      id: "leftover-power",
+      title: "Power cut overnight",
+      detail: "The fridge was off for several hours, so some foods that looked stored may no longer be safe.",
+      action: "When in doubt, use smell, texture, and storage time to decide.",
+      card: ["powerRice", "Rice kept in the fridge during a long power cut; now smells sour", "discard"],
+    },
+    {
+      id: "leftover-hot",
+      title: "Very hot afternoon",
+      detail: "Food left uncovered in heat spoils faster because bacteria multiply quickly.",
+      action: "Discard food with spoilage signs or unsafe storage.",
+      card: ["hotStew", "Stew left uncovered in a hot room for many hours", "discard"],
+    },
+    {
+      id: "leftover-community",
+      title: "Community sharing chance",
+      detail: "A nearby family can use extra clean food if it is still fresh and untouched.",
+      action: "Share only food that is safe, clean, and fresh.",
+      card: ["freshChapati", "Extra untouched chapati packed cleanly after lunch", "share"],
+    },
+  ]);
   const cards = [
     ["coldRice", "Rice, beef, and vegetables kept covered in a fridge overnight", "reuse"],
     ["partyFood", "Extra clean party food packed while still fresh", "share"],
@@ -4501,6 +4611,7 @@ function renderLeftoverSort(mount, module) {
     ["foulRice", "Rice with unusual smell and texture", "discard"],
     ["warmSoup", "Soup that must cool quickly in a covered container", "store"],
     ["chapati", "Leftover chapati for tea or stew", "reuse"],
+    leftoverEvent.card,
   ];
   const targets = [
     ["store", "Store safely"],
@@ -4515,6 +4626,7 @@ function renderLeftoverSort(mount, module) {
       <article class="tool-card">
         <p class="eyebrow">Leftover safety sort</p>
         <h3>Choose the safest action</h3>
+        ${renderGameEventCard(leftoverEvent, "game-event-compact")}
         <div class="card-grid" id="leftoverCards">
           ${cards.map(([id, label]) => `<button class="play-card" data-card="${id}"><strong>${escapeHTML(label)}</strong><span>Tap, then choose a zone.</span></button>`).join("")}
         </div>
@@ -4574,6 +4686,16 @@ function renderLeftoverSort(mount, module) {
       if (score >= 80) completeGame(module.id);
     }
   });
+  mount._tutorAdvice = () => {
+    const targetLabels = Object.fromEntries(targets);
+    if (selected) {
+      const [, label, answer] = cards.find(([id]) => id === selected) || [];
+      return `${label}: choose "${targetLabels[answer]}". ${answer === "discard" ? "Spoilage or unsafe storage means do not serve it." : "It is safe only because it is fresh or stored properly."}`;
+    }
+    const unassigned = cards.find(([id]) => !assignments[id]);
+    if (unassigned) return `Tap this card next: ${unassigned[1]}. Then choose the safest action zone.`;
+    return "All cards are placed. Press Check sort to see whether the choices are safe.";
+  };
   draw();
   const leftoverStage = document.getElementById("leftoverThreeStage");
   if (leftoverStage && window.MTPThreeSim?.mountLeftoverSortScene) {
@@ -4615,14 +4737,39 @@ const FARMLOOP_TUT = [
 ];
 function renderFarmLoop(mount, module) {
   const correct = ["Crop residues", "Animal feed", "Manure", "Compost", "Organic garden", "Household food"];
+  const farmEvent = pickGameEvent([
+    {
+      id: "farm-feed-shortage",
+      title: "Animal feed shortage",
+      detail: "Animals need feed, so crop residues should be used instead of burned or wasted.",
+      action: "Start with Crop residues, then Animal feed.",
+      distractor: "Buy expensive feed",
+    },
+    {
+      id: "farm-low-fertility",
+      title: "Low soil fertility",
+      detail: "The garden soil is weak, so manure and compost must return nutrients to the crop area.",
+      action: "Keep Manure before Compost, and Compost before Organic garden.",
+      distractor: "Synthetic shortcut",
+    },
+    {
+      id: "farm-market-demand",
+      title: "Market demand",
+      detail: "Vegetables can be sold today, but only if the farm cycle keeps the garden productive.",
+      action: "Complete the full cycle so Household food is supplied at the end.",
+      distractor: "Skip compost",
+    },
+  ]);
   let sequence = [];
+  const loopChoices = correct.concat(["Burn residues", "Leaking store", farmEvent.distractor]).sort(() => 0.5 - Math.random());
   mount.innerHTML = `
     <div class="game-board">
       <article class="tool-card">
         <p class="eyebrow">Integrated farm loop</p>
         <h3>Build a resource cycle</h3>
+        ${renderGameEventCard(farmEvent, "game-event-compact")}
         <div class="activity-strip">
-          ${correct.concat(["Burn residues", "Leaking store"]).sort(() => 0.5 - Math.random()).map((item) => `<button class="secondary-button" data-loop-item="${escapeHTML(item)}">${escapeHTML(item)}</button>`).join("")}
+          ${loopChoices.map((item) => `<button class="secondary-button" data-loop-item="${escapeHTML(item)}">${escapeHTML(item)}</button>`).join("")}
         </div>
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="primary-button" id="checkFarmLoop">Check loop</button>
@@ -4670,6 +4817,12 @@ function renderFarmLoop(mount, module) {
       if (score === correct.length) completeGame(module.id);
     }
   });
+  mount._tutorAdvice = () => {
+    const wrongIndex = sequence.findIndex((item, index) => item !== correct[index]);
+    if (wrongIndex >= 0) return `${sequence[wrongIndex]} is not correct at step ${wrongIndex + 1}. Remove it and choose ${correct[wrongIndex]} instead.`;
+    if (sequence.length < correct.length) return `Next choose ${correct[sequence.length]}. Event clue: ${farmEvent.action}`;
+    return "The cycle is complete. Press Check loop to confirm it.";
+  };
   draw();
   setupIdleHint(mount, () => mount.querySelector('[data-loop-item]'));
   maybeShowTutorial(mount, 'farmLoop', FARMLOOP_TUT);
@@ -4766,6 +4919,12 @@ function renderGardenPlanner(mount, _module) {
     ["spray", "Natural spray"],
     ["harvest", "Harvest"],
   ];
+  const starterGardenEvent = {
+    id: "garden-start",
+    title: "Calm start",
+    detail: "The garden is ready for bed preparation and planting.",
+    action: "Prepare an empty bed, then plant your chosen crop.",
+  };
   const garden = {
     day: 1,
     clock: DAY_START,
@@ -4773,6 +4932,9 @@ function renderGardenPlanner(mount, _module) {
     tool: "prepare",
     crop: "kale",
     harvested: 0,
+    marketBonus: 0,
+    marketDemand: null,
+    event: starterGardenEvent,
     message: "Start by preparing an empty bed, then plant your chosen crop.",
     plots: Array.from({ length: 12 }, () => ({
       crop: null,
@@ -4831,6 +4993,7 @@ function renderGardenPlanner(mount, _module) {
           <strong>Pest safety</strong><div class="mini-meter"><span id="gardenPestMeter"></span></div>
         </div>
         <div class="harvest-count"><span id="gardenHarvested">0</span><small>harvests</small></div>
+        <div id="gardenEventSlot"></div>
         <p id="gardenMessage">Start by preparing an empty bed, then plant your chosen crop.</p>
         <button class="primary-button" id="saveGardenPlan">Save simulation</button>
       </article>
@@ -4843,6 +5006,9 @@ function renderGardenPlanner(mount, _module) {
     garden.dayProgress = 0;
     lastClockTick = performance.now();
     garden.harvested = 0;
+    garden.marketBonus = 0;
+    garden.marketDemand = null;
+    garden.event = starterGardenEvent;
     garden.message = "Start by preparing an empty bed, then plant your chosen crop.";
     garden.plots = Array.from({ length: 12 }, () => ({
       crop: null,
@@ -4870,7 +5036,7 @@ function renderGardenPlanner(mount, _module) {
 
   const gardenScore = () => {
     const activeScore = garden.plots.reduce((sum, plot) => sum + plotScore(plot), 0) / garden.plots.length;
-    return clamp(Math.round(activeScore + garden.harvested * 12), 0, 100);
+    return clamp(Math.round(activeScore + garden.harvested * 12 + garden.marketBonus * 6), 0, 100);
   };
 
   const gardenClockInfo = () => {
@@ -4918,6 +5084,74 @@ function renderGardenPlanner(mount, _module) {
         `).join("")}
       </ol>
     `;
+  };
+
+  const renderGardenEvent = () => {
+    const slot = document.getElementById("gardenEventSlot");
+    if (!slot) return;
+    slot.innerHTML = renderGameEventCard(garden.event, "game-event-compact garden-event-live");
+  };
+
+  const createGardenEvent = () => {
+    const cropIds = Object.keys(crops);
+    const demandCrop = cropIds[Math.floor(Math.random() * cropIds.length)];
+    return pickGameEvent([
+      {
+        id: "garden-drought",
+        title: "Drought spell",
+        detail: "Hot dry weather has pulled moisture from the soil.",
+        action: "Use Water on planted beds. Mulch helps slow the next water loss.",
+        apply() {
+          garden.plots.forEach((plot) => {
+            if (plot.crop) plot.water = clamp(plot.water - 18, 0, 100);
+          });
+        },
+      },
+      {
+        id: "garden-rain",
+        title: "Rain shower",
+        detail: "Rain has watered the beds, but weeds and disease risk may rise.",
+        action: "Check weeds and pests after the water boost.",
+        apply() {
+          garden.plots.forEach((plot) => {
+            plot.water = clamp(plot.water + 20, 0, 100);
+            plot.weeds = clamp(plot.weeds + 7, 0, 100);
+            if (plot.crop && plot.water > 85) plot.pests = clamp(plot.pests + 6, 0, 100);
+          });
+        },
+      },
+      {
+        id: "garden-pests",
+        title: "Pest outbreak",
+        detail: "Pests have spread from nearby plants into the garden.",
+        action: "Use Natural spray and remove weeds before damage increases.",
+        apply() {
+          garden.plots.forEach((plot) => {
+            if (plot.crop) plot.pests = clamp(plot.pests + 22, 0, 100);
+          });
+        },
+      },
+      {
+        id: "garden-low-fertility",
+        title: "Low fertility warning",
+        detail: "The soil is losing nutrients as crops keep feeding.",
+        action: "Use Compost on planted beds with low fertility.",
+        apply() {
+          garden.plots.forEach((plot) => {
+            if (plot.crop) plot.fertility = clamp(plot.fertility - 14, 0, 100);
+          });
+        },
+      },
+      {
+        id: "garden-market-demand",
+        title: "Market demand",
+        detail: `The nearby market is asking for ${crops[demandCrop].name}.`,
+        action: `Harvest mature ${crops[demandCrop].name} today for a bonus.`,
+        apply() {
+          garden.marketDemand = demandCrop;
+        },
+      },
+    ]);
   };
 
   const updateClockUI = () => {
@@ -5020,14 +5254,19 @@ function renderGardenPlanner(mount, _module) {
         garden.message = "Control pests before harvesting this crop.";
         return;
       }
+      const marketHit = garden.marketDemand === plot.crop;
       garden.harvested += 1;
+      if (marketHit) garden.marketBonus += 1;
       Object.assign(plot, { crop: null, stage: 0, water: 35, fertility: 35, pests: 0, weeds: 12, mulch: false, prepared: false });
-      garden.message = "Crop harvested hygienically. Prepare another bed to continue the cycle.";
+      garden.message = marketHit
+        ? "Crop harvested hygienically and market demand was met. Prepare another bed to continue."
+        : "Crop harvested hygienically. Prepare another bed to continue the cycle.";
     }
   };
 
   const nextDay = () => {
     garden.day += 1;
+    garden.marketDemand = null;
     garden.plots.forEach((plot) => {
       if (!plot.crop) {
         plot.weeds = clamp(plot.weeds + 4, 0, 100);
@@ -5045,7 +5284,9 @@ function renderGardenPlanner(mount, _module) {
         plot.stage = clamp(plot.stage - 1, 1, 4);
       }
     });
-    garden.message = `Day ${garden.day} has begun. Check water, weeds, fertility, and pests.`;
+    garden.event = createGardenEvent();
+    if (garden.event?.apply) garden.event.apply();
+    garden.message = `Day ${garden.day}: ${garden.event.action}`;
     draw();
   };
 
@@ -5089,6 +5330,7 @@ function renderGardenPlanner(mount, _module) {
     document.getElementById("saveGardenPlan").dataset.score = gardenScore();
     document.getElementById("gardenGrid").innerHTML = garden.plots.map((plot, index) => gardenPlotTemplate(plot, index, crops)).join("");
     renderLifecycle();
+    renderGardenEvent();
     updateClockUI();
     syncThree();
   };
@@ -5114,6 +5356,31 @@ function renderGardenPlanner(mount, _module) {
       garden.crop = event.target.value;
     }
   });
+
+  mount._tutorAdvice = () => {
+    const plots = garden.plots;
+    const hasPrepared = plots.some((plot) => plot.prepared && !plot.crop);
+    const hasCrop = plots.some((plot) => plot.crop);
+    const dryPlot = plots.find((plot) => plot.crop && plot.water < 28);
+    const hungryPlot = plots.find((plot) => plot.crop && plot.fertility < 30);
+    const weedyPlot = plots.find((plot) => plot.crop && plot.weeds > 45);
+    const pestPlot = plots.find((plot) => plot.crop && plot.pests > 45);
+    const maturePlot = plots.find((plot) => plot.crop && plot.stage >= 4);
+    if (!hasPrepared && !hasCrop) return "Start with Prepare bed. Click an empty plot to loosen soil and clear weeds.";
+    if (hasPrepared && !hasCrop) return "Now use Plant. Choose a crop from the dropdown, then click a prepared bed.";
+    if (pestPlot) return "Pests are rising. Select Natural spray, then click the affected planted bed.";
+    if (weedyPlot) return "Weeds are too high. Select Weed and click the planted bed before pests spread.";
+    if (dryPlot) return "Your crop is dry. Select Water, then click the planted bed.";
+    if (hungryPlot) return "Soil fertility is low. Select Compost, then click the planted bed.";
+    if (maturePlot) {
+      const cropName = crops[maturePlot.crop]?.name || "crop";
+      if (garden.marketDemand === maturePlot.crop) return `Harvest the mature ${cropName} now. The market demand event gives a score bonus.`;
+      return `The ${cropName} is mature. Select Harvest, then click that bed.`;
+    }
+    if (garden.event?.id === "garden-drought") return "Drought is active. Water planted beds and add Mulch to reduce future water loss.";
+    if (garden.event?.id === "garden-rain") return "Rain helped water, but check weeds and pests next.";
+    return "Keep watching the automatic day/night timer. Water, compost, weed, or spray whenever a bed warning appears.";
+  };
 
   draw();
   startGardenClock();
