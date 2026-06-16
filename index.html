@@ -38,7 +38,7 @@
           <svg viewBox="0 0 72 72" role="img" aria-hidden="true" style="display:none">
             <rect x="8" y="8" width="56" height="56" rx="13" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
             <path d="M21 46c13-2 23-12 25-29 11 10 13 25 5 39-9 0-20-3-30-10Z" fill="rgba(255,255,255,0.6)"/>
-            <text x="36" y="42" text-anchor="middle" fill="white" font-size="13" font-weight="900">MTP</text>
+            <text  x="36" y="42" text-anchor="middle" fill="white" font-size="13" font-weight="900">MTP</text>
           </svg>
         </div>
         <p class="loader-title">Agriculture &amp; Nutrition</p>
@@ -93,6 +93,7 @@
             <span class="streak-chip" id="streakChip" style="display:none"></span>
             <div class="weekly-goal-ring" id="weeklyGoalRing" aria-label="Weekly goal"></div>
           </div>
+          <div id="xpBarWrap" class="xp-bar-wrap"></div>
         </div>
 
         <div class="account-panel" id="accountPanel" aria-live="polite"></div>
@@ -111,6 +112,9 @@
           </div>
           <button id="pwaInstallBtn" class="secondary-button" style="display:none;width:100%;margin-top:10px" aria-label="Install app">
             📲 Install App
+          </button>
+          <button id="leaderboardBtn" class="secondary-button" style="width:100%;margin-top:6px" aria-label="Class leaderboard">
+            🏆 Leaderboard
           </button>
           <button id="notifToggleBtn" class="secondary-button" style="width:100%;margin-top:6px" aria-label="Enable study reminders">
             🔔 Enable reminders

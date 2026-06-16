@@ -1160,6 +1160,10 @@ const BADGES = [
   { id: "all_rounder", icon: "🌟", title: "All-Rounder",  desc: "Fully complete all 10 modules" },
   { id: "note_keeper", icon: "✏️",  title: "Note Keeper",  desc: "Write journal notes for 5 modules" },
   { id: "bilingual",   icon: "🌍", title: "Bilingual",    desc: "Use the Swahili language mode" },
+  { id: "explorer",    icon: "🧭", title: "Explorer",     desc: "Visit every module at least once" },
+  { id: "flash_master",icon: "⚡", title: "Flash Master",  desc: "Complete flashcards in 5 modules" },
+  { id: "centurion",   icon: "💯", title: "Centurion",    desc: "Score 100% on 3 different quizzes" },
+  { id: "xp_500",      icon: "🌿", title: "Green Thumb",  desc: "Earn 500 XP" },
 ];
 
 function checkBadges() {
@@ -1177,12 +1181,17 @@ function checkBadges() {
       case "all_rounder": earned = MODULES.every((m) => moduleCompletion(m) === 3); break;
       case "note_keeper": earned = Object.values(progress.notes).filter((n) => n.trim().length > 10).length >= 5; break;
       case "bilingual":   earned = progress.language === "sw"; break;
+      case "explorer":    earned = MODULES.every((m) => (progress.visitedModules || []).includes(m.id)); break;
+      case "flash_master":earned = (progress.flashcardsDone || []).length >= 5; break;
+      case "centurion":   earned = Object.values(progress.quizScores).filter((s) => s >= 100).length >= 3; break;
+      case "xp_500":      earned = (progress.xp || 0) >= 500; break;
     }
     if (earned) { progress.badges.push(badge.id); newlyEarned.push(badge); }
   });
   if (newlyEarned.length) {
     saveProgress();
     newlyEarned.forEach((b) => {
+      awardXP(25);
       showToast(`${b.icon} Badge unlocked: ${b.title}!`, "success");
       confettiBurst(window.innerWidth / 2, window.innerHeight / 3, 25);
     });
@@ -1201,6 +1210,87 @@ function renderBadgesInline() {
     </div>
   `).join("");
 }
+
+/* ── XP & Level System ───────────────────────────────────────── */
+const XP_LEVELS = [
+  { min: 0,   label: "Seedling",      color: "#96e6a1" },
+  { min: 50,  label: "Sprout",        color: "#40d0a0" },
+  { min: 120, label: "Sapling",       color: "#20b080" },
+  { min: 250, label: "Young Plant",   color: "#17c964" },
+  { min: 450, label: "Mature Plant",  color: "#0a7a3a" },
+  { min: 700, label: "Master Farmer", color: "#ffd700" },
+];
+
+function xpLevel(xp) {
+  xp = xp ?? progress.xp ?? 0;
+  let level = XP_LEVELS[0];
+  for (const l of XP_LEVELS) if (xp >= l.min) level = l;
+  const idx = XP_LEVELS.indexOf(level);
+  const next = XP_LEVELS[idx + 1];
+  const pct = next ? Math.round(((xp - level.min) / (next.min - level.min)) * 100) : 100;
+  return { ...level, next, pct };
+}
+
+function awardXP(amount) {
+  if (!canEditProgress()) return;
+  const before = xpLevel(progress.xp ?? 0);
+  progress.xp = (progress.xp || 0) + amount;
+  const after = xpLevel(progress.xp);
+  saveProgress();
+  renderXPBar();
+  if (after.label !== before.label) {
+    showToast(`⬆️ Level up! You are now a ${after.label}!`, "success");
+    confettiBurst(window.innerWidth / 2, window.innerHeight / 3, 40);
+  }
+}
+
+function renderXPBar() {
+  const el = document.getElementById("xpBarWrap");
+  if (!el) return;
+  const lv = xpLevel();
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <span class="xp-level-chip" style="color:${lv.color}">${lv.label}</span>
+      <span class="xp-number">${progress.xp || 0} XP</span>
+    </div>
+    <div class="xp-track" title="${progress.xp || 0} XP${lv.next ? ` / ${lv.next.min} XP for ${lv.next.label}` : " — Max level!"}">
+      <div class="xp-fill" style="width:${lv.pct}%;background:${lv.color}"></div>
+    </div>
+  `;
+}
+
+function showLeaderboard() {
+  const profiles = getStudentProfiles();
+  if (!profiles.length) { showToast("No student profiles found on this device.", "info"); return; }
+  const ranked = profiles.map((p) => {
+    const prog = loadProgress(p.id);
+    return { name: p.name, xp: prog.xp || 0, pct: coursePercentFor(prog), badges: (prog.badges || []).length };
+  }).sort((a, b) => b.xp - a.xp);
+  const modal = document.createElement("div");
+  modal.className = "share-modal-overlay";
+  modal.style.cssText = "display:flex";
+  modal.innerHTML = `
+    <div class="share-modal" style="max-width:460px">
+      <h3 style="text-align:center;margin-bottom:4px">🏆 Class Leaderboard</h3>
+      <p class="account-note" style="text-align:center;margin-bottom:16px">All students on this device, ranked by XP</p>
+      <div class="leaderboard-list">
+        ${ranked.map((s, i) => `
+          <div class="leaderboard-row ${i === 0 ? "leader-gold" : i === 1 ? "leader-silver" : i === 2 ? "leader-bronze" : ""}">
+            <span class="lb-rank">${i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}</span>
+            <span class="lb-name">${escapeHTML(s.name)}</span>
+            <span class="lb-xp">${s.xp} XP</span>
+            <span class="lb-pct">${s.pct}%</span>
+            <span class="lb-badges">${s.badges} 🏅</span>
+          </div>`).join("")}
+      </div>
+      <button class="secondary-button" id="closeLbModal" style="width:100%;margin-top:14px">Close</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  document.getElementById("closeLbModal")?.addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+}
+/* ── End XP & Level System ───────────────────────────────────── */
 
 /* ── Performance Analytics ───────────────────────────────────── */
 function renderAnalyticsCard() {
@@ -1528,6 +1618,7 @@ function initNotifications() {
     if (Notification.permission === "granted") scheduleReminder();
   });
   if (Notification.permission === "granted") scheduleReminder();
+  document.getElementById("leaderboardBtn")?.addEventListener("click", showLeaderboard);
 }
 
 function scheduleReminder() {
@@ -1928,6 +2019,7 @@ function defaultProgress() {
     quizHistory: {}, quizMisses: {}, streak: { count: 0, lastDate: "" },
     weeklyGoal: { target: 3, weekStart: "", done: [] },
     fontScale: 1, language: "en", badges: [],
+    xp: 0, visitedModules: [], flashcardsDone: [],
   };
 }
 
@@ -1935,17 +2027,20 @@ function normalizeProgress(saved) {
   const base = defaultProgress();
   if (!saved || typeof saved !== "object") return base;
   return {
-    learned:      saved.learned      || base.learned,
-    games:        saved.games        || base.games,
-    quizScores:   saved.quizScores   || base.quizScores,
-    notes:        saved.notes        || base.notes,
-    quizHistory:  saved.quizHistory  || base.quizHistory,
-    quizMisses:   saved.quizMisses   || base.quizMisses,
-    streak:       saved.streak       || base.streak,
-    weeklyGoal:   saved.weeklyGoal   || base.weeklyGoal,
-    fontScale:    saved.fontScale    ?? base.fontScale,
-    language:     saved.language     || base.language,
-    badges:       saved.badges       || base.badges,
+    learned:        saved.learned        || base.learned,
+    games:          saved.games          || base.games,
+    quizScores:     saved.quizScores     || base.quizScores,
+    notes:          saved.notes          || base.notes,
+    quizHistory:    saved.quizHistory    || base.quizHistory,
+    quizMisses:     saved.quizMisses     || base.quizMisses,
+    streak:         saved.streak         || base.streak,
+    weeklyGoal:     saved.weeklyGoal     || base.weeklyGoal,
+    fontScale:      saved.fontScale      ?? base.fontScale,
+    language:       saved.language       || base.language,
+    badges:         saved.badges         || base.badges,
+    xp:             saved.xp             ?? base.xp,
+    visitedModules: saved.visitedModules  || base.visitedModules,
+    flashcardsDone: saved.flashcardsDone  || base.flashcardsDone,
   };
 }
 
@@ -2402,6 +2497,7 @@ function render() {
   renderTabs();
   renderView();
   renderStreakAndGoal();
+  renderXPBar();
   if (state.locked) {
     const lockBanner = document.getElementById("assignmentBanner");
     if (lockBanner) {
@@ -3062,6 +3158,12 @@ function showAccountSettings() {
 
 function renderHero() {
   const module = currentModule();
+  if (canEditProgress() && !progress.visitedModules?.includes(state.moduleId)) {
+    progress.visitedModules = progress.visitedModules || [];
+    progress.visitedModules.push(state.moduleId);
+    saveProgress();
+    checkBadges();
+  }
   const learnDone = progress.learned[module.id];
   const gameDone  = progress.games[module.id];
   const quizScore = progress.quizScores[module.id] || 0;
@@ -3198,12 +3300,19 @@ function renderLearn(module) {
       </article>
     </div>
     ${videoCard}${linksCard}
+    ${module.id === "organic" ? `<article class="tool-card" style="animation-delay:0.38s;padding:16px"><p class="eyebrow">🌱 Soil Cross-Section</p><h3>Soil layers explorer</h3><p style="margin-bottom:10px;font-size:0.9rem">Hover over each layer to learn its role in plant growth.</p><div id="soilSceneHost" style="width:100%;height:280px;border-radius:12px;overflow:hidden"></div></article>` : ""}
   `;
   if (module.video) {
     document.getElementById("loadVideoBtn")?.addEventListener("click", () => {
       const thumb = document.getElementById(`videoThumb_${module.id}`);
       if (thumb) thumb.innerHTML = `<iframe src="${escapeHTML(module.video)}" width="100%" height="240" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius:10px"></iframe>`;
     }, { once: true });
+  }
+  if (module.id === "organic") {
+    const soilHost = document.getElementById("soilSceneHost");
+    if (soilHost && window.MTPThreeSim?.mountSoilScene) {
+      window.MTPThreeSim.mountSoilScene(soilHost);
+    }
   }
 }
 
@@ -3488,7 +3597,19 @@ function renderFlashcard(module) {
       document.getElementById("flashcardInner")?.classList.toggle("flipped", flipped);
     });
     document.getElementById("fcPrev")?.addEventListener("click", () => { idx = Math.max(0, idx - 1); flipped = false; draw(); });
-    document.getElementById("fcNext")?.addEventListener("click", () => { idx = Math.min(cards.length - 1, idx + 1); flipped = false; draw(); });
+    document.getElementById("fcNext")?.addEventListener("click", () => {
+      idx = Math.min(cards.length - 1, idx + 1); flipped = false; draw();
+      if (idx === cards.length - 1) {
+        if (canEditProgress() && !(progress.flashcardsDone || []).includes(module.id)) {
+          progress.flashcardsDone = progress.flashcardsDone || [];
+          progress.flashcardsDone.push(module.id);
+          awardXP(10);
+          saveProgress();
+          checkBadges();
+          showToast("⚡ Flashcards complete!", "success");
+        }
+      }
+    });
     document.getElementById("fcKnown")?.addEventListener("click", () => { known.has(idx) ? known.delete(idx) : known.add(idx); draw(); });
   };
 
@@ -3728,6 +3849,7 @@ function showAssessmentOverlay(module) {
     progress.quizHistory[module.id] = progress.quizHistory[module.id] || [];
     progress.quizHistory[module.id].push(score);
     saveProgress();
+    awardXP(Math.max(1, Math.round((score || 0) / 10)));
     showToast(`📋 Assessment complete — ${score}%`, score >= 70 ? "success" : "info");
     renderProgress(); renderHero(); renderModuleList();
   };
@@ -4220,6 +4342,11 @@ function renderGardenPlanner(mount, _module) {
       <article class="tool-card garden-tools">
         <p class="eyebrow">Planting simulation</p>
         <h3>Run an organic garden</h3>
+        <div class="game-control-row" style="margin-bottom:12px">
+          <label class="small-label" for="gardenDaySlider">🌅 Time of day</label>
+          <input id="gardenDaySlider" type="range" min="0" max="100" value="50" style="width:100%">
+          <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted)"><span>Dawn</span><span>Noon</span><span>Dusk</span><span>Night</span></div>
+        </div>
         <div class="field-row">
           <label for="cropSelect">Crop to plant</label>
           <select id="cropSelect">
@@ -4305,6 +4432,9 @@ function renderGardenPlanner(mount, _module) {
       threeController = window.MTPThreeSim.mountGarden(host, garden, crops, (index) => {
         applyTool(garden.plots[index]);
         draw();
+      });
+      document.getElementById("gardenDaySlider")?.addEventListener("input", (e) => {
+        if (threeController?.setDayTime) threeController.setDayTime(Number(e.target.value) / 100);
       });
     }
     threeController?.update(garden, crops);
@@ -5600,6 +5730,7 @@ function completeGame(moduleId) {
     saveProgress();
     checkWeeklyGoal(moduleId);
     checkBadges();
+    awardXP(20);
     showToast("🎉 " + t("gameComplete"), "success");
     triggerCelebration(document.getElementById("gameMount"));
   } else {
@@ -5648,6 +5779,7 @@ document.addEventListener("click", (event) => {
     saveProgress();
     checkWeeklyGoal(state.moduleId);
     checkBadges();
+    awardXP(15);
     showToast("📚 " + t("learnedToast"), "success");
     render();
   }
@@ -5694,6 +5826,7 @@ document.addEventListener("click", (event) => {
     if (scoreEl) animateValue(scoreEl, progress.quizScores[module.id], 700, "%");
     if (scoreBar) { scoreBar.style.transition = "width 0.7s cubic-bezier(0.34,1.56,0.64,1)"; scoreBar.style.width = `${progress.quizScores[module.id]}%`; }
     checkBadges();
+    awardXP(Math.max(1, Math.round((score || 0) / 10)));
     if (score >= 70) showToast(`🏆 ${score}% — ${t("badgeEarned")}`, "success");
     else if (score >= 40) showToast(`📝 ${score}% — ${t("keepPractising")}`, "info");
     else showToast(`🔄 ${score}% — ${t("reviewNotes")}`, "warn");
@@ -5715,9 +5848,11 @@ document.addEventListener("click", (event) => {
   }
   if (event.target.id === "saveJournalButton") {
     if (!guardProgressWrite("save notes")) return;
+    const hadNote = !!progress.notes[state.moduleId];
     progress.notes[state.moduleId] = document.getElementById("journalText")?.value || "";
     saveProgress();
     checkBadges();
+    if (!hadNote) awardXP(5);
     showToast("💾 " + t("noteSaved"), "info");
   }
   if (event.target.id === "exportProgressButton") {

@@ -395,6 +395,70 @@ function mountGarden(host, garden, crops, onPlot) {
     }
   }
 
+  // Day/night state
+  let dayTime = 0.5;
+
+  // Moon sphere (opposite sun)
+  const moonSphere = new THREE.Mesh(
+    new THREE.SphereGeometry(0.28, 18, 12),
+    new THREE.MeshBasicMaterial({ color: 0xe8e8ff }),
+  );
+  moonSphere.position.set(-4.2, -2, -3.5);
+  moonSphere.visible = false;
+  scene.add(moonSphere);
+
+  function setDayTime(t) {
+    dayTime = Math.max(0, Math.min(1, t));
+    // Sun arc: dawn=east-low, noon=overhead, dusk=west-low, night=below
+    const angle = dayTime * Math.PI; // 0=horizon-east, PI/2=overhead, PI=horizon-west
+    const sunX = Math.cos(angle) * 5.5;
+    const sunY = Math.sin(angle) * 6.5 - 0.5;
+    sunSphere.position.set(sunX, sunY, -3.5);
+    sunLight.position.set(sunX, sunY + 1.5, 5);
+
+    // Sun intensity: bright midday, dim at dawn/dusk, off at night
+    const sunIntensity = Math.max(0, Math.sin(angle)) * 2.6;
+    sunLight.intensity = sunIntensity;
+    sunSphere.visible = sunY > -0.5;
+
+    // Sun color: dawn/dusk = warm orange, midday = white-yellow, night = off
+    const duskFactor = 1 - Math.abs(dayTime - 0.5) * 2;
+    sunLight.color.setRGB(1, 0.85 + duskFactor * 0.15, 0.7 + duskFactor * 0.3);
+
+    // Ambient: warm blue day → orange dusk → deep blue night
+    const nightFactor = Math.max(0, 1 - Math.sin(angle) * 1.6);
+    ambient.color.setRGB(0.94, 1.0, 0.94);
+    ambient.groundColor.setRGB(0.42 - nightFactor * 0.3, 0.47 - nightFactor * 0.35, 0.42 - nightFactor * 0.3);
+    ambient.intensity = Math.max(0.25, 1.65 - nightFactor * 1.2);
+
+    // Fog color: light green day → dark blue night
+    scene.fog.color.setRGB(
+      0.85 - nightFactor * 0.7,
+      0.94 - nightFactor * 0.8,
+      0.87 - nightFactor * 0.75
+    );
+
+    // Moon: appears at night, opposite the sun
+    moonSphere.position.set(-sunX, Math.max(0.5, -sunY + 1), -3.5);
+    moonSphere.visible = nightFactor > 0.3;
+  }
+
+  // Orbit controls
+  let orbitTheta = 0;       // horizontal angle
+  let orbitPhi = 0.73;      // vertical angle (~42°)
+  const ORBIT_R = 11;
+  let orbitDragging = false;
+  let orbitLast = { x: 0, y: 0 };
+  let orbitMoved = false;
+
+  function updateOrbitCamera() {
+    camera.position.x = ORBIT_R * Math.sin(orbitPhi) * Math.sin(orbitTheta);
+    camera.position.y = ORBIT_R * Math.cos(orbitPhi);
+    camera.position.z = ORBIT_R * Math.sin(orbitPhi) * Math.cos(orbitTheta);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+  }
+
   // Hover highlight
   let hovered = -1;
   const highlightMat = new THREE.MeshStandardMaterial({
@@ -453,28 +517,59 @@ function mountGarden(host, garden, crops, onPlot) {
     const rect = renderer.domElement.getBoundingClientRect();
     pointer.x =  ((event.clientX - rect.left) / rect.width)  * 2 - 1;
     pointer.y = -((event.clientY - rect.top)  / rect.height) * 2 + 1;
+
+    if (orbitDragging) {
+      const dx = event.clientX - orbitLast.x;
+      const dy = event.clientY - orbitLast.y;
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) orbitMoved = true;
+      orbitTheta -= dx * 0.012;
+      orbitPhi = Math.max(0.25, Math.min(1.4, orbitPhi - dy * 0.010));
+      orbitLast = { x: event.clientX, y: event.clientY };
+      updateOrbitCamera();
+      renderer.domElement.style.cursor = "grabbing";
+      return;
+    }
+
     raycaster.setFromCamera(pointer, camera);
     const hit = raycaster.intersectObjects(clickable, false)[0];
     hovered = hit ? hit.object.userData.index : -1;
-    renderer.domElement.style.cursor = hovered >= 0 ? "pointer" : "default";
+    renderer.domElement.style.cursor = hovered >= 0 ? "pointer" : "grab";
   }
 
   function onPointerDown(event) {
+    orbitDragging = true;
+    orbitMoved = false;
+    orbitLast = { x: event.clientX, y: event.clientY };
+
     const rect = renderer.domElement.getBoundingClientRect();
     pointer.x =  ((event.clientX - rect.left) / rect.width)  * 2 - 1;
     pointer.y = -((event.clientY - rect.top)  / rect.height) * 2 + 1;
-    raycaster.setFromCamera(pointer, camera);
-    const hit = raycaster.intersectObjects(clickable, false)[0];
-    if (hit) {
-      const idx = hit.object.userData.index;
-      // Spawn water splash
-      splashes.push(createWaterSplash(scene, hit.point.x, hit.point.y, hit.point.z));
-      if (typeof onPlot === "function") onPlot(idx);
+  }
+
+  function onPointerUp(event) {
+    orbitDragging = false;
+    renderer.domElement.style.cursor = "grab";
+    if (!orbitMoved) {
+      // Treat as a click — do raycast for plot selection
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x =  ((event.clientX - rect.left) / rect.width)  * 2 - 1;
+      pointer.y = -((event.clientY - rect.top)  / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hit = raycaster.intersectObjects(clickable, false)[0];
+      if (hit) {
+        const idx = hit.object.userData.index;
+        splashes.push(createWaterSplash(scene, hit.point.x, hit.point.y, hit.point.z));
+        if (typeof onPlot === "function") onPlot(idx);
+      }
     }
   }
 
   renderer.domElement.addEventListener("pointermove", onPointerMove);
   renderer.domElement.addEventListener("pointerdown",  onPointerDown);
+  renderer.domElement.addEventListener("pointerup",    onPointerUp);
+  renderer.domElement.style.cursor = "grab";
+
+  updateOrbitCamera();
 
   let lastTime = 0;
   function animate(time) {
@@ -483,8 +578,6 @@ function mountGarden(host, garden, crops, onPlot) {
 
     // Animate environment
     clouds.position.x = Math.sin(time / 3800) * 1.0;
-    sunSphere.position.y = 4.8 + Math.sin(time / 2400) * 0.18;
-    sunLight.position.x  = 4.2 + Math.sin(time / 2800) * 0.70;
 
     // Update pollen particles and water splashes
     updateParticles(particles, delta * 60);
@@ -507,10 +600,12 @@ function mountGarden(host, garden, crops, onPlot) {
 
   const controller = {
     update,
+    setDayTime,
     dispose() {
       renderer.setAnimationLoop(null);
       renderer.domElement.removeEventListener("pointermove", onPointerMove);
       renderer.domElement.removeEventListener("pointerdown",  onPointerDown);
+      renderer.domElement.removeEventListener("pointerup",    onPointerUp);
       resizeObs.disconnect();
       disposeNode(scene);
       renderer.dispose();
@@ -2862,6 +2957,179 @@ function mountWordSearchScene(host) {
   return ctrl;
 }
 
+/* ── 3D Soil Cross-Section Scene ────────────────────────────── */
+function mountSoilScene(host) {
+  if (!host) return null;
+  if (mounted.has(host)) mounted.get(host).dispose();
+  host.replaceChildren();
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xd4edd8);
+  const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 50);
+  camera.position.set(0, 0, 9);
+  camera.lookAt(0, 0, 0);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  host.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0xfff8e8, 1.2));
+  const sun = new THREE.DirectionalLight(0xfff3c0, 2.0);
+  sun.position.set(3, 6, 5);
+  sun.castShadow = true;
+  scene.add(sun);
+
+  // Soil layers: bottom to top (y positions)
+  const LAYERS = [
+    { name: "Bedrock",       color: "#8a8a8a", y: -3.6, h: 1.0, info: "Hard rock — water cannot pass through. Plants cannot root here." },
+    { name: "Parent Material",color: "#b8a08a", y: -2.4, h: 1.2, info: "Weathered rock fragments. Very few nutrients; poor structure." },
+    { name: "Subsoil",       color: "#c49a6c", y: -1.0, h: 1.4, info: "Clay and minerals. Some roots reach here; limited nutrients." },
+    { name: "Topsoil",       color: "#6b4226", y:  0.7, h: 1.4, info: "Rich dark layer full of nutrients and microbes. Most roots live here." },
+    { name: "Humus Layer",   color: "#3d1f0a", y:  1.8, h: 0.6, info: "Decomposed organic matter. Feeds soil life and holds moisture." },
+    { name: "Grass & Cover", color: "#4caf50", y:  2.3, h: 0.3, info: "Ground cover protects topsoil from erosion and water loss." },
+  ];
+
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  const layerMeshes = [];
+  let hovered = -1;
+  let infoPanel = null;
+
+  LAYERS.forEach((layer, i) => {
+    const geo = new THREE.BoxGeometry(5.5, layer.h, 1.5);
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: layer.color,
+      roughness: 0.88,
+      metalness: 0.02,
+      clearcoat: 0.1,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(0, layer.y, 0);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData = { layer, index: i };
+    scene.add(mesh);
+    layerMeshes.push(mesh);
+
+    // Layer label as a thin colored plate on the right side
+    const plateMat = makeMat(layer.color, 0.6);
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(0.12, layer.h * 0.85, 1.5), plateMat);
+    plate.position.set(2.87, layer.y, 0);
+    scene.add(plate);
+  });
+
+  // Roots: extend from topsoil downward
+  const rootMat = new THREE.MeshBasicMaterial({ color: 0xb87840 });
+  [[0.3, 0.4], [-0.5, 0.6], [0.8, 0.3], [-0.2, 0.8], [0.1, 0.5]].forEach(([rx, rdepth]) => {
+    const rootGeo = new THREE.CylinderGeometry(0.018, 0.008, rdepth * 3.5, 5);
+    const root = new THREE.Mesh(rootGeo, rootMat);
+    root.position.set(rx, 0.7 - rdepth * 1.75, 0.1);
+    root.rotation.z = rx * 0.5;
+    scene.add(root);
+  });
+
+  // Earthworm (simple segmented cylinder, animated)
+  const wormGroup = new THREE.Group();
+  const wormMat = makeMat("#e8917a", 0.7);
+  for (let s = 0; s < 6; s++) {
+    const seg = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 6), wormMat);
+    seg.scale.set(1, 0.7, 0.7);
+    seg.position.x = -0.8 + s * 0.13;
+    wormGroup.add(seg);
+  }
+  wormGroup.position.set(-0.4, 0.4, 0.5);
+  scene.add(wormGroup);
+
+  // Moisture droplets in topsoil
+  const dropMat = new THREE.MeshBasicMaterial({ color: 0x6ab8e8, transparent: true, opacity: 0.65 });
+  const dropGroup = new THREE.Group();
+  for (let d = 0; d < 12; d++) {
+    const drop = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), dropMat);
+    drop.position.set((Math.random() - 0.5) * 4.5, 0.0 + Math.random() * 1.2, (Math.random() - 0.5) * 1.2);
+    drop.userData.floatOffset = Math.random() * Math.PI * 2;
+    dropGroup.add(drop);
+  }
+  scene.add(dropGroup);
+
+  // Info panel overlay (HTML)
+  infoPanel = document.createElement("div");
+  infoPanel.style.cssText = `position:absolute;bottom:10px;left:10px;right:10px;background:rgba(10,30,15,0.82);color:#fff;border-radius:10px;padding:10px 14px;font-size:0.82rem;line-height:1.4;backdrop-filter:blur(8px);pointer-events:none;opacity:0;transition:opacity 0.2s ease;`;
+  host.style.position = "relative";
+  host.appendChild(infoPanel);
+
+  function showLayerInfo(layerData) {
+    infoPanel.innerHTML = `<strong style="color:#9ef5b0">${layerData.name}</strong><br>${layerData.info}`;
+    infoPanel.style.opacity = "1";
+  }
+
+  function resize() {
+    const w = Math.max(260, host.clientWidth);
+    const h = Math.max(220, host.clientHeight);
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  const ro = new ResizeObserver(resize);
+  ro.observe(host);
+  resize();
+
+  function onMove(event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    pointer.x =  ((event.clientX - rect.left) / rect.width)  * 2 - 1;
+    pointer.y = -((event.clientY - rect.top)  / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObjects(layerMeshes, false);
+    if (hits.length) {
+      const idx = hits[0].object.userData.index;
+      if (idx !== hovered) {
+        hovered = idx;
+        showLayerInfo(hits[0].object.userData.layer);
+        layerMeshes.forEach((m, i) => { m.material.emissive?.setHex(i === idx ? 0x224422 : 0x000000); });
+      }
+      renderer.domElement.style.cursor = "pointer";
+    } else {
+      hovered = -1;
+      renderer.domElement.style.cursor = "default";
+      infoPanel.style.opacity = "0";
+      layerMeshes.forEach((m) => { m.material.emissive?.setHex(0x000000); });
+    }
+  }
+
+  renderer.domElement.addEventListener("pointermove", onMove);
+
+  renderer.setAnimationLoop((ts) => {
+    const t = ts * 0.001;
+    // Worm wiggle
+    wormGroup.position.x = -0.4 + Math.sin(t * 0.7) * 0.35;
+    wormGroup.children.forEach((seg, i) => {
+      seg.position.y = Math.sin(t * 2.2 + i * 0.5) * 0.035;
+    });
+    // Moisture droplet float
+    dropGroup.children.forEach((d) => {
+      d.position.y += Math.sin(t * 1.8 + d.userData.floatOffset) * 0.0005;
+    });
+    renderer.render(scene, camera);
+  });
+
+  const ctrl = {
+    dispose() {
+      renderer.setAnimationLoop(null);
+      renderer.domElement.removeEventListener("pointermove", onMove);
+      ro.disconnect();
+      disposeScene(scene);
+      renderer.dispose();
+      if (infoPanel && infoPanel.parentNode) infoPanel.remove();
+      host.replaceChildren();
+      mounted.delete(host);
+    }
+  };
+  mounted.set(host, ctrl);
+  return ctrl;
+}
+/* ── End Soil Cross-Section Scene ───────────────────────────── */
+
 function disposeAll() {
   [...mounted.values()].forEach((c) => c.dispose());
 }
@@ -2873,6 +3141,7 @@ window.MTPThreeSim = {
   mountCleanupScene, mountDisinfectScene,
   mountPestBlaster3D, mountFarmRaider3D, mountFlourFrenzy3D,
   mountLeftoverSortScene, mountWordSearchScene,
+  mountSoilScene,
   disposeAll,
 };
 window.dispatchEvent(new CustomEvent("mtp-three-ready"));
