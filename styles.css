@@ -2583,6 +2583,38 @@ body { font-size: calc(var(--font-scale) * 15px); }
 }
 .game-tutorial-hint.gone { opacity: 0; animation: none; }
 
+/* ── In-game random event banner ────────────────────────────── */
+.game-event-banner {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  min-width: 240px;
+  max-width: 92%;
+  background: rgba(14, 30, 20, 0.96);
+  border: 1.5px solid rgba(255, 200, 60, 0.7);
+  border-radius: 12px;
+  padding: 10px 16px 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  z-index: 120;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,200,60,0.15);
+  animation: geb-in 0.32s cubic-bezier(.22,1,.36,1) forwards;
+  pointer-events: none;
+}
+.game-event-banner.geb-bad  { border-color: rgba(255, 90, 60, 0.75); }
+.game-event-banner.geb-good { border-color: rgba(60, 220, 130, 0.75); }
+.game-event-banner.geb-out  { animation: geb-out 0.35s ease forwards; }
+.geb-icon  { font-size: 1.55rem; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+.geb-body  { display: flex; flex-direction: column; gap: 2px; }
+.geb-title { font-size: 0.78rem; font-weight: 800; color: rgba(255,200,60,0.95); }
+.geb-bad  .geb-title { color: rgba(255,120,90,0.95); }
+.geb-good .geb-title { color: rgba(80,230,150,0.95); }
+.geb-msg   { font-size: 0.67rem; color: rgba(220,230,220,0.88); line-height: 1.45; }
+@keyframes geb-in  { from { opacity:0; transform:translateX(-50%) translateY(-18px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+@keyframes geb-out { from { opacity:1; transform:translateX(-50%) translateY(0);    } to { opacity:0; transform:translateX(-50%) translateY(-12px); } }
+
 /* Glowing interaction hint — pulses on first interactive element after tutorial */
 .vt-hint-glow {
   outline: 2px solid rgba(23, 201, 100, 0.75);

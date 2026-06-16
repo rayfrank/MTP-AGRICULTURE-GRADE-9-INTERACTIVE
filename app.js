@@ -159,6 +159,19 @@ function showVisualTutorial(stage, steps, onDone) {
   render();
 }
 
+function showGameEvent(mount, type, icon, title, msg, ms = 5000) {
+  if (!mount || !mount.isConnected) return;
+  mount.querySelectorAll('.game-event-banner').forEach((b) => b.remove());
+  const el = document.createElement('div');
+  el.className = `game-event-banner${type === 'bad' ? ' geb-bad' : type === 'good' ? ' geb-good' : ''}`;
+  el.innerHTML = `<span class='geb-icon'>${icon}</span><div class='geb-body'><div class='geb-title'>${title}</div><div class='geb-msg'>${msg}</div></div>`;
+  mount.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('geb-out');
+    setTimeout(() => el.remove(), 380);
+  }, ms);
+}
+
 function setupIdleHint(mount, getHintEl, delayMs = 9000) {
   let timer = null;
   const showHint = () => {
@@ -4484,7 +4497,8 @@ function renderHayLab(mount, _module) {
       hayThreeCtrl.update({ moisture, storage, weather });
     }
     document.getElementById("hayFeedback").innerHTML = feedback.map((item) => `<li>${escapeHTML(item)}</li>`).join("");
-    document.getElementById("saveHayButton").dataset.score = score;
+    const finalScore = Math.max(0, Math.min(100, score - (window._hayEventPenalty||0) + (score >= 90 ? (window._hayEventBonus||0) : 0)));
+    document.getElementById("saveHayButton").dataset.score = finalScore;
   };
   if (mount._gameAC) mount._gameAC.abort();
   const _hayAC = new AbortController();
@@ -4509,6 +4523,20 @@ function renderHayLab(mount, _module) {
   const hayStage = document.getElementById("hayThreeStage");
   if (window.MTPThreeSim?.mountHayScene) {
     hayThreeCtrl = window.MTPThreeSim.mountHayScene(hayStage, { moisture: 18, storage: "raised", weather: "hot" });
+  }
+  // Random weather event on load
+  const HAY_EVENTS = [
+    { type: 'bad',  icon: '🌧️', title: 'Unexpected Rain!',  msg: 'Rain is expected today — moisture will be harder to control. Moisture starts higher.',  apply() { const s = mount.querySelector('#moistureSlider, [data-hay="moisture"], input[type="range"]'); if (s) { s.value = Math.min(+s.max, +s.value + 8); s.dispatchEvent(new Event('input')); } } },
+    { type: 'bad',  icon: '🦗', title: 'Pest Alert!',       msg: 'Rodents found near the barn — poor storage conditions reduce your max score by 10.',     apply() { window._hayEventPenalty = 10; } },
+    { type: 'good', icon: '☀️', title: 'Heatwave!',         msg: 'Unusually dry heat today — moisture drops faster. Ideal drying conditions if managed well.', apply() { const s = mount.querySelector('#moistureSlider, [data-hay="moisture"], input[type="range"]'); if (s) { s.value = Math.max(+s.min, +s.value - 5); s.dispatchEvent(new Event('input')); } } },
+    { type: 'good', icon: '📈', title: 'Market Demand!',    msg: 'High demand for quality hay this season — a score of 90+ earns a 5-point bonus.',        apply() { window._hayEventBonus = 5; } },
+  ];
+  window._hayEventPenalty = 0;
+  window._hayEventBonus = 0;
+  if (Math.random() < 0.55) {
+    const ev = HAY_EVENTS[Math.floor(Math.random() * HAY_EVENTS.length)];
+    showGameEvent(mount, ev.type, ev.icon, ev.title, ev.msg, 6000);
+    ev.apply();
   }
   update();
   setupIdleHint(mount, () => mount.querySelector('input[type="range"]'));
@@ -4702,6 +4730,16 @@ function renderLeftoverSort(mount, module) {
     window.MTPThreeSim.mountLeftoverSortScene(leftoverStage);
   }
   setupIdleHint(mount, () => mount.querySelector('[data-card]:not([hidden])'));
+  // Random scenario event on load
+  const LS_EVENTS = [
+    { type: 'bad',  icon: '⚡', title: 'Power Cut!',         msg: 'The fridge was off for 2 hours — check all stored items carefully. Some may have warmed up.' },
+    { type: 'bad',  icon: '📅', title: 'Long Weekend!',      msg: 'These leftovers are 2 days older than expected — extra care needed before consuming.' },
+    { type: 'good', icon: '❄️', title: 'Cold Chain Intact!', msg: 'Everything was stored at correct temperature today — items are safer than usual.' },
+  ];
+  if (Math.random() < 0.55) {
+    const ev = LS_EVENTS[Math.floor(Math.random() * LS_EVENTS.length)];
+    showGameEvent(mount, ev.type, ev.icon, ev.title, ev.msg, 6000);
+  }
   maybeShowTutorial(mount, 'leftoverSort', LEFTOVER_TUT);
 }
 
@@ -4825,6 +4863,17 @@ function renderFarmLoop(mount, module) {
   };
   draw();
   setupIdleHint(mount, () => mount.querySelector('[data-loop-item]'));
+  // Random supply-chain event on load
+  const FL_EVENTS = [
+    { type: 'bad',  icon: '🌾', title: 'Feed Shortage!',     msg: 'Animal feed is scarce this season — completing the cycle earns a reduced score.' },
+    { type: 'bad',  icon: '🦗', title: 'Pest Damage!',       msg: 'Crop residues are partially damaged — manage the loop carefully to minimise loss.' },
+    { type: 'good', icon: '📈', title: 'Market Demand!',     msg: 'Organic produce is in high demand — a perfect cycle earns a 10-point bonus this round.' },
+    { type: 'good', icon: '🌱', title: 'Good Rainfall!',     msg: 'Rain topped up soil moisture — the organic garden step is more productive today.' },
+  ];
+  if (Math.random() < 0.5) {
+    const ev = FL_EVENTS[Math.floor(Math.random() * FL_EVENTS.length)];
+    showGameEvent(mount, ev.type, ev.icon, ev.title, ev.msg, 6000);
+  }
   maybeShowTutorial(mount, 'farmLoop', FARMLOOP_TUT);
 }
 
@@ -4932,6 +4981,7 @@ function renderGardenPlanner(mount, _module) {
     tool: "prepare",
     crop: "kale",
     harvested: 0,
+    _eventBonus: 1,
     marketBonus: 0,
     marketDemand: null,
     event: starterGardenEvent,
@@ -5006,6 +5056,7 @@ function renderGardenPlanner(mount, _module) {
     garden.dayProgress = 0;
     lastClockTick = performance.now();
     garden.harvested = 0;
+    garden._eventBonus = 1;
     garden.marketBonus = 0;
     garden.marketDemand = null;
     garden.event = starterGardenEvent;
@@ -5036,7 +5087,8 @@ function renderGardenPlanner(mount, _module) {
 
   const gardenScore = () => {
     const activeScore = garden.plots.reduce((sum, plot) => sum + plotScore(plot), 0) / garden.plots.length;
-    return clamp(Math.round(activeScore + garden.harvested * 12 + garden.marketBonus * 6), 0, 100);
+    const bonus = garden._eventBonus || 1;
+    return clamp(Math.round(activeScore + garden.harvested * 12 * bonus), 0, 100);
   };
 
   const gardenClockInfo = () => {
@@ -5264,13 +5316,44 @@ function renderGardenPlanner(mount, _module) {
     }
   };
 
+  const GARDEN_EVENTS = [
+    { id: 'drought',  type: 'bad',  icon: '🌵', title: 'Drought Alert!',       msg: 'No rain forecast — water drains twice as fast today.',              weight: 14 },
+    { id: 'rain',     type: 'good', icon: '🌧️', title: 'Heavy Rainfall!',      msg: 'Flooding risk — all plots gain water but weeds spread rapidly.',     weight: 10 },
+    { id: 'pests',    type: 'bad',  icon: '🦗', title: 'Pest Outbreak!',        msg: 'Locusts spotted nearby — pests surge on all planted crops.',         weight: 12 },
+    { id: 'season',   type: 'good', icon: '🌱', title: 'Good Growing Season!',  msg: 'Warm nights boost soil fertility across all beds.',                  weight: 10 },
+    { id: 'hail',     type: 'bad',  icon: '🌨️', title: 'Hailstorm!',           msg: 'Hail damages exposed crops — unmulched plots lose a growth stage.',  weight:  7 },
+    { id: 'harvest',  type: 'good', icon: '📈', title: 'Market Demand!',        msg: 'High demand this week — bonus points for every harvest today.',      weight:  8 },
+  ];
+
   const nextDay = () => {
     garden.day += 1;
-    garden.marketDemand = null;
+    let eventBonus = 1;
+
+    // Roll for an event roughly every 3 days
+    if (garden.day > 1 && Math.random() < 0.42) {
+      const totalW = GARDEN_EVENTS.reduce((s, e) => s + e.weight, 0);
+      let roll = Math.random() * totalW;
+      const ev = GARDEN_EVENTS.find((e) => { roll -= e.weight; return roll <= 0; }) || GARDEN_EVENTS[0];
+      showGameEvent(mount, ev.type, ev.icon, ev.title, ev.msg);
+
+      if (ev.id === 'drought') {
+        garden.plots.forEach((p) => { if (p.crop) p.water = clamp(p.water - 14, 0, 100); });
+      } else if (ev.id === 'rain') {
+        garden.plots.forEach((p) => { p.water = clamp(p.water + 20, 0, 100); p.weeds = clamp(p.weeds + 12, 0, 100); });
+      } else if (ev.id === 'pests') {
+        garden.plots.forEach((p) => { if (p.crop) p.pests = clamp(p.pests + 25, 0, 100); });
+      } else if (ev.id === 'season') {
+        garden.plots.forEach((p) => { p.fertility = clamp(p.fertility + 12, 0, 100); });
+      } else if (ev.id === 'hail') {
+        garden.plots.forEach((p) => { if (p.crop && !p.mulch) p.stage = clamp(p.stage - 1, 1, 4); });
+      } else if (ev.id === 'harvest') {
+        eventBonus = 1.5;
+      }
+    }
+
     garden.plots.forEach((plot) => {
       if (!plot.crop) {
         plot.weeds = clamp(plot.weeds + 4, 0, 100);
-        if (plot.weeds > 35) plot.prepared = false;
         return;
       }
       plot.water = clamp(plot.water - (plot.mulch ? 8 : 16), 0, 100);
@@ -5284,9 +5367,10 @@ function renderGardenPlanner(mount, _module) {
         plot.stage = clamp(plot.stage - 1, 1, 4);
       }
     });
-    garden.event = createGardenEvent();
-    if (garden.event?.apply) garden.event.apply();
-    garden.message = `Day ${garden.day}: ${garden.event.action}`;
+    garden._eventBonus = eventBonus;
+    garden.message = garden.day > 1 && eventBonus > 1
+      ? `Day ${garden.day}: Market bonus active — harvest now for extra points!`
+      : "A day passed. Check water, weeds, fertility, and pests.";
     draw();
   };
 
@@ -5516,6 +5600,16 @@ function renderStorageInspector(mount, _module) {
   }
   update();
   setupIdleHint(mount, () => mount.querySelector('input[type="checkbox"]:not(:checked)') || mount.querySelector('input[type="checkbox"]'));
+  // Random storage condition event
+  const SI_EVENTS = [
+    { type: 'bad',  icon: '🐀', title: 'Rodent Sighting!',   msg: 'Rodents found near the store — pest-proofing options are critical today.' },
+    { type: 'bad',  icon: '🌡️', title: 'Heatwave!',          msg: 'Temperatures are unusually high — ventilation and moisture control matter more.' },
+    { type: 'good', icon: '🌬️', title: 'Dry Season!',        msg: 'Low humidity makes storage easier — conditions are favourable for dry grains.' },
+  ];
+  if (Math.random() < 0.45) {
+    const ev = SI_EVENTS[Math.floor(Math.random() * SI_EVENTS.length)];
+    showGameEvent(mount, ev.type, ev.icon, ev.title, ev.msg, 6000);
+  }
   maybeShowTutorial(mount, 'storageInspector', STORAGE_TUT);
 }
 
@@ -6031,6 +6125,16 @@ function renderGraftingLab(mount, module) {
     const scion = btns.find((b) => b.dataset.graftStep === 'Select scion' || b.textContent.includes('scion') || b.textContent.includes('Scion'));
     return scion || btns[0];
   });
+  // Random grafting condition event
+  const GL_EVENTS = [
+    { type: 'bad',  icon: '🌵', title: 'Dry Conditions!',    msg: 'Low humidity today — sealing the graft union is especially important.' },
+    { type: 'good', icon: '🌱', title: 'Ideal Conditions!',  msg: 'Mild temperature and good humidity — perfect grafting weather. Take care with each step.' },
+    { type: 'bad',  icon: '🌡️', title: 'Heat Stress!',      msg: 'High temperatures — work quickly to avoid desiccation of the scion.' },
+  ];
+  if (Math.random() < 0.45) {
+    const ev = GL_EVENTS[Math.floor(Math.random() * GL_EVENTS.length)];
+    showGameEvent(mount, ev.type, ev.icon, ev.title, ev.msg, 6000);
+  }
   maybeShowTutorial(mount, 'graftingLab', GRAFTING_TUT);
 }
 
@@ -6153,6 +6257,18 @@ function renderSunDryer(mount, _module) {
   mount._gameAC = _dryerAC;
   mount.addEventListener("input",  update, { signal: _dryerAC.signal });
   mount.addEventListener("change", update, { signal: _dryerAC.signal });
+  // Random weather event on load
+  const SD_EVENTS = [
+    { type: 'bad',  icon: '☁️', title: 'Cloudy Week!',       msg: 'Cloud cover is high this week — sun hours are reduced. Compensate with more turning.', apply(sliders) { const s = sliders[0]; if (s) { s.max = Math.max(+s.min+1, Math.round(+s.max * 0.6)); s.value = Math.min(+s.value, +s.max); s.dispatchEvent(new Event('input')); } } },
+    { type: 'bad',  icon: '🌧️', title: 'Rain Risk!',         msg: 'Unexpected rain showers — move your dryer under cover. Turning frequency is more important today.', apply() {} },
+    { type: 'good', icon: '☀️', title: 'Perfect Drying Day!', msg: 'Clear skies all day! Maximum sun hours available — ideal conditions for quick drying.', apply(sliders) { const s = sliders[0]; if (s) { s.value = s.max; s.dispatchEvent(new Event('input')); } } },
+  ];
+  if (Math.random() < 0.5) {
+    const ev = SD_EVENTS[Math.floor(Math.random() * SD_EVENTS.length)];
+    const sliders = [...mount.querySelectorAll('input[type="range"]')];
+    showGameEvent(mount, ev.type, ev.icon, ev.title, ev.msg, 6000);
+    ev.apply(sliders);
+  }
   update();
   setupIdleHint(mount, () => mount.querySelector('input[type="checkbox"]:not(:checked)') || mount.querySelector('input[type="range"]'));
   maybeShowTutorial(mount, 'sunDryer', SUNDRYER_TUT);
