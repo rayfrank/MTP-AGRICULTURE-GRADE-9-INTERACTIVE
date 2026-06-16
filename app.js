@@ -3396,6 +3396,205 @@ function renderLearn(module) {
   }
 }
 
+const GAME_HINTS = {
+  hayLab: {
+    title: "Hay Quality Lab",
+    goal: "Adjust the hay preparation settings until the bale is safe to store.",
+    steps: [
+      "Set moisture close to 15 to 20 percent.",
+      "Use 2 to 4 drying days with hot, dry weather.",
+      "Choose raised, roofed, aerated storage, then save when the score is 75 or more.",
+    ],
+    tip: "Watch the feedback list after every change; it explains exactly what still needs fixing.",
+  },
+  leftoverSort: {
+    title: "Leftover Safety Sort",
+    goal: "Choose the safest action for each leftover food situation.",
+    steps: [
+      "Tap one food card to select it.",
+      "Tap the best action zone: store, reheat, share, or throw away.",
+      "Place all cards, then press Check sort.",
+    ],
+    tip: "Bad smell, odd colour, or odd texture usually means the safest choice is Throw away.",
+  },
+  farmRaider: {
+    title: "Farm Raider",
+    goal: "Steer the tractor through all six farm resources to complete the integrated cycle.",
+    steps: [
+      "Press Play Now and read the short tutorial.",
+      "Move your mouse or finger over the field to steer.",
+      "Drive through every resource pillar until the counter reaches 6 out of 6.",
+    ],
+    tip: "If you stop steering, the tractor will still try to head toward the nearest resource.",
+  },
+  farmLoop: {
+    title: "Farm Resource Cycle",
+    goal: "Build the integrated farming cycle in the correct order.",
+    steps: [
+      "Click the resource that should come first.",
+      "Keep clicking items to add all six steps to Your cycle.",
+      "Press Check loop and adjust the order if any link is wrong.",
+    ],
+    tip: "Start with crop residues, then think about how animals, manure, compost, gardens, and food connect.",
+  },
+  gardenPlanner: {
+    title: "Organic Garden",
+    goal: "Guide an organic crop from bed preparation to harvest while day and night pass automatically.",
+    steps: [
+      "Prepare the bed, choose a crop, then plant it.",
+      "As the automatic day/night timer runs, water, compost, mulch, weed, and spray when needed.",
+      "When a crop reaches stage 4, harvest it and save once the garden score reaches 75 points.",
+    ],
+    tip: "You cannot control time; watch the clock and respond like a real gardener.",
+  },
+  pestBlaster: {
+    title: "Pest Blaster",
+    goal: "Protect stored produce by spraying pests before they overrun the granary.",
+    steps: [
+      "Press Play Now and read the tutorial.",
+      "Move over the granary to aim the spray gun.",
+      "Click or tap pests to spray them and reach 500 points before lives run out.",
+    ],
+    tip: "Pests that reach the store cost lives, so aim for the closest threats first.",
+  },
+  storageInspector: {
+    title: "Storage Inspector",
+    goal: "Prepare a storage facility so crops stay dry, clean, ventilated, and pest-proof.",
+    steps: [
+      "Choose the type of storage facility.",
+      "Tick every safe preparation step you would complete.",
+      "Press Save inspection when the score is 80 percent or more.",
+    ],
+    tip: "A safe store is clean, dry, sealed, ventilated, and cleared around the outside.",
+  },
+  flourFrenzy: {
+    title: "Flour Frenzy",
+    goal: "Sort moving food products by the flour mixture they use.",
+    steps: [
+      "Press Play Now and read the mixture examples.",
+      "Watch the product on the conveyor belt.",
+      "Click Dough, Thin Batter, or Thick Batter before the product falls off.",
+    ],
+    tip: "Chapati, mandazi, and bread are dough; pancakes are thin batter; coatings are thick batter.",
+  },
+  flourMixer: {
+    title: "Flour Mixture Lab",
+    goal: "Mix flour and liquid until the result matches the target product.",
+    steps: [
+      "Choose the target product.",
+      "Move the flour and liquid sliders.",
+      "Save when the mixture type matches what the product needs.",
+    ],
+    tip: "Less liquid makes dough, medium liquid makes thick batter, and more liquid makes thin batter.",
+  },
+  cleanupOrder: {
+    title: "Cleanup Sequence",
+    goal: "Put cleaning steps into the safest order for the selected facility.",
+    steps: [
+      "Choose the facility: bin, sink, or drain.",
+      "Use Up and Dn to move each step into order.",
+      "Press Check order when the full sequence looks correct.",
+    ],
+    tip: "Protect yourself first, remove solid waste early, then wash, rinse, disinfect, and dry where needed.",
+  },
+  disinfectMatch: {
+    title: "Disinfection Match",
+    goal: "Match each household item to the safest disinfection method.",
+    steps: [
+      "Read one scenario at a time.",
+      "Use its dropdown to choose boiling, disinfectant, sunlight, salting, or ironing.",
+      "Press Check matches after all dropdowns are filled.",
+    ],
+    tip: "Think about the fabric and heat: cotton can often be boiled, while delicate items may need disinfectant.",
+  },
+  graftingLab: {
+    title: "Grafting Lab",
+    goal: "Build a grafting procedure in the correct order.",
+    steps: [
+      "Click grafting steps one by one to add them to the procedure.",
+      "Use Remove if you add a step in the wrong place.",
+      "Press Check graft when all six steps are listed.",
+    ],
+    tip: "Start by selecting the scion and rootstock before making cuts, inserting, tying, sealing, and caring for the graft.",
+  },
+  sunDryer: {
+    title: "Sun Dryer Builder",
+    goal: "Design a sun dryer that can dry leafy vegetables safely.",
+    steps: [
+      "Tick every part your dryer includes.",
+      "Set enough sun exposure and turning checks.",
+      "Press Save dryer when the score is 80 percent or more.",
+    ],
+    tip: "Transparent cover, wire mesh tray, clean leaves, a single layer, and regular turning all improve drying.",
+  },
+  wordSearch: {
+    title: "Word Search",
+    goal: "Find hidden vocabulary words in the letter grid.",
+    steps: [
+      "Look at the word list on the right.",
+      "Click the first letter of a word in the grid.",
+      "Click the last letter of that word to mark it found.",
+    ],
+    tip: "Words may run forward or backward, so try the reverse direction if a word does not mark correctly.",
+  },
+};
+
+function gameHintFor(module, altGame) {
+  if (altGame === "match") {
+    return {
+      title: "Term Match",
+      goal: `Match ${ml(module, "title")} glossary terms with their definitions.`,
+      steps: [
+        "Click any card to flip it.",
+        "Click a second card to look for its matching term or definition.",
+        "Match every pair; wrong pairs flip back so you can remember their positions.",
+      ],
+      tip: "Use the Glossary tab if a term feels unfamiliar.",
+    };
+  }
+  if (altGame === "wordsearch") {
+    return {
+      title: "Word Search",
+      goal: `Find hidden ${ml(module, "title")} vocabulary words in the letter grid.`,
+      steps: [
+        "Look at the word list on the right.",
+        "Click the first letter of a word in the grid.",
+        "Click the last letter of that word to mark it found.",
+      ],
+      tip: "Words may run forward or backward, so try the reverse direction if a word does not mark correctly.",
+    };
+  }
+  return GAME_HINTS[module.game] || {
+    title: "Game Help",
+    goal: "Play through the activity and use the on-screen feedback to improve your score.",
+    steps: [
+      "Read the goal at the top of the game.",
+      "Try one control at a time and watch what changes.",
+      "Use Check or Save when your answer or score is ready.",
+    ],
+    tip: "The Learn tab explains the ideas used in this game.",
+  };
+}
+
+function renderGameHelp(module, altGame) {
+  const hint = gameHintFor(module, altGame);
+  return `
+    <article class="game-help-card" aria-label="How to play this game">
+      <div class="game-help-main">
+        <p class="eyebrow">Beginner guide</p>
+        <h3>${escapeHTML(hint.title)}</h3>
+        <p>${escapeHTML(hint.goal)}</p>
+      </div>
+      <ol class="game-help-steps">
+        ${hint.steps.map((step, index) => `
+          <li><span>${index + 1}</span><p>${escapeHTML(step)}</p></li>
+        `).join("")}
+      </ol>
+      ${hint.tip ? `<p class="game-help-tip">Hint: ${escapeHTML(hint.tip)}</p>` : ""}
+    </article>
+  `;
+}
+
 function renderPlay(module) {
   if (window._activeGameCleanup) { window._activeGameCleanup(); window._activeGameCleanup = null; }
   if (window.MTPThreeSim?.disposeAll) window.MTPThreeSim.disposeAll();
@@ -3406,6 +3605,7 @@ function renderPlay(module) {
       <button class="game-tab-btn ${altGame === "match" ? "active" : ""}" data-alt-game="match">🃏 Term Match</button>
       <button class="game-tab-btn ${altGame === "wordsearch" ? "active" : ""}" data-alt-game="wordsearch">🔤 Word Search</button>
     </div>
+    ${renderGameHelp(module, altGame)}
     <div id="gameMount" style="position:relative"></div>
   `;
   els.viewHost.querySelectorAll("[data-alt-game]").forEach((btn) => {
@@ -4521,7 +4721,7 @@ const GARDEN_TUT = [
   {
     art: `<div class='vt-scene'><div style='position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:120px'>${Array(12).fill('<div style="background:rgba(100,180,80,0.22);border:1px solid rgba(100,200,80,0.35);border-radius:4px;height:22px"></div>').join('')}</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,150,0.9)'>12 organic garden beds to manage</div></div>`,
     title: "Organic Garden",
-    desc: "You manage 12 growing beds. Choose a crop, apply tools, and advance days to grow and harvest. Aim for a score of 75 to save your garden plan."
+    desc: "You manage 12 growing beds from bed preparation to planting, daily care, pest control, and harvest. Time moves by itself, so watch the clock and respond."
   },
   {
     art: `<div class='vt-scene'><div style='position:absolute;left:8%;top:14%;display:flex;flex-wrap:wrap;gap:5px;width:84%'><span style='background:rgba(100,200,80,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(150,255,150,0.9)'>🌱 Plant</span><span style='background:rgba(100,150,255,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(150,200,255,0.9)'>💧 Water</span><span style='background:rgba(180,130,50,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(220,190,100,0.9)'>🌿 Compost</span><span style='background:rgba(140,100,50,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(200,170,100,0.9)'>🪨 Mulch</span><span style='background:rgba(200,200,50,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(230,230,100,0.9)'>🌾 Weed</span><span style='background:rgba(200,80,80,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(255,150,150,0.9)'>🐛 Spray</span><span style='background:rgba(255,165,0,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(255,210,100,0.9)'>✂️ Harvest</span></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Select a tool first, then click a bed</div></div>`,
@@ -4529,9 +4729,9 @@ const GARDEN_TUT = [
     desc: "First select your crop from the dropdown. Then pick a tool — Water, Compost, Mulch, Weed, Spray, or Harvest. Finally click any bed in the grid to apply it."
   },
   {
-    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:2.2rem'>📅</span><div style='position:absolute;top:50%;left:8%;right:8%;font-size:0.68rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>💧 Water daily — mulch reduces water loss<br>🌿 Compost boosts soil fertility<br>🌾 Weed before pests spread<br>✂️ Harvest at stage 4 when ready</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Press Next Day to advance time</div></div>`,
-    title: "Advance days to grow",
-    desc: "Each day, crops grow a stage but lose water and gain weeds. Press Next Day to move forward. Harvest mature crops (stage 4+) to earn points. Reach 75 to save."
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:2.2rem'>📅</span><div style='position:absolute;top:50%;left:8%;right:8%;font-size:0.68rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>💧 Water daily — mulch reduces water loss<br>🌿 Compost boosts soil fertility<br>🌾 Weed before pests spread<br>✂️ Harvest at stage 4 when ready</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Day and night advance automatically</div></div>`,
+    title: "Time moves automatically",
+    desc: "The day and night timer keeps running. Each new day, crops may grow but also lose water and gain weeds. Harvest mature crops (stage 4+) to earn points. Reach 75 to save."
   },
   {
     art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:5px'>
@@ -4544,10 +4744,12 @@ const GARDEN_TUT = [
   <div style='text-align:center;font-size:0.62rem;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtGPFB'>Click any bed above to water it</div>
 </div>`,
     title: "Try it!",
-    desc: "In the real game the grid has 12 beds. Select your crop, pick a tool, click a bed, then press Next Day to advance. Harvest at stage 4+ to score."
+    desc: "In the real game the grid has 12 beds. Select your crop, pick a tool, click a bed, then let the automatic days pass. Harvest at stage 4+ to score."
   }
 ];
 function renderGardenPlanner(mount, _module) {
+  const DAY_START = 0.24;
+  const GARDEN_DAY_MS = 20000;
   const crops = {
     kale: { name: "Kale", short: "K", color: "#4d934d", days: 5 },
     spinach: { name: "Spinach", short: "S", color: "#2f7d4f", days: 4 },
@@ -4566,10 +4768,12 @@ function renderGardenPlanner(mount, _module) {
   ];
   const garden = {
     day: 1,
-    tool: "plant",
+    clock: DAY_START,
+    dayProgress: 0,
+    tool: "prepare",
     crop: "kale",
     harvested: 0,
-    message: "Select a tool, then tap a plot.",
+    message: "Start by preparing an empty bed, then plant your chosen crop.",
     plots: Array.from({ length: 12 }, () => ({
       crop: null,
       stage: 0,
@@ -4578,6 +4782,7 @@ function renderGardenPlanner(mount, _module) {
       pests: 0,
       weeds: 18,
       mulch: false,
+      prepared: false,
     })),
   };
   let threeController = null;
@@ -4587,11 +4792,7 @@ function renderGardenPlanner(mount, _module) {
       <article class="tool-card garden-tools">
         <p class="eyebrow">Planting simulation</p>
         <h3>Run an organic garden</h3>
-        <div class="game-control-row" style="margin-bottom:12px">
-          <label class="small-label" for="gardenDaySlider">🌅 Time of day</label>
-          <input id="gardenDaySlider" type="range" min="0" max="100" value="50" style="width:100%">
-          <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted)"><span>Dawn</span><span>Noon</span><span>Dusk</span><span>Night</span></div>
-        </div>
+        <div class="garden-cycle-card" id="gardenLifecycle"></div>
         <div class="field-row">
           <label for="cropSelect">Crop to plant</label>
           <select id="cropSelect">
@@ -4606,12 +4807,18 @@ function renderGardenPlanner(mount, _module) {
         <div class="sim-header">
           <div>
             <p class="eyebrow">School plot</p>
-            <h3>Day <span id="gardenDay">1</span></h3>
+            <h3>Day <span id="gardenDay">1</span> <span class="garden-phase-chip" id="gardenPhaseLabel">Morning</span></h3>
           </div>
           <div class="sim-actions">
-            <button class="primary-button" id="nextGardenDay">Next day</button>
             <button class="secondary-button" id="resetGardenSim">Reset</button>
           </div>
+        </div>
+        <div class="garden-time-panel" id="gardenTimePanel" aria-label="Automatic day and night timer">
+          <div class="garden-time-meta">
+            <span id="gardenClockText">06:00</span>
+            <span id="gardenCycleText">Automatic day/night cycle</span>
+          </div>
+          <div class="garden-time-track"><span id="gardenTimeFill"></span></div>
         </div>
         <div class="three-stage" id="gardenThreeStage"></div>
         <div class="garden-grid" id="gardenGrid"></div>
@@ -4624,7 +4831,7 @@ function renderGardenPlanner(mount, _module) {
           <strong>Pest safety</strong><div class="mini-meter"><span id="gardenPestMeter"></span></div>
         </div>
         <div class="harvest-count"><span id="gardenHarvested">0</span><small>harvests</small></div>
-        <p id="gardenMessage">Select a tool, then tap a plot.</p>
+        <p id="gardenMessage">Start by preparing an empty bed, then plant your chosen crop.</p>
         <button class="primary-button" id="saveGardenPlan">Save simulation</button>
       </article>
     </div>
@@ -4632,8 +4839,11 @@ function renderGardenPlanner(mount, _module) {
 
   const reset = () => {
     garden.day = 1;
+    garden.clock = DAY_START;
+    garden.dayProgress = 0;
+    lastClockTick = performance.now();
     garden.harvested = 0;
-    garden.message = "Select a tool, then tap a plot.";
+    garden.message = "Start by preparing an empty bed, then plant your chosen crop.";
     garden.plots = Array.from({ length: 12 }, () => ({
       crop: null,
       stage: 0,
@@ -4642,6 +4852,7 @@ function renderGardenPlanner(mount, _module) {
       pests: 0,
       weeds: 18,
       mulch: false,
+      prepared: false,
     }));
     draw();
   };
@@ -4662,6 +4873,68 @@ function renderGardenPlanner(mount, _module) {
     return clamp(Math.round(activeScore + garden.harvested * 12), 0, 100);
   };
 
+  const gardenClockInfo = () => {
+    const totalMinutes = Math.floor(garden.clock * 24 * 60) % (24 * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const phase =
+      hours < 5 ? "Night" :
+      hours < 8 ? "Dawn" :
+      hours < 12 ? "Morning" :
+      hours < 15 ? "Noon" :
+      hours < 18 ? "Afternoon" :
+      hours < 20 ? "Dusk" : "Night";
+    return {
+      time: `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`,
+      phase,
+      isNight: phase === "Night",
+    };
+  };
+
+  const renderLifecycle = () => {
+    const plots = garden.plots;
+    const hasPrepared = plots.some((plot) => plot.prepared && !plot.crop);
+    const hasCrop = plots.some((plot) => plot.crop);
+    const hasMature = plots.some((plot) => plot.crop && plot.stage >= 4);
+    const needsCare = plots.some((plot) => plot.crop && (plot.water < 35 || plot.fertility < 35));
+    const needsProtection = plots.some((plot) => plot.crop && (plot.weeds > 45 || plot.pests > 45));
+    const rows = [
+      ["Prepare", "Loosen the bed and remove weeds", hasPrepared || hasCrop, !hasPrepared && !hasCrop],
+      ["Plant", "Choose a crop and click a prepared bed", hasCrop, hasPrepared && !hasCrop],
+      ["Care", "Water, compost, and mulch as days pass", hasMature || garden.harvested > 0, hasCrop && !hasMature && !needsProtection],
+      ["Protect", "Weed and spray before pests spread", (hasCrop && !needsProtection && hasMature) || garden.harvested > 0, hasCrop && needsProtection],
+      ["Harvest", "Harvest at stage 4 when crops mature", garden.harvested > 0 && !hasCrop, hasMature],
+    ];
+    const el = document.getElementById("gardenLifecycle");
+    if (!el) return;
+    el.innerHTML = `
+      <p class="small-label">Start to finish</p>
+      <ol class="garden-cycle-list">
+        ${rows.map(([title, detail, done, active]) => `
+          <li class="${done ? "done" : active ? "active" : ""}">
+            <span>${escapeHTML(title)}</span>
+            <small>${escapeHTML(detail)}</small>
+          </li>
+        `).join("")}
+      </ol>
+    `;
+  };
+
+  const updateClockUI = () => {
+    const info = gardenClockInfo();
+    const clockEl = document.getElementById("gardenClockText");
+    const phaseEl = document.getElementById("gardenPhaseLabel");
+    const cycleEl = document.getElementById("gardenCycleText");
+    const fillEl = document.getElementById("gardenTimeFill");
+    const panelEl = document.getElementById("gardenTimePanel");
+    if (clockEl) clockEl.textContent = info.time;
+    if (phaseEl) phaseEl.textContent = info.phase;
+    if (cycleEl) cycleEl.textContent = info.isNight ? "Night is passing automatically; plan the next care step" : `Day ${garden.day} is passing automatically`;
+    if (fillEl) fillEl.style.width = `${garden.dayProgress * 100}%`;
+    if (panelEl) panelEl.classList.toggle("is-night", info.isNight);
+    if (threeController?.setDayTime) threeController.setDayTime(garden.clock);
+  };
+
   const syncThree = () => {
     const host = document.getElementById("gardenThreeStage");
     if (!host) return;
@@ -4678,10 +4951,8 @@ function renderGardenPlanner(mount, _module) {
         applyTool(garden.plots[index]);
         draw();
       });
-      document.getElementById("gardenDaySlider")?.addEventListener("input", (e) => {
-        if (threeController?.setDayTime) threeController.setDayTime(Number(e.target.value) / 100);
-      });
     }
+    if (threeController?.setDayTime) threeController.setDayTime(garden.clock);
     threeController?.update(garden, crops);
   };
 
@@ -4694,6 +4965,7 @@ function renderGardenPlanner(mount, _module) {
       }
       plot.fertility = clamp(plot.fertility + 20, 0, 100);
       plot.weeds = 0;
+      plot.prepared = true;
       garden.message = "Bed prepared: old weeds removed and soil loosened.";
     }
     if (tool === "plant") {
@@ -4701,13 +4973,18 @@ function renderGardenPlanner(mount, _module) {
         garden.message = "This plot already has a crop.";
         return;
       }
+      if (!plot.prepared) {
+        garden.message = "Prepare the bed first. Organic gardening starts with clean, loose soil.";
+        return;
+      }
       if (plot.fertility < 25) {
-        garden.message = "Add compost or prepare the bed before planting.";
+        garden.message = "Add compost before planting so the crop has enough nutrients.";
         return;
       }
       plot.crop = garden.crop;
       plot.stage = 1;
       plot.water = clamp(plot.water + 5, 0, 100);
+      plot.prepared = false;
       garden.message = `${crops[garden.crop].name} planted. Keep it watered and weed-free.`;
     }
     if (tool === "water") {
@@ -4744,8 +5021,8 @@ function renderGardenPlanner(mount, _module) {
         return;
       }
       garden.harvested += 1;
-      Object.assign(plot, { crop: null, stage: 0, water: 35, fertility: 35, pests: 0, weeds: 12, mulch: false });
-      garden.message = "Crop harvested hygienically at the right stage.";
+      Object.assign(plot, { crop: null, stage: 0, water: 35, fertility: 35, pests: 0, weeds: 12, mulch: false, prepared: false });
+      garden.message = "Crop harvested hygienically. Prepare another bed to continue the cycle.";
     }
   };
 
@@ -4754,6 +5031,7 @@ function renderGardenPlanner(mount, _module) {
     garden.plots.forEach((plot) => {
       if (!plot.crop) {
         plot.weeds = clamp(plot.weeds + 4, 0, 100);
+        if (plot.weeds > 35) plot.prepared = false;
         return;
       }
       plot.water = clamp(plot.water - (plot.mulch ? 8 : 16), 0, 100);
@@ -4767,8 +5045,35 @@ function renderGardenPlanner(mount, _module) {
         plot.stage = clamp(plot.stage - 1, 1, 4);
       }
     });
-    garden.message = "A day passed. Check water, weeds, fertility, and pests.";
+    garden.message = `Day ${garden.day} has begun. Check water, weeds, fertility, and pests.`;
     draw();
+  };
+
+  let clockTimer = null;
+  let lastClockTick = performance.now();
+
+  const stopGardenClock = () => {
+    if (clockTimer) clearInterval(clockTimer);
+    clockTimer = null;
+  };
+
+  const startGardenClock = () => {
+    stopGardenClock();
+    lastClockTick = performance.now();
+    clockTimer = setInterval(() => {
+      if (!mount.isConnected) {
+        stopGardenClock();
+        return;
+      }
+      const now = performance.now();
+      const delta = now - lastClockTick;
+      lastClockTick = now;
+      const previousProgress = garden.dayProgress;
+      garden.dayProgress = (garden.dayProgress + delta / GARDEN_DAY_MS) % 1;
+      garden.clock = (DAY_START + garden.dayProgress) % 1;
+      if (garden.dayProgress < previousProgress) nextDay();
+      else updateClockUI();
+    }, 250);
   };
 
   const draw = () => {
@@ -4783,6 +5088,8 @@ function renderGardenPlanner(mount, _module) {
     document.getElementById("gardenPestMeter").style.width = `${100 - average("pests", 0)}%`;
     document.getElementById("saveGardenPlan").dataset.score = gardenScore();
     document.getElementById("gardenGrid").innerHTML = garden.plots.map((plot, index) => gardenPlotTemplate(plot, index, crops)).join("");
+    renderLifecycle();
+    updateClockUI();
     syncThree();
   };
 
@@ -4799,7 +5106,6 @@ function renderGardenPlanner(mount, _module) {
       draw();
       return;
     }
-    if (event.target.id === "nextGardenDay") nextDay();
     if (event.target.id === "resetGardenSim") reset();
   });
 
@@ -4810,8 +5116,15 @@ function renderGardenPlanner(mount, _module) {
   });
 
   draw();
+  startGardenClock();
+  window._activeGameCleanup = () => {
+    stopGardenClock();
+    if (mount._gameAC) mount._gameAC.abort();
+  };
   setupIdleHint(mount, () => {
     const hasCrop = mount.querySelector('.garden-plot.planted');
+    const hasPrepared = mount.querySelector('.garden-plot.prepared');
+    if (!hasCrop && !hasPrepared) return mount.querySelector('[data-garden-tool="prepare"], .sim-tool');
     if (!hasCrop) return mount.querySelector('[data-garden-tool="plant"], .sim-tool');
     const needsWater = mount.querySelector('.garden-plot.planted');
     if (needsWater) return mount.querySelector('[data-garden-tool="water"]');
@@ -4823,7 +5136,7 @@ function renderGardenPlanner(mount, _module) {
 function gardenPlotTemplate(plot, index, crops) {
   const crop = plot.crop ? crops[plot.crop] : null;
   const plantHeight = crop ? 14 + plot.stage * 11 : 0;
-  const status = crop ? `${crop.name} stage ${plot.stage}` : "Empty bed";
+  const status = crop ? `${crop.name} stage ${plot.stage}` : plot.prepared ? "Prepared bed" : "Prepare first";
   const warnings = [
     plot.water < 20 ? "dry" : "",
     plot.weeds > 55 ? "weedy" : "",
@@ -4831,13 +5144,13 @@ function gardenPlotTemplate(plot, index, crops) {
     plot.stage >= 4 ? "ready" : "",
   ].filter(Boolean);
   return `
-    <button class="garden-plot ${crop ? "planted" : ""} ${plot.mulch ? "mulched" : ""}" data-plot="${index}" aria-label="${escapeHTML(status)}">
+    <button class="garden-plot ${crop ? "planted" : ""} ${plot.prepared ? "prepared" : ""} ${plot.mulch ? "mulched" : ""}" data-plot="${index}" aria-label="${escapeHTML(status)}">
       <span class="plot-soil"></span>
       ${crop ? `
         <span class="plot-plant" style="--plant:${crop.color};--plant-height:${plantHeight}px">
           <span>${escapeHTML(crop.short)}</span>
         </span>
-      ` : `<span class="plot-empty">+</span>`}
+      ` : `<span class="plot-empty">${plot.prepared ? "ready" : "+"}</span>`}
       <span class="plot-bars">
         <i style="width:${plot.water}%"></i>
         <i style="width:${plot.fertility}%"></i>
