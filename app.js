@@ -1317,6 +1317,174 @@ function renderXPBar() {
   `;
 }
 
+function showUserGuide() {
+  if (document.querySelector(".ug-overlay")) return;
+
+  const SECTIONS = [
+    {
+      id: "welcome", icon: "🏠", label: "Welcome",
+      html: `<h3>Welcome to MTP Digital</h3>
+<p class='ug-lead'>Agriculture &amp; Nutrition Grade 9 — by Mountain Publishers</p>
+<div class='ug-tip'>This app covers all Grade 9 Agriculture &amp; Nutrition topics with interactive simulations, games, quizzes, and reading material — all available offline once installed.</div>
+<div class='ug-card'><div class='ug-card-title'>📱 Install for offline use</div><div class='ug-card-body'>Tap <strong>Install App</strong> in the sidebar (or your browser's install prompt) to save the app to your device. Once installed, everything works without an internet connection.</div></div>
+<div class='ug-card'><div class='ug-card-title'>👤 Offline profiles</div><div class='ug-card-body'>Create up to 5 offline student profiles using the account button in the top bar. Each profile keeps its own progress, XP, badges, and notes — no login required.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🌐 Language</div><div class='ug-card-body'>Switch between English and Swahili using the <strong>EN / SW</strong> toggle in the sidebar Settings panel.</div></div>`,
+    },
+    {
+      id: "navigate", icon: "🧭", label: "Navigation",
+      html: `<h3>Finding Your Way</h3>
+<p class='ug-lead'>The sidebar on the left lists all 12 learning modules. The tabs at the top switch between views.</p>
+<table class='ug-table'>
+  <tr><th>Tab</th><th>What it does</th></tr>
+  <tr><td>📖 Learn</td><td>Illustrated lesson content, skill targets, and key facts for the selected module.</td></tr>
+  <tr><td>🎮 Games</td><td>Interactive simulation or activity for the module. Includes Main Game, Term Match, and Word Search.</td></tr>
+  <tr><td>❓ Quiz</td><td>Multiple-choice questions. Timed mode is available for exam practice.</td></tr>
+  <tr><td>📄 Book</td><td>Embedded PDF textbook reader for the full chapter.</td></tr>
+  <tr><td>📝 Notes</td><td>Personal journal — write and save notes for each module.</td></tr>
+  <tr><td>📇 Flashcards</td><td>Tap to flip vocabulary flashcards. Swipe or press Got it / Review again.</td></tr>
+  <tr><td>🔤 Glossary</td><td>Searchable definitions for all key terms in the module.</td></tr>
+</table>
+<div class='ug-tip' style='margin-top:12px'>Click any module name in the left sidebar to switch. The current module is highlighted.</div>`,
+    },
+    {
+      id: "learn", icon: "📖", label: "Learning",
+      html: `<h3>The Learn Tab</h3>
+<p class='ug-lead'>Start here before playing games or attempting quizzes.</p>
+<div class='ug-card'><div class='ug-card-title'>🎯 Skill targets</div><div class='ug-card-body'>Each lesson opens with the learning objectives. Read these first so you know what to look for as you study.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🌿 3D scenes</div><div class='ug-card-body'>Some modules (Organic Gardening, Soil Science) include interactive 3D diagrams. Drag to orbit the camera. Use the Time of Day slider to see day and night lighting.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🤖 AI Advisor</div><div class='ug-card-body'>Press the <strong>AI Advisor</strong> button in the top bar to ask questions about any topic. The advisor knows the full Grade 9 curriculum and can give hints, explanations, or practice questions.</div></div>
+<div class='ug-tip'>Read the Learn tab before attempting the quiz — questions are based directly on the lesson content.</div>`,
+    },
+    {
+      id: "games", icon: "🎮", label: "Games",
+      html: `<h3>Games &amp; Simulations</h3>
+<p class='ug-lead'>Each module has a main game plus Term Match and Word Search.</p>
+<div class='ug-tip'>On your first visit to each game a <strong>tutorial</strong> walks you through 4 steps — the last step lets you try the mechanic yourself before the real game starts.</div>
+<table class='ug-table'>
+  <tr><th>Game</th><th>What you do</th></tr>
+  <tr><td>🌾 Hay Lab</td><td>Adjust moisture, drying days, weather, and shelter sliders. Score 75+ to save.</td></tr>
+  <tr><td>🗑️ Leftover Sort</td><td>Tap a food card, then assign it to Store / Reheat / Share / Discard.</td></tr>
+  <tr><td>♻️ Farm Loop</td><td>Click 6 farm resources in the correct circular order.</td></tr>
+  <tr><td>🌱 Garden Planner</td><td>Select a tool, click plots, advance days. Harvest at stage 4. Score 75+.</td></tr>
+  <tr><td>🏚️ Storage Inspector</td><td>Tick every safe storage practice. Score 80+.</td></tr>
+  <tr><td>🥣 Flour Mixer</td><td>Slide flour and liquid until the mix type matches the target product.</td></tr>
+  <tr><td>🗑️ Cleanup Order</td><td>Use Up / Down buttons to sort cleanup steps into the correct order.</td></tr>
+  <tr><td>🧴 Disinfect Match</td><td>Use dropdowns to match scenarios to disinfection methods. 4/5 to pass.</td></tr>
+  <tr><td>🌿 Grafting Lab</td><td>Click 6 grafting steps in the correct order, then Check Graft.</td></tr>
+  <tr><td>☀️ Sun Dryer</td><td>Tick all dryer parts and set sun hours + turning. Score 80+.</td></tr>
+  <tr><td>🔤 Word Search</td><td>Click the first letter, then the last letter of a hidden word.</td></tr>
+  <tr><td>🃏 Term Match</td><td>Flip two cards to match a term with its definition.</td></tr>
+</table>
+<div class='ug-card' style='margin-top:10px'><div class='ug-card-title'>💡 Idle hints</div><div class='ug-card-body'>If you stop interacting for about 9 seconds, the most important control glows green. This is a hint — interact with that element to continue.</div></div>
+<div class='ug-card'><div class='ug-card-title'>⚡ Random events</div><div class='ug-card-body'>Some games (Garden Planner, Hay Lab, Sun Dryer, and others) trigger random real-world events like drought, pest outbreaks, or market demand. These change the game state — respond appropriately to protect your score.</div></div>`,
+    },
+    {
+      id: "quiz", icon: "❓", label: "Quiz",
+      html: `<h3>Quizzes</h3>
+<p class='ug-lead'>Test your knowledge with module-specific multiple-choice questions.</p>
+<div class='ug-card'><div class='ug-card-title'>📝 How to answer</div><div class='ug-card-body'>Read each question carefully and tap your chosen answer. You get immediate feedback — correct answers turn green, wrong answers show the correct choice.</div></div>
+<div class='ug-card'><div class='ug-card-title'>⏱️ Timed mode</div><div class='ug-card-body'>Toggle <strong>Timed Assessment</strong> for exam-style practice. A countdown timer runs for the whole quiz — answer before time runs out.</div></div>
+<div class='ug-card'><div class='ug-card-title'>📊 Score history</div><div class='ug-card-body'>Your last 5 quiz scores are shown for each module so you can track improvement. The best score is saved to your progress record.</div></div>
+<div class='ug-tip'>Aim to read the Learn tab and review Flashcards before attempting the Quiz for the first time.</div>`,
+    },
+    {
+      id: "progress", icon: "⭐", label: "Progress",
+      html: `<h3>Progress, XP &amp; Badges</h3>
+<p class='ug-lead'>Your learning journey is tracked automatically.</p>
+<div class='ug-card'><div class='ug-card-title'>📈 Course progress bar</div><div class='ug-card-body'>The bar at the top of the sidebar shows how many modules you have completed. A module is marked complete when you save a passing game result and score on the quiz.</div></div>
+<div class='ug-card'><div class='ug-card-title'>⚡ XP &amp; Levels</div><div class='ug-card-body'>You earn XP by completing games, quizzes, and flashcards. Levels in order:<br><br>
+<strong>🌱 Seedling</strong> → <strong>🌿 Sprout</strong> → <strong>🌳 Sapling</strong> → <strong>🌲 Young Plant</strong> → <strong>🎋 Mature Plant</strong> → <strong>👨‍🌾 Master Farmer</strong></div></div>
+<div class='ug-card'><div class='ug-card-title'>🔥 Daily streak</div><div class='ug-card-body'>Complete at least one activity every day to build your streak. The streak chip appears in the sidebar when you have a streak running.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🏅 Badges</div><div class='ug-card-body'>Badges unlock automatically when you hit milestones. Examples:
+<div style='margin-top:6px'>
+<span class='ug-badge-chip'>🌱 First Steps</span>
+<span class='ug-badge-chip'>🔥 On Fire</span>
+<span class='ug-badge-chip'>🎓 Scholar</span>
+<span class='ug-badge-chip'>🏆 Hay Expert</span>
+<span class='ug-badge-chip'>⚡ Speed Learner</span>
+<span class='ug-badge-chip'>🌍 Eco Farmer</span>
+</div></div></div>
+<div class='ug-card'><div class='ug-card-title'>🏆 Leaderboard</div><div class='ug-card-body'>Press the Leaderboard button in the sidebar to compare XP across all profiles on this device.</div></div>`,
+    },
+    {
+      id: "flashcards", icon: "📇", label: "Flashcards",
+      html: `<h3>Flashcards</h3>
+<p class='ug-lead'>Memorise key vocabulary before a quiz or exam.</p>
+<div class='ug-card'><div class='ug-card-title'>↩️ Flipping</div><div class='ug-card-body'>Tap a flashcard to flip it from the term to the definition. Tap again to flip back.</div></div>
+<div class='ug-card'><div class='ug-card-title'>✅ Got it / 🔁 Review again</div><div class='ug-card-body'>After seeing a definition, press <strong>Got it</strong> if you knew the answer. Press <strong>Review again</strong> if you need another look. Cards you flag for review reappear at the end of the deck.</div></div>
+<div class='ug-card'><div class='ug-card-title'>📊 Completion tracking</div><div class='ug-card-body'>Completing a full flashcard deck earns XP and counts toward your progress. Your completion count is shown on your profile.</div></div>
+<div class='ug-tip'>Study flashcards in small sets — 5–10 cards at a time is more effective than doing all at once.</div>`,
+    },
+    {
+      id: "notes", icon: "📝", label: "Notes",
+      html: `<h3>Notes &amp; Journal</h3>
+<p class='ug-lead'>Write personal study notes for each module under the Notes tab.</p>
+<div class='ug-card'><div class='ug-card-title'>✏️ Writing notes</div><div class='ug-card-body'>Type in the text area and press <strong>Save notes</strong>. Notes are saved per module and per profile — they persist offline.</div></div>
+<div class='ug-card'><div class='ug-card-title'>📤 Exporting</div><div class='ug-card-body'>Use the export button to download all your notes as a text file you can share or print.</div></div>
+<div class='ug-tip'>Use notes to write your own summaries after reading the Learn tab. Writing in your own words is one of the best study techniques.</div>`,
+    },
+    {
+      id: "settings", icon: "⚙️", label: "Settings",
+      html: `<h3>Settings &amp; Accessibility</h3>
+<p class='ug-lead'>Customise the app to suit your preferences.</p>
+<div class='ug-card'><div class='ug-card-title'>🎨 Themes</div><div class='ug-card-body'>Choose between <strong>Glass</strong> (default), <strong>Light</strong>, and <strong>Dark</strong> modes using the buttons in the top bar.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🔤 Text size</div><div class='ug-card-body'>The <strong>Text size</strong> slider in the sidebar Settings panel scales all text. Useful on small screens or for accessibility.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🔔 Study reminders</div><div class='ug-card-body'>Press <strong>Enable reminders</strong> to allow notification reminders to study. Reminders only work when the app is installed as a PWA.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🔄 Resetting progress</div><div class='ug-card-body'>The reset button (↺) in the top bar clears all progress for the current profile. This cannot be undone — use it only if you want to start fresh.</div></div>
+<div class='ug-card'><div class='ug-card-title'>📲 Installing the app</div><div class='ug-card-body'>Press <strong>Install App</strong> in the sidebar to install as a PWA. On iOS, use Safari → Share → Add to Home Screen. Once installed, the app works fully offline.</div></div>`,
+    },
+    {
+      id: "tips", icon: "💡", label: "Study Tips",
+      html: `<h3>Study Tips</h3>
+<p class='ug-lead'>Get the most out of MTP Digital.</p>
+<div class='ug-tip'>📖 <strong>Learn first, play second.</strong> Reading the Learn tab before the game means you understand why — not just what to click.</div>
+<div class='ug-tip'>🔥 <strong>Build your streak.</strong> Even 10 minutes a day keeps your streak alive and compounds your progress over the term.</div>
+<div class='ug-tip'>🃏 <strong>Flashcards before quizzes.</strong> Reviewing glossary terms as flashcards directly before a quiz boosts your score.</div>
+<div class='ug-tip'>⚡ <strong>Random events are real.</strong> In the Garden Planner, drought and pest events mirror what farmers actually face. Respond quickly — mulch plots before drought, spray pests before they spread.</div>
+<div class='ug-tip'>📝 <strong>Write notes in your own words.</strong> After each module, open Notes and summarise what you learned in 3–5 sentences. This is one of the most effective study strategies.</div>
+<div class='ug-tip'>🤖 <strong>Ask the AI Advisor.</strong> If anything in the lesson is unclear, the AI Advisor can explain it differently, give examples, or quiz you on it.</div>
+<div class='ug-card' style='margin-top:12px'><div class='ug-card-title'>📱 Mountain Publishers</div><div class='ug-card-body'>MTP Digital accompanies the Agriculture &amp; Nutrition Grade 9 textbook. Use both together for the best results. The Book tab opens the PDF chapter for the selected module.</div></div>`,
+    },
+  ];
+
+  const overlay = document.createElement("div");
+  overlay.className = "ug-overlay";
+  overlay.innerHTML = `
+    <div class='ug-modal' role='dialog' aria-modal='true' aria-label='User Guide'>
+      <div class='ug-header'>
+        <div>
+          <h2>📖 User Guide</h2>
+          <div class='ug-header-sub'>Agriculture &amp; Nutrition Grade 9 — MTP Digital</div>
+        </div>
+        <button class='ug-close' aria-label='Close guide'>✕</button>
+      </div>
+      <div class='ug-body'>
+        <nav class='ug-nav' aria-label='Guide sections'>
+          ${SECTIONS.map((s) => `<button class='ug-nav-btn' data-ug='${s.id}'><span class='ug-nav-icon'>${s.icon}</span><span>${s.label}</span></button>`).join("")}
+        </nav>
+        <div class='ug-content'>
+          ${SECTIONS.map((s) => `<section class='ug-section' id='ug-${s.id}'>${s.html}</section>`).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const activate = (id) => {
+    overlay.querySelectorAll(".ug-nav-btn").forEach((b) => b.classList.toggle("active", b.dataset.ug === id));
+    overlay.querySelectorAll(".ug-section").forEach((s) => s.classList.toggle("active", s.id === `ug-${id}`));
+  };
+  activate(SECTIONS[0].id);
+
+  overlay.querySelector(".ug-close").onclick = () => overlay.remove();
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+  overlay.querySelectorAll(".ug-nav-btn").forEach((b) => b.addEventListener("click", () => activate(b.dataset.ug)));
+  document.addEventListener("keydown", function onKey(e) {
+    if (e.key === "Escape") { overlay.remove(); document.removeEventListener("keydown", onKey); }
+  });
+}
+
 function showLeaderboard() {
   const profiles = getStudentProfiles();
   if (!profiles.length) { showToast("No student profiles found on this device.", "info"); return; }
@@ -1710,6 +1878,7 @@ function initNotifications() {
   });
   if (Notification.permission === "granted") scheduleReminder();
   document.getElementById("leaderboardBtn")?.addEventListener("click", showLeaderboard);
+  document.getElementById("userGuideBtn")?.addEventListener("click", showUserGuide);
 }
 
 function scheduleReminder() {
