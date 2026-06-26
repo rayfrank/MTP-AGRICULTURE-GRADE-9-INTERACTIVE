@@ -45,7 +45,7 @@ function triggerCelebration(mount) {
   const banner = document.createElement("div");
   banner.className = "celebration-banner";
   banner.innerHTML = `
-    <img src="mtplogo.png" alt="MTP Logo" style="width: 64px; height: 64px; object-fit: contain; margin-bottom: 10px; border-radius: 12px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); padding: 4px; box-shadow: 0 4px 12px rgba(35,208,109,0.3)">
+    <img src="media/mtplogo.png" alt="MTP Logo" style="width: 64px; height: 64px; object-fit: contain; margin-bottom: 10px; border-radius: 12px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); padding: 4px; box-shadow: 0 4px 12px rgba(35,208,109,0.3)">
     <h3>Excellent Work!</h3>
     <p>Game completed and saved to your progress.</p>
   `;
@@ -3109,7 +3109,7 @@ function showWelcomeSplash() {
   function buildBrand() {
     return `
       <div class="welcome-brand">
-        <img src="mtplogo.png" alt="MTP Logo" onerror="this.style.display='none'">
+        <img src="media/mtplogo.png" alt="MTP Logo" onerror="this.style.display='none'">
         <h1>Agriculture &amp; Nutrition</h1>
         <p>Grade 9 · MTP Digital</p>
       </div>

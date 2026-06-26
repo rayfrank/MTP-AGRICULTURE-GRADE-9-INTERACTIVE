@@ -1,18 +1,20 @@
 /* ── MTP Digital Service Worker ─────────────────────────────── */
-const CACHE_NAME = "agri-nutrition-v1";
+const CACHE_NAME = "agri-nutrition-v2";
+const APP_ROOT = new URL("../", self.location.href);
 
 // Files cached immediately on install (app shell)
 const PRECACHE = [
-  "./index.html",
-  "./styles.css",
-  "./app.js",
-  "./book-data.js",
-  "./three-scenes.js",
-  "./assets/three.cjs",
-  "./mtplogo.png",
-  "./icons/icon.svg",
-  "./manifest.json",
-];
+  "index.html",
+  "styles/styles.css",
+  "scripts/app.js",
+  "scripts/book-data.js",
+  "scripts/three-scenes.js",
+  "assets/three.cjs",
+  "assets/book.pdf",
+  "media/mtplogo.png",
+  "icons/icon.svg",
+  "pwa/manifest.json",
+].map((path) => new URL(path, APP_ROOT).href);
 
 // ── Install: precache app shell ───────────────────────────────
 self.addEventListener("install", (event) => {

@@ -332,7 +332,7 @@ function mountGarden(host, garden, crops, onPlot) {
 
   // MTP Logo Billboard
   const texLoader = new THREE.TextureLoader();
-  texLoader.load("mtplogo.png", (tex) => {
+  texLoader.load("media/mtplogo.png", (tex) => {
     const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.85 });
     const sprite = new THREE.Sprite(mat);
     sprite.scale.set(3, 3, 1);

@@ -6,14 +6,14 @@
     <title>Agriculture &amp; Nutrition Grade 9 — MTP Digital</title>
     <meta name="description" content="Interactive Agriculture and Nutrition Grade 9 learning platform by Mountain Publishers.">
     <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="pwa/manifest.json">
     <meta name="theme-color" content="#1e6b3c">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Agri-Nutrition">
     <link rel="apple-touch-icon" href="icons/icon.svg">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles/styles.css">
   </head>
   <body data-theme="liquid">
 
@@ -34,7 +34,7 @@
     <div class="app-loader" id="appLoader" aria-label="Loading">
       <div class="loader-inner">
         <div class="loader-logo">
-          <img src="mtplogo.png" alt="MTP" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <img src="media/mtplogo.png" alt="MTP" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <svg viewBox="0 0 72 72" role="img" aria-hidden="true" style="display:none">
             <rect x="8" y="8" width="56" height="56" rx="13" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
             <path d="M21 46c13-2 23-12 25-29 11 10 13 25 5 39-9 0-20-3-30-10Z" fill="rgba(255,255,255,0.6)"/>
@@ -65,7 +65,7 @@
       <aside class="side-panel" aria-label="Book modules">
         <div class="brand-block">
           <div class="brand-mark" aria-hidden="true">
-            <img src="mtplogo.png" alt="MTP Logo" class="brand-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <img src="media/mtplogo.png" alt="MTP Logo" class="brand-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
             <div class="brand-logo-fallback" style="display:none">
               <svg viewBox="0 0 72 72" role="img">
                 <rect x="8" y="8" width="56" height="56" rx="13"></rect>
@@ -212,7 +212,7 @@
     <!-- Toast container -->
     <div class="toast-container" id="toastContainer" aria-live="assertive"></div>
 
-    <script src="book-data.js"></script>
+    <script src="scripts/book-data.js"></script>
     <script>
       window.__mtpThreeModule = { exports: {} };
       window.exports = window.__mtpThreeModule.exports;
@@ -225,8 +225,8 @@
       delete window.module;
       delete window.__mtpThreeModule;
     </script>
-    <script src="three-scenes.js"></script>
-    <script src="app.js"></script>
+    <script src="scripts/three-scenes.js"></script>
+    <script src="scripts/app.js"></script>
     <script>
       // Dismiss loader after app initializes
       window.addEventListener("load", () => {
@@ -252,7 +252,12 @@
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", async () => {
           try {
-            const reg = await navigator.serviceWorker.register("./sw.js");
+            let reg;
+            try {
+              reg = await navigator.serviceWorker.register("./pwa/sw.js", { scope: "./" });
+            } catch (scopeErr) {
+              reg = await navigator.serviceWorker.register("./pwa/sw.js");
+            }
 
             // Show "Update available" toast when a new SW is waiting
             reg.addEventListener("updatefound", () => {
