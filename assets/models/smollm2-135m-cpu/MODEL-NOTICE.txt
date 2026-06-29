@@ -1,0 +1,10 @@
+SmolLM2 135M Instruct CPU fallback
+
+Source: https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct
+Model: HuggingFaceTB/SmolLM2-135M-Instruct
+Bundled file: onnx/model_quantized.onnx
+SHA-256: ecc1a19eece6494e2963cf74f78ace35916e8d0b803168ddd41db00979f18e39
+License: Apache License 2.0
+
+The model is used locally through Transformers.js and ONNX Runtime Web as a
+CPU/WebAssembly fallback when the 360M WebGPU model is unavailable.

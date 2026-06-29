@@ -1,6 +1,7 @@
 /* ── UI Utilities ───────────────────────────────────────────── */
 
-function addRipple(event) {
+function addRipple(event)
+{
   const btn = event.currentTarget || event.target;
   if (!btn || !btn.getBoundingClientRect) return;
   const rect = btn.getBoundingClientRect();
@@ -14,7 +15,8 @@ function addRipple(event) {
   el.addEventListener("animationend", () => el.remove(), { once: true });
 }
 
-function showToast(message, type = "info") {
+function showToast(message, type = "info")
+{
   const container = document.getElementById("toastContainer");
   if (!container) return;
   const toast = document.createElement("div");
@@ -27,7 +29,8 @@ function showToast(message, type = "info") {
   }, 3200);
 }
 
-function animateValue(el, target, duration = 800, suffix = "") {
+function animateValue(el, target, duration = 800, suffix = "")
+{
   if (!el) return;
   const start = parseInt(el.textContent) || 0;
   const startTime = performance.now();
@@ -40,8 +43,10 @@ function animateValue(el, target, duration = 800, suffix = "") {
   requestAnimationFrame(step);
 }
 
-function triggerCelebration(mount) {
+function triggerCelebration(mount)
+{
   if (!mount) return;
+  studyAudio.playEffect("success", { force: true });
   const banner = document.createElement("div");
   banner.className = "celebration-banner";
   banner.innerHTML = `
@@ -61,7 +66,8 @@ function triggerCelebration(mount) {
 
 /* ── Effects System ──────────────────────────────────────────── */
 
-function spawnFloatingScore(screenX, screenY, text, color = "#ffd700") {
+function spawnFloatingScore(screenX, screenY, text, color = "#ffd700")
+{
   const el = document.createElement("div");
   el.className = "float-score-el";
   el.textContent = text;
@@ -1352,7 +1358,7 @@ function showUserGuide() {
 <p class='ug-lead'>Start here before playing games or attempting quizzes.</p>
 <div class='ug-card'><div class='ug-card-title'>🎯 Skill targets</div><div class='ug-card-body'>Each lesson opens with the learning objectives. Read these first so you know what to look for as you study.</div></div>
 <div class='ug-card'><div class='ug-card-title'>🌿 3D scenes</div><div class='ug-card-body'>Some modules (Organic Gardening, Soil Science) include interactive 3D diagrams. Drag to orbit the camera. Use the Time of Day slider to see day and night lighting.</div></div>
-<div class='ug-card'><div class='ug-card-title'>🤖 AI Advisor</div><div class='ug-card-body'>Press the <strong>AI Advisor</strong> button in the top bar to ask questions about any topic. The advisor knows the full Grade 9 curriculum and can give hints, explanations, or practice questions.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🧑🏾‍🌾 Mwalimu AI Tutor</div><div class='ug-card-body'>Press <strong>AI Tutor</strong> in the top bar to chat naturally, ask about the Grade 9 textbook, or control the app. Mwalimu greets the active offline profile by name. Use the face button to change the avatar and optionally enable the included SmolLM2 Enhanced local AI pack. AI+ automatically uses graphics acceleration when available or its included CPU model on other devices.</div></div>
 <div class='ug-tip'>Read the Learn tab before attempting the quiz — questions are based directly on the lesson content.</div>`,
     },
     {
@@ -1442,7 +1448,7 @@ function showUserGuide() {
 <div class='ug-tip'>🃏 <strong>Flashcards before quizzes.</strong> Reviewing glossary terms as flashcards directly before a quiz boosts your score.</div>
 <div class='ug-tip'>⚡ <strong>Random events are real.</strong> In the Garden Planner, drought and pest events mirror what farmers actually face. Respond quickly — mulch plots before drought, spray pests before they spread.</div>
 <div class='ug-tip'>📝 <strong>Write notes in your own words.</strong> After each module, open Notes and summarise what you learned in 3–5 sentences. This is one of the most effective study strategies.</div>
-<div class='ug-tip'>🤖 <strong>Ask the AI Advisor.</strong> If anything in the lesson is unclear, the AI Advisor can explain it differently, give examples, or quiz you on it.</div>
+<div class='ug-tip'>🧑🏾‍🌾 <strong>Ask Mwalimu.</strong> The 3D AI tutor is available from every screen. It recognizes the active profile, can have friendly conversations, answers agriculture questions from the offline textbook, and controls safe app functions. Use the face button to change its avatar and gender. Typed questions never leave this device; optional microphone dictation depends on the browser and may require internet.</div>
 <div class='ug-card' style='margin-top:12px'><div class='ug-card-title'>📱 Mountain Publishers</div><div class='ug-card-body'>MTP Digital accompanies the Agriculture &amp; Nutrition Grade 9 textbook. Use both together for the best results. The Book tab opens the PDF chapter for the selected module.</div></div>`,
     },
   ];
@@ -1553,8 +1559,8 @@ function renderAnalyticsCard() {
   `;
 }
 
-/* ── AI Advisor Panel ────────────────────────────────────────── */
-function showAIPanel() {
+/* ── Legacy study snapshot (kept for report-card context) ───── */
+function showStudyAdvisorSnapshot() {
   const module = currentModule();
   const misses = progress.quizMisses?.[module.id] || {};
   const hardQuestions = module.quiz
@@ -1879,6 +1885,8 @@ function initNotifications() {
   if (Notification.permission === "granted") scheduleReminder();
   document.getElementById("leaderboardBtn")?.addEventListener("click", showLeaderboard);
   document.getElementById("userGuideBtn")?.addEventListener("click", showUserGuide);
+  document.getElementById("classCardBtn")?.addEventListener("click", showStudentClassCard);
+  document.getElementById("classBoardBtn")?.addEventListener("click", showClassBoard);
 }
 
 function scheduleReminder() {
@@ -2601,7 +2609,7 @@ const params = new URLSearchParams(window.location.search);
 if (MODULES.some((module) => module.id === params.get("module"))) {
   state.moduleId = params.get("module");
 }
-if (["learn", "play", "quiz", "reader", "journal", "flashcard", "glossary"].includes(params.get("view"))) {
+if (["learn", "media", "play", "quiz", "reader", "journal", "flashcard", "glossary"].includes(params.get("view"))) {
   state.view = params.get("view");
 }
 if (params.get("lock") && MODULES.some((m) => m.id === params.get("lock"))) {
@@ -2688,6 +2696,313 @@ function currentModule() {
   return MODULES.find((module) => module.id === state.moduleId) || MODULES[0];
 }
 
+/* -- Music, narration and interface audio --------------------- */
+
+const MEDIA_SETTINGS_KEY = "mtp-media-settings-v1";
+
+const studyAudio = (() => {
+  const saved = parseStoredJSON(MEDIA_SETTINGS_KEY, {});
+  const prefs = {
+    volume: clamp(Number(saved.volume ?? 0.45), 0, 1),
+    sfx: saved.sfx !== false,
+  };
+  let context = null;
+  let masterGain = null;
+  let musicBus = null;
+  let musicTimer = null;
+  let musicPlaying = false;
+  let narrationActive = false;
+  let narrationIsLesson = false;
+  let activeUtterance = null;
+
+  function saveSettings() {
+    localStorage.setItem(MEDIA_SETTINGS_KEY, JSON.stringify(prefs));
+  }
+
+  function ensureContext() {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return null;
+    if (!context) {
+      context = new AudioContext();
+      masterGain = context.createGain();
+      masterGain.gain.value = prefs.volume;
+      masterGain.connect(context.destination);
+    }
+    if (context.state === "suspended") context.resume();
+    return context;
+  }
+
+  function scheduleNote(frequency, start, duration, gainValue, destination, type = "sine") {
+    if (!context || !destination) return;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(gainValue, start + Math.min(0.35, duration / 3));
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    oscillator.connect(gain);
+    gain.connect(destination);
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.05);
+  }
+
+  function scheduleMusicCycle() {
+    if (!musicPlaying || !ensureContext() || !musicBus) return;
+    const start = context.currentTime + 0.08;
+    const chords = [
+      [130.81, 164.81, 196.00],
+      [110.00, 146.83, 174.61],
+      [98.00, 130.81, 164.81],
+      [116.54, 146.83, 196.00],
+    ];
+    const melody = [261.63, 293.66, 329.63, 293.66, 246.94, 261.63, 220.00, 246.94];
+    chords.forEach((chord, chordIndex) => {
+      const chordStart = start + chordIndex * 2;
+      chord.forEach((frequency) => scheduleNote(frequency, chordStart, 2.35, 0.06, musicBus, "sine"));
+    });
+    melody.forEach((frequency, noteIndex) => {
+      scheduleNote(frequency, start + noteIndex, 0.82, 0.042, musicBus, "triangle");
+    });
+  }
+
+  function startMusic() {
+    if (musicPlaying || !ensureContext()) return false;
+    musicPlaying = true;
+    musicBus = context.createGain();
+    musicBus.gain.setValueAtTime(0.0001, context.currentTime);
+    musicBus.gain.exponentialRampToValueAtTime(1, context.currentTime + 0.5);
+    musicBus.connect(masterGain);
+    scheduleMusicCycle();
+    musicTimer = window.setInterval(scheduleMusicCycle, 8000);
+    updateMediaControls();
+    return true;
+  }
+
+  function stopMusic() {
+    if (!musicPlaying) return;
+    musicPlaying = false;
+    window.clearInterval(musicTimer);
+    musicTimer = null;
+    if (musicBus && context) {
+      const oldBus = musicBus;
+      oldBus.gain.cancelScheduledValues(context.currentTime);
+      oldBus.gain.setValueAtTime(Math.max(oldBus.gain.value, 0.0001), context.currentTime);
+      oldBus.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.25);
+      window.setTimeout(() => oldBus.disconnect(), 350);
+    }
+    musicBus = null;
+    updateMediaControls();
+  }
+
+  function toggleMusic() {
+    if (musicPlaying) stopMusic();
+    else if (!startMusic()) showToast("Audio is not supported in this browser.", "warn");
+  }
+
+  function playEffect(kind = "tap", { force = false } = {}) {
+    if ((!prefs.sfx && !force) || !ensureContext()) return;
+    const tones = {
+      tap: [420, 0.055, 0.09],
+      switch: [520, 0.08, 0.13],
+      success: [660, 0.18, 0.22],
+    };
+    const [frequency, duration, level] = tones[kind] || tones.tap;
+    scheduleNote(frequency, context.currentTime, duration, level, masterGain, "sine");
+    if (kind === "success") scheduleNote(880, context.currentTime + 0.11, 0.22, level, masterGain, "sine");
+  }
+
+  function lessonScript(module) {
+    const goals = ml(module, "goals") || [];
+    const ideas = ml(module, "ideas") || [];
+    const swahili = progress?.language === "sw";
+    return [
+      ml(module, "title"),
+      ml(module, "summary"),
+      swahili ? "Malengo ya kujifunza." : "Learning goals.",
+      ...goals,
+      swahili ? "Mawazo muhimu." : "Core ideas.",
+      ...ideas,
+    ].filter(Boolean).join(" ");
+  }
+
+  function preferredVoice(language, gender = "neutral") {
+    const voices = window.speechSynthesis?.getVoices?.() || [];
+    if (!voices.length) return null;
+    const langRoot = language.toLowerCase().split("-")[0];
+    const local = voices.filter((voice) => voice.localService !== false);
+    const candidates = [...(local.length ? local : voices)];
+    const matching = candidates.filter((voice) => voice.lang?.toLowerCase().startsWith(langRoot));
+    const pool = matching.length ? matching : candidates;
+    return pool.sort((a, b) => {
+      const score = (voice) => {
+        const name = voice.name || "";
+        let value = /natural|neural|premium|enhanced|google|microsoft/i.test(name) ? 5 : 0;
+        if (gender === "woman" && /female|woman|aria|jenny|zira|samantha|susan|hazel|libby|sonia|natasha|moira|tessa|victoria|karen/i.test(name)) value += 7;
+        if (gender === "man" && /male|man|david|mark|george|guy|ryan|daniel|james|thomas|william/i.test(name)) value += 7;
+        return value;
+      };
+      return score(b) - score(a);
+    })[0] || null;
+  }
+
+  function speak(text, options = {}) {
+    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+      showToast("Narration is not supported in this browser.", "warn");
+      return false;
+    }
+    stopNarration();
+    const utterance = new SpeechSynthesisUtterance(String(text));
+    utterance.lang = (progress?.language === "sw") ? "sw-KE" : "en-KE";
+    utterance.rate = options.rate || 0.9;
+    utterance.pitch = options.voice === "tutor"
+      ? options.voiceGender === "woman" ? 1.06 : options.voiceGender === "man" ? 0.94 : 1
+      : 1;
+    utterance.volume = prefs.volume;
+    const voice = preferredVoice(utterance.lang, options.voiceGender);
+    if (voice) utterance.voice = voice;
+    narrationActive = true;
+    narrationIsLesson = Boolean(options.lesson);
+    activeUtterance = utterance;
+    utterance._mtpOnEnd = options.onEnd;
+    utterance.onstart = () => options.onStart?.();
+    const finish = (event) => {
+      if (activeUtterance !== utterance) return;
+      narrationActive = false;
+      narrationIsLesson = false;
+      activeUtterance = null;
+      updateMediaControls();
+      utterance._mtpOnEnd?.(event);
+    };
+    utterance.onend = finish;
+    utterance.onerror = finish;
+    window.speechSynthesis.speak(utterance);
+    updateMediaControls();
+    return true;
+  }
+
+  function stopNarration() {
+    const stoppedUtterance = activeUtterance;
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    narrationActive = false;
+    narrationIsLesson = false;
+    activeUtterance = null;
+    updateMediaControls();
+    stoppedUtterance?._mtpOnEnd?.({ type: "cancel" });
+  }
+
+  function toggleLessonNarration() {
+    if (narrationActive && narrationIsLesson) stopNarration();
+    else {
+      const sceneNarration = document.getElementById("motionNarrationToggle");
+      if (sceneNarration) sceneNarration.checked = false;
+      speak(lessonScript(currentModule()), { lesson: true });
+    }
+  }
+
+  function setVolume(value) {
+    prefs.volume = clamp(Number(value), 0, 1);
+    if (masterGain && context) {
+      masterGain.gain.setTargetAtTime(prefs.volume, context.currentTime, 0.03);
+    }
+    if (activeUtterance) activeUtterance.volume = prefs.volume;
+    saveSettings();
+    updateMediaControls();
+  }
+
+  function toggleEffects() {
+    prefs.sfx = !prefs.sfx;
+    saveSettings();
+    if (prefs.sfx) playEffect("switch");
+    updateMediaControls();
+  }
+
+  return {
+    get volume() { return prefs.volume; },
+    get effectsEnabled() { return prefs.sfx; },
+    get musicPlaying() { return musicPlaying; },
+    get narrationActive() { return narrationActive; },
+    get narrationIsLesson() { return narrationIsLesson; },
+    toggleMusic,
+    stopMusic,
+    playEffect,
+    speak,
+    stopNarration,
+    toggleLessonNarration,
+    toggleEffects,
+    setVolume,
+  };
+})();
+
+function updateMediaControls() {
+  const musicButton = document.getElementById("musicToggleButton");
+  const lessonButton = document.getElementById("lessonAudioButton");
+  const effectsButton = document.getElementById("soundEffectsButton");
+  const mediaButton = document.getElementById("mediaControlsButton");
+  const musicHint = document.getElementById("musicToggleHint");
+  const lessonHint = document.getElementById("lessonAudioHint");
+  const effectsHint = document.getElementById("soundEffectsHint");
+  const status = document.getElementById("mediaDockStatus");
+  const slider = document.getElementById("mediaVolumeSlider");
+  const output = document.getElementById("mediaVolumeOutput");
+  const anyPlaying = studyAudio.musicPlaying || studyAudio.narrationActive;
+
+  musicButton?.classList.toggle("active", studyAudio.musicPlaying);
+  lessonButton?.classList.toggle("active", studyAudio.narrationActive && studyAudio.narrationIsLesson);
+  effectsButton?.classList.toggle("active", studyAudio.effectsEnabled);
+  mediaButton?.classList.toggle("audio-active", anyPlaying);
+  musicButton?.setAttribute("aria-pressed", String(studyAudio.musicPlaying));
+  lessonButton?.setAttribute("aria-pressed", String(studyAudio.narrationActive && studyAudio.narrationIsLesson));
+  effectsButton?.setAttribute("aria-pressed", String(studyAudio.effectsEnabled));
+  if (musicHint) musicHint.textContent = studyAudio.musicPlaying ? "Pause" : "Play";
+  if (lessonHint) lessonHint.textContent = studyAudio.narrationActive && studyAudio.narrationIsLesson ? "Stop" : "Listen";
+  if (effectsHint) effectsHint.textContent = studyAudio.effectsEnabled ? "On" : "Off";
+  if (status) {
+    status.textContent = studyAudio.narrationActive
+      ? "Narration playing"
+      : studyAudio.musicPlaying ? "Study music playing" : "Audio is off";
+  }
+  if (slider && document.activeElement !== slider) slider.value = String(studyAudio.volume);
+  if (output) output.value = `${Math.round(studyAudio.volume * 100)}%`;
+  document.querySelectorAll("[data-music-control]").forEach((button) => {
+    button.classList.toggle("active", studyAudio.musicPlaying);
+    button.setAttribute("aria-pressed", String(studyAudio.musicPlaying));
+    button.textContent = studyAudio.musicPlaying ? "Pause study music" : "Play study music";
+  });
+  document.querySelectorAll("[data-lesson-audio-control]").forEach((button) => {
+    const active = studyAudio.narrationActive && studyAudio.narrationIsLesson;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+    button.textContent = active ? "Stop lesson audio" : "Listen to lesson";
+  });
+}
+
+function initMediaControls() {
+  const dock = document.getElementById("mediaDock");
+  const openButton = document.getElementById("mediaControlsButton");
+  const closeButton = document.getElementById("mediaDockClose");
+  const setOpen = (open) => {
+    const returnFocus = !open && dock?.contains(document.activeElement);
+    dock?.classList.toggle("open", open);
+    dock?.setAttribute("aria-hidden", String(!open));
+    if (dock) dock.inert = !open;
+    openButton?.setAttribute("aria-expanded", String(open));
+    if (open) closeButton?.focus();
+    else if (returnFocus) openButton?.focus();
+  };
+  openButton?.addEventListener("click", () => setOpen(!dock?.classList.contains("open")));
+  closeButton?.addEventListener("click", () => setOpen(false));
+  document.getElementById("musicToggleButton")?.addEventListener("click", () => studyAudio.toggleMusic());
+  document.getElementById("lessonAudioButton")?.addEventListener("click", () => studyAudio.toggleLessonNarration());
+  document.getElementById("soundEffectsButton")?.addEventListener("click", () => studyAudio.toggleEffects());
+  document.getElementById("mediaVolumeSlider")?.addEventListener("input", (event) => studyAudio.setVolume(event.target.value));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && dock?.classList.contains("open")) setOpen(false);
+  });
+  window.addEventListener("beforeunload", () => studyAudio.stopNarration());
+  updateMediaControls();
+}
+
 function moduleCompletionFor(module, source = progress) {
   let done = 0;
   if (source.learned?.[module.id]) done += 1;
@@ -2748,6 +3063,1570 @@ function highlight(text, query) {
   return safe.replace(new RegExp(`(${escaped})`, "ig"), "<mark>$1</mark>");
 }
 
+/* ── Mwalimu: persistent offline AI tutor ──────────────────── */
+const AI_TUTOR_SETTINGS_KEY = "mtp-ai-tutor-settings-v1";
+const AI_TUTOR_HISTORY_PREFIX = "mtp-ai-tutor-history-v1";
+const AI_TUTOR_MAX_MESSAGES = 24;
+const AI_TUTOR_DEFAULT_SETTINGS = { voice: true, avatar: "farmer", gender: "neutral", enhancedAI: false };
+const storedTutorSettings = parseStoredJSON(AI_TUTOR_SETTINGS_KEY, AI_TUTOR_DEFAULT_SETTINGS) || {};
+const ENHANCED_AI_MODEL_ID = "SmolLM2-360M-Instruct-q4f16_1-MLC";
+const ENHANCED_AI_MODEL_SIZE_MB = 207;
+const ENHANCED_AI_MODEL_ROOT = "assets/models/smollm2-360m/";
+const ENHANCED_AI_RUNTIME_URL = "assets/webllm/webllm.js";
+const ENHANCED_AI_WASM_URL = "assets/webllm/SmolLM2-360M-Instruct-q4f16_1_cs1k-webgpu.wasm";
+const ENHANCED_AI_CPU_MODEL_ID = "smollm2-135m-cpu";
+const ENHANCED_AI_CPU_MODEL_SIZE_MB = 137;
+const ENHANCED_AI_CPU_MODEL_ROOT = "assets/models/";
+const ENHANCED_AI_CPU_RUNTIME_URL = "assets/transformers/transformers.min.js";
+const ENHANCED_AI_CPU_WASM_ROOT = "assets/transformers/";
+const ENHANCED_AI_PACK_SIZE_MB = ENHANCED_AI_MODEL_SIZE_MB + ENHANCED_AI_CPU_MODEL_SIZE_MB;
+const ENHANCED_AI_EMBEDDED_ROOT = "https://mtp-embedded.local/";
+
+const TUTOR_AVATARS = {
+  farmer: { label: "Farmer", icon: "🌾" },
+  agronomist: { label: "Agronomist", icon: "🔬" },
+  guide: { label: "Field guide", icon: "🌿" },
+};
+
+const TUTOR_GENDERS = {
+  woman: { label: "Woman", icon: "👩🏾" },
+  man: { label: "Man", icon: "👨🏾" },
+  neutral: { label: "Neutral", icon: "🧑🏾" },
+};
+
+const tutorRuntime = {
+  layer: null,
+  avatar: null,
+  recognition: null,
+  pendingQuiz: null,
+  historyProfile: null,
+  speaking: false,
+  lastFocus: null,
+  settings: { ...AI_TUTOR_DEFAULT_SETTINGS, ...storedTutorSettings },
+};
+
+const enhancedAIRuntime = {
+  module: null,
+  cpuModule: null,
+  engine: null,
+  backend: "",
+  loadingPromise: null,
+  ready: false,
+  generating: false,
+  progress: 0,
+  status: "Uses the 360M model on WebGPU and an automatic CPU model on other devices.",
+  error: "",
+  webgpuFailed: false,
+  webgpuError: "",
+  cpuError: "",
+  embeddedResources: null,
+  embeddedURLs: {},
+  nativeFetch: null,
+  failureNotified: false,
+};
+
+const TUTOR_VIEW_ALIASES = {
+  learn: ["learn", "lesson", "summary", "goals"],
+  media: ["media", "video", "videos", "animation", "animations"],
+  play: ["game", "games", "simulate", "simulation", "puzzle", "puzzles"],
+  quiz: ["quiz", "quizzes", "test", "assessment"],
+  reader: ["book", "reader", "textbook", "page", "pages"],
+  journal: ["note", "notes", "journal", "writing"],
+  flashcard: ["flashcard", "flashcards", "cards"],
+  glossary: ["glossary", "definitions", "terms", "vocabulary"],
+};
+
+const TUTOR_VIEW_LABELS = {
+  learn: "Learn", media: "Media", play: "Games", quiz: "Quiz",
+  reader: "Book", journal: "Notes", flashcard: "Flashcards", glossary: "Glossary",
+};
+
+const TUTOR_HELP_DOCS = [
+  {
+    id: "navigation",
+    keywords: "app navigate navigation move module lesson tab sidebar open go switch where find",
+    answer: "Choose a module in the left sidebar, then use the tabs across the top for Learn, Media, Games, Quiz, Book, Notes, Flashcards, or Glossary. You can also tell me ‘open the quiz’, ‘go to notes’, or ‘open the hay module’ and I will take you there.",
+  },
+  {
+    id: "learn",
+    keywords: "learn lesson summary goal core idea mark learned study module",
+    answer: "The Learn tab gives the selected module’s summary, learning goals, core ideas, activities, and textbook extract. When you finish studying, use Mark as learned to save that part of your progress.",
+  },
+  {
+    id: "media",
+    keywords: "media video videos animation animations audio watch offline",
+    answer: "The Media tab contains the module’s offline video, motion lesson, and audio controls. The bundled videos play without internet after the app has been installed or cached.",
+  },
+  {
+    id: "games",
+    keywords: "game games simulate simulation puzzle word search play score complete",
+    answer: "Open Games to practise the current topic through a simulation or puzzle. Follow the on-screen goal, then save a passing result so it counts toward module progress.",
+  },
+  {
+    id: "quiz",
+    keywords: "quiz quizzes test assessment question answer score timed pass",
+    answer: "The Quiz tab has questions for the selected module. Answer every question and submit it to save your best score; 70% or more completes the quiz part of the module.",
+  },
+  {
+    id: "book",
+    keywords: "book reader textbook pdf page pages search find read extract",
+    answer: "The Book tab searches the bundled Grade 9 textbook and shows pages for the current module. Use the search box at the top to search the whole book, or ask me to search for a topic.",
+  },
+  {
+    id: "notes",
+    keywords: "notes note journal save writing export prompt",
+    answer: "Use Notes to write and save your own ideas for each module. Notes are stored locally for the current learner profile and remain available offline.",
+  },
+  {
+    id: "flashcards",
+    keywords: "flashcards flashcard cards glossary remember revise vocabulary definition",
+    answer: "Flashcards help you revise the module glossary. Flip each card, then choose Got it or Review again. The Glossary tab shows all terms and definitions together.",
+  },
+  {
+    id: "themes",
+    keywords: "theme themes dark light glass appearance colour color text size font accessibility",
+    answer: "The app has Glass, Light, and Dark themes, plus adjustable text size. Tell me ‘use dark theme’, ‘make text larger’, or choose the controls in the top bar and sidebar.",
+  },
+  {
+    id: "audio",
+    keywords: "audio sound speech speak voice read aloud narration music stop pause volume",
+    answer: "I can read the current lesson, visible textbook page, or selected text using your device voice. The music button opens offline study music and volume controls. Say ‘read this lesson’, ‘stop reading’, or ‘play study music’.",
+  },
+  {
+    id: "reminders",
+    keywords: "reminder reminders notification notifications alert schedule study streak",
+    answer: "Use Enable reminders in the sidebar and allow notifications when your device asks. Installed-app notifications depend on browser and operating-system support; your study data stays on this device.",
+  },
+  {
+    id: "profiles",
+    keywords: "account accounts profile learner teacher parent class progress badge xp streak reset",
+    answer: "Each offline profile keeps separate notes, scores, XP, badges, and progress on this device. Use the profile chip in the top bar to switch accounts. Reset progress always asks for confirmation.",
+  },
+  {
+    id: "offline",
+    keywords: "offline internet data privacy install pwa ai tutor works connection",
+    answer: "Typed tutor questions, agriculture search, app commands, the book, games, and bundled media work offline. Answers come from the textbook and app help stored on this device; no question is sent to an AI server. Optional microphone dictation depends on your browser and may require internet, but typing never does.",
+  },
+];
+
+const TUTOR_STOP_WORDS = new Set([
+  "a", "about", "an", "and", "are", "as", "at", "be", "can", "could", "do", "does",
+  "for", "from", "give", "how", "i", "in", "is", "it", "me", "my", "of", "on", "or",
+  "please", "should", "tell", "that", "the", "their", "this", "to", "what", "when", "where",
+  "which", "who", "why", "with", "would", "you", "your",
+]);
+
+function tutorHistoryKey() {
+  return `${AI_TUTOR_HISTORY_PREFIX}:${currentProfile?.id || activeLearnerProfileId()}`;
+}
+
+function loadTutorHistory() {
+  const history = parseStoredJSON(tutorHistoryKey(), []);
+  if (!Array.isArray(history)) return [];
+  const recent = history.slice(-AI_TUTOR_MAX_MESSAGES);
+  const deduplicated = recent.filter((message, index) => {
+    const previous = recent[index - 1];
+    return !previous
+      || message.role !== previous.role
+      || message.text !== previous.text
+      || message.source !== previous.source;
+  });
+  if (deduplicated.length !== recent.length) saveTutorHistory(deduplicated);
+  return deduplicated;
+}
+
+function saveTutorHistory(messages) {
+  localStorage.setItem(tutorHistoryKey(), JSON.stringify(messages.slice(-AI_TUTOR_MAX_MESSAGES)));
+}
+
+function tutorPerson() {
+  const profile = currentProfile || currentLearnerProfile?.();
+  const fullName = String(profile?.name || "Student").trim() || "Student";
+  return {
+    fullName,
+    firstName: fullName.split(/\s+/)[0],
+    role: ACCOUNT_ROLES[profile?.role]?.label || "Student",
+  };
+}
+
+function tutorPick(options) {
+  return options[Math.floor(Math.random() * options.length)] || options[0] || "";
+}
+
+function tutorCleanStyle(value) {
+  return String(value || "")
+    .replace(/(\d)\s*[–—]\s*(\d)/g, "$1 to $2")
+    .replace(/\s*[–—]\s*/g, ", ")
+    .replace(/\s+,/g, ",")
+    .replace(/,{2,}/g, ",")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function saveTutorSettings() {
+  localStorage.setItem(AI_TUTOR_SETTINGS_KEY, JSON.stringify(tutorRuntime.settings));
+}
+
+function enhancedAIIsSupported() {
+  return typeof WebAssembly === "object" && typeof fetch === "function";
+}
+
+function enhancedAIHasWebGPU() {
+  return Boolean(location.protocol !== "file:" && window.isSecureContext && navigator.gpu && !enhancedAIRuntime.webgpuFailed);
+}
+
+function embeddedAIResources() {
+  if (enhancedAIRuntime.embeddedResources) return enhancedAIRuntime.embeddedResources;
+  const resources = new Map();
+  document.querySelectorAll("script[data-mtp-ai-path]").forEach((element) => {
+    resources.set(element.dataset.mtpAiPath, {
+      element,
+      size: Number(element.dataset.size || 0),
+      mime: element.dataset.mime || "application/octet-stream",
+    });
+  });
+  enhancedAIRuntime.embeddedResources = resources;
+  return resources;
+}
+
+function embeddedAIIsAvailable() {
+  return embeddedAIResources().has("smollm2-135m-cpu/onnx/model_quantized.onnx");
+}
+
+function embeddedAIBase64(resource) {
+  return resource?.element?.text || resource?.element?.textContent || "";
+}
+
+function decodeEmbeddedAIBytes(resource) {
+  const encoded = embeddedAIBase64(resource);
+  if (!encoded || !resource?.size) throw new Error("An embedded AI resource is missing or empty.");
+  const output = new Uint8Array(resource.size);
+  const encodedChunkSize = 1024 * 1024;
+  let outputOffset = 0;
+  for (let offset = 0; offset < encoded.length; offset += encodedChunkSize) {
+    const binary = atob(encoded.slice(offset, Math.min(offset + encodedChunkSize, encoded.length)));
+    for (let index = 0; index < binary.length; index++) output[outputOffset++] = binary.charCodeAt(index);
+  }
+  if (outputOffset !== resource.size) throw new Error("An embedded AI resource did not decode to its expected size.");
+  return output;
+}
+
+function embeddedAIBlobURL(path, mime) {
+  if (enhancedAIRuntime.embeddedURLs[path]) return enhancedAIRuntime.embeddedURLs[path];
+  const resource = embeddedAIResources().get(path);
+  if (!resource) throw new Error(`Embedded AI resource not found: ${path}`);
+  const url = URL.createObjectURL(new Blob([decodeEmbeddedAIBytes(resource)], { type: mime || resource.mime }));
+  enhancedAIRuntime.embeddedURLs[path] = url;
+  return url;
+}
+
+function embeddedAIResponse(resource) {
+  const encoded = embeddedAIBase64(resource);
+  const encodedChunkSize = 1024 * 1024;
+  let offset = 0;
+  const stream = new ReadableStream({
+    pull(controller) {
+      if (offset >= encoded.length) {
+        controller.close();
+        return;
+      }
+      const end = Math.min(offset + encodedChunkSize, encoded.length);
+      const binary = atob(encoded.slice(offset, end));
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+      offset = end;
+      controller.enqueue(bytes);
+    },
+  });
+  return new Response(stream, {
+    status: 200,
+    headers: {
+      "Content-Type": resource.mime,
+      "Content-Length": String(resource.size),
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+function installEmbeddedAIFetch() {
+  if (enhancedAIRuntime.nativeFetch) return;
+  enhancedAIRuntime.nativeFetch = window.fetch.bind(window);
+  window.fetch = (input, init) => {
+    const url = typeof input === "string" || input instanceof URL ? String(input) : input?.url || "";
+    if (!url.startsWith(ENHANCED_AI_EMBEDDED_ROOT)) return enhancedAIRuntime.nativeFetch(input, init);
+    const path = decodeURIComponent(url.slice(ENHANCED_AI_EMBEDDED_ROOT.length)).replace(/^\/+/, "");
+    const resource = embeddedAIResources().get(path);
+    return Promise.resolve(resource ? embeddedAIResponse(resource) : new Response(null, { status: 404 }));
+  };
+}
+
+function updateEnhancedAIUI() {
+  const layer = tutorRuntime.layer;
+  const card = layer?.querySelector("#aiTutorEnhancedCard");
+  const button = layer?.querySelector("#aiTutorEnhancedButton");
+  const composerButton = layer?.querySelector("#aiTutorComposerEnhanced");
+  const status = layer?.querySelector("#aiTutorEnhancedStatus");
+  const progress = layer?.querySelector("#aiTutorEnhancedProgress");
+  const progressBar = layer?.querySelector("#aiTutorEnhancedProgressBar");
+  const supported = enhancedAIIsSupported();
+  if (card) {
+    card.dataset.state = enhancedAIRuntime.loadingPromise ? "loading"
+      : enhancedAIRuntime.ready && tutorRuntime.settings.enhancedAI ? "ready"
+        : enhancedAIRuntime.error ? "error" : supported ? "available" : "unsupported";
+  }
+  if (status) {
+    status.textContent = !supported
+      ? "This browser does not support WebAssembly. The standard offline tutor will continue to work."
+      : enhancedAIRuntime.error || enhancedAIRuntime.status;
+  }
+  if (progress) {
+    progress.hidden = !enhancedAIRuntime.loadingPromise;
+    progress.setAttribute("aria-valuenow", String(Math.round(enhancedAIRuntime.progress * 100)));
+    progress.setAttribute("aria-valuemin", "0");
+    progress.setAttribute("aria-valuemax", "100");
+  }
+  if (progressBar) progressBar.style.width = `${Math.round(enhancedAIRuntime.progress * 100)}%`;
+  if (button) {
+    button.disabled = Boolean(enhancedAIRuntime.loadingPromise) || enhancedAIRuntime.generating || !supported;
+    button.textContent = enhancedAIRuntime.loadingPromise
+      ? `Preparing ${Math.round(enhancedAIRuntime.progress * 100)}%`
+      : enhancedAIRuntime.ready && tutorRuntime.settings.enhancedAI
+        ? "Disable enhanced AI"
+        : tutorRuntime.settings.enhancedAI ? "Load enhanced AI" : "Enable enhanced AI";
+  }
+  if (composerButton) {
+    const active = enhancedAIRuntime.ready && tutorRuntime.settings.enhancedAI;
+    composerButton.disabled = Boolean(enhancedAIRuntime.loadingPromise) || enhancedAIRuntime.generating || !supported;
+    composerButton.classList.toggle("active", active);
+    composerButton.classList.toggle("loading", Boolean(enhancedAIRuntime.loadingPromise));
+    composerButton.setAttribute("aria-pressed", String(active));
+    composerButton.setAttribute("aria-label", active ? "Disable enhanced local AI" : "Enable enhanced local AI");
+    composerButton.title = !supported
+      ? "Enhanced AI requires a modern browser with WebAssembly"
+      : active ? `Disable enhanced local AI (${enhancedAIRuntime.backend || "local"})` : "Enable SmolLM2 enhanced local AI";
+    composerButton.textContent = enhancedAIRuntime.loadingPromise
+      ? `${Math.round(enhancedAIRuntime.progress * 100)}%`
+      : active ? "AI on" : "AI+";
+  }
+}
+
+async function loadEnhancedAIWebGPU() {
+  enhancedAIRuntime.status = `Preparing the ${ENHANCED_AI_MODEL_SIZE_MB} MB WebGPU model`;
+  updateEnhancedAIUI();
+  const adapter = await Promise.race([
+    navigator.gpu.requestAdapter(),
+    new Promise((_, reject) => window.setTimeout(() => reject(new Error("WebGPU did not respond on this device.")), 5000)),
+  ]);
+  if (!adapter) throw new Error("No compatible WebGPU adapter was found on this device.");
+  if (!adapter.features.has("shader-f16")) {
+    throw new Error("This device does not support the shader-f16 feature required by the 360M model.");
+  }
+
+  const runtimeUrl = new URL(ENHANCED_AI_RUNTIME_URL, document.baseURI).href;
+  const webllm = enhancedAIRuntime.module || await import(runtimeUrl);
+  enhancedAIRuntime.module = webllm;
+  const appConfig = {
+    cacheBackend: "cache",
+    model_list: [{
+      model: new URL(ENHANCED_AI_MODEL_ROOT, document.baseURI).href,
+      model_id: ENHANCED_AI_MODEL_ID,
+      model_lib: new URL(ENHANCED_AI_WASM_URL, document.baseURI).href,
+      vram_required_MB: 376.06,
+      low_resource_required: true,
+      required_features: ["shader-f16"],
+      overrides: { context_window_size: 2048, prefill_chunk_size: 512 },
+    }],
+  };
+  const engine = await webllm.CreateMLCEngine(ENHANCED_AI_MODEL_ID, {
+    appConfig,
+    logLevel: "WARN",
+    initProgressCallback(report) {
+      enhancedAIRuntime.progress = clamp(Number(report.progress || 0), 0, 1);
+      const percent = Math.round(enhancedAIRuntime.progress * 100);
+      enhancedAIRuntime.status = percent < 90
+        ? `Loading SmolLM2 360M locally, ${percent}%`
+        : "Starting the WebGPU language model";
+      tutorSetStatus("thinking", enhancedAIRuntime.status);
+      updateEnhancedAIUI();
+    },
+  });
+  enhancedAIRuntime.backend = "webgpu";
+  return engine;
+}
+
+async function loadEnhancedAICPU() {
+  enhancedAIRuntime.progress = 0;
+  enhancedAIRuntime.status = location.protocol === "file:"
+    ? `Decoding the embedded ${ENHANCED_AI_CPU_MODEL_SIZE_MB} MB CPU model`
+    : `Loading the ${ENHANCED_AI_CPU_MODEL_SIZE_MB} MB CPU compatibility model`;
+  tutorSetStatus("thinking", "Preparing CPU enhanced AI");
+  updateEnhancedAIUI();
+
+  const useEmbedded = location.protocol === "file:";
+  let transformers;
+  if (useEmbedded) {
+    if (!embeddedAIIsAvailable()) throw new Error("The embedded CPU model is missing from index.html.");
+    installEmbeddedAIFetch();
+    const runtimeUrl = embeddedAIBlobURL("@runtime/transformers.js", "text/javascript");
+    transformers = enhancedAIRuntime.cpuModule || await import(runtimeUrl);
+  } else {
+    const runtimeUrl = new URL(ENHANCED_AI_CPU_RUNTIME_URL, document.baseURI).href;
+    transformers = enhancedAIRuntime.cpuModule || await import(runtimeUrl);
+  }
+  enhancedAIRuntime.cpuModule = transformers;
+  transformers.env.allowLocalModels = true;
+  transformers.env.allowRemoteModels = false;
+  transformers.env.useBrowserCache = false;
+  transformers.env.localModelPath = useEmbedded
+    ? ENHANCED_AI_EMBEDDED_ROOT
+    : new URL(ENHANCED_AI_CPU_MODEL_ROOT, document.baseURI).href;
+  transformers.env.backends.onnx.wasm.wasmPaths = useEmbedded
+    ? {
+      mjs: embeddedAIBlobURL("@runtime/ort-loader.js", "text/javascript"),
+      wasm: embeddedAIBlobURL("@runtime/ort.wasm", "application/wasm"),
+    }
+    : {
+      mjs: new URL(`${ENHANCED_AI_CPU_WASM_ROOT}ort-wasm-simd-threaded.jsep.js`, document.baseURI).href,
+      wasm: new URL(`${ENHANCED_AI_CPU_WASM_ROOT}ort-wasm-simd-threaded.jsep.wasm`, document.baseURI).href,
+    };
+  transformers.env.backends.onnx.wasm.proxy = false;
+  transformers.env.backends.onnx.wasm.numThreads = window.crossOriginIsolated
+    ? Math.max(1, Math.min(4, navigator.hardwareConcurrency || 1))
+    : 1;
+
+  const engine = await transformers.pipeline("text-generation", ENHANCED_AI_CPU_MODEL_ID, {
+    device: "wasm",
+    dtype: "q8",
+    local_files_only: true,
+    progress_callback(report) {
+      if (report.status === "progress" && Number.isFinite(report.progress)) {
+        enhancedAIRuntime.progress = clamp(0.05 + (Number(report.progress) / 100) * 0.9, 0, 0.95);
+        enhancedAIRuntime.status = `Loading CPU SmolLM2 locally, ${Math.round(enhancedAIRuntime.progress * 100)}%`;
+        updateEnhancedAIUI();
+      } else if (report.status === "ready") {
+        enhancedAIRuntime.progress = 0.98;
+        enhancedAIRuntime.status = "Starting the CPU language model";
+        updateEnhancedAIUI();
+      }
+    },
+  });
+  enhancedAIRuntime.backend = "wasm";
+  return engine;
+}
+
+async function ensureEnhancedAI() {
+  if (enhancedAIRuntime.engine && enhancedAIRuntime.ready) return enhancedAIRuntime.engine;
+  if (enhancedAIRuntime.loadingPromise) return enhancedAIRuntime.loadingPromise;
+  if (!enhancedAIIsSupported()) {
+    throw new Error("Enhanced AI requires a modern browser with WebAssembly support.");
+  }
+
+  enhancedAIRuntime.error = "";
+  enhancedAIRuntime.cpuError = "";
+  enhancedAIRuntime.progress = 0;
+  enhancedAIRuntime.status = `Preparing the included ${ENHANCED_AI_PACK_SIZE_MB} MB adaptive AI pack`;
+  const load = (async () => {
+    navigator.storage?.persist?.()?.catch?.(() => false);
+    if (enhancedAIHasWebGPU()) {
+      try {
+        return await loadEnhancedAIWebGPU();
+      } catch (error) {
+        enhancedAIRuntime.webgpuFailed = true;
+        enhancedAIRuntime.webgpuError = error?.message || "The WebGPU model could not start.";
+        enhancedAIRuntime.status = "Graphics acceleration is unavailable. Switching to the CPU model.";
+        enhancedAIRuntime.progress = 0;
+        updateEnhancedAIUI();
+      }
+    }
+    return loadEnhancedAICPU();
+  })();
+
+  enhancedAIRuntime.loadingPromise = load;
+  updateEnhancedAIUI();
+  try {
+    enhancedAIRuntime.engine = await load;
+    enhancedAIRuntime.ready = true;
+    enhancedAIRuntime.failureNotified = false;
+    enhancedAIRuntime.progress = 1;
+    enhancedAIRuntime.status = enhancedAIRuntime.backend === "webgpu"
+      ? "SmolLM2 360M is ready with graphics acceleration"
+      : "SmolLM2 is ready in CPU compatibility mode";
+    tutorSetStatus("idle", enhancedAIRuntime.backend === "webgpu" ? "Enhanced local AI ready" : "Enhanced local AI ready on CPU");
+    return enhancedAIRuntime.engine;
+  } catch (error) {
+    enhancedAIRuntime.engine = null;
+    enhancedAIRuntime.backend = "";
+    enhancedAIRuntime.ready = false;
+    enhancedAIRuntime.cpuError = String(error?.message || "The CPU model could not start.").slice(0, 360);
+    enhancedAIRuntime.error = tutorCleanStyle([
+      enhancedAIRuntime.webgpuError ? `Graphics model: ${enhancedAIRuntime.webgpuError}` : "",
+      `CPU model: ${enhancedAIRuntime.cpuError}`,
+    ].filter(Boolean).join(" "));
+    tutorRuntime.settings.enhancedAI = false;
+    saveTutorSettings();
+    tutorSetStatus("idle", "Standard offline tutor ready");
+    throw new Error(enhancedAIRuntime.error);
+  } finally {
+    enhancedAIRuntime.loadingPromise = null;
+    updateEnhancedAIUI();
+  }
+}
+
+async function toggleEnhancedAI() {
+  if (enhancedAIRuntime.ready && tutorRuntime.settings.enhancedAI) {
+    tutorRuntime.settings.enhancedAI = false;
+    saveTutorSettings();
+    if (enhancedAIRuntime.backend === "wasm") await enhancedAIRuntime.engine?.dispose?.();
+    else await enhancedAIRuntime.engine?.unload?.();
+    enhancedAIRuntime.engine = null;
+    enhancedAIRuntime.backend = "";
+    enhancedAIRuntime.ready = false;
+    enhancedAIRuntime.progress = 0;
+    enhancedAIRuntime.status = "Enhanced AI is disabled. The included model remains available.";
+    updateEnhancedAIUI();
+    tutorAddMessage("tutor", `Enhanced AI is off, ${tutorPerson().firstName}. The standard textbook tutor is still ready.`, "Tutor settings");
+    return;
+  }
+
+  tutorRuntime.settings.enhancedAI = true;
+  saveTutorSettings();
+  updateEnhancedAIUI();
+  showToast("Preparing enhanced AI. The first start may take a moment.", "info");
+  try {
+    await ensureEnhancedAI();
+    const mode = enhancedAIRuntime.backend === "webgpu" ? "graphics acceleration" : "CPU compatibility mode";
+    showToast(`Enhanced AI is ready in ${mode}.`, "success");
+    tutorAddMessage("tutor", `SmolLM2 is ready, ${tutorPerson().firstName}. I am using ${mode}, and my replies stay entirely on this device.`, "Local SmolLM2 model");
+    tutorRenderSuggestions(["Explain this topic simply", "Why is this important?", "Ask me something"]);
+  } catch (error) {
+    const reason = tutorCleanStyle(enhancedAIRuntime.error || error?.message || "Enhanced AI could not start.").slice(0, 520);
+    showToast(reason, "warn");
+    if (!enhancedAIRuntime.failureNotified) {
+      tutorAddMessage("tutor", `AI+ could not start. ${reason} I will keep using the standard offline textbook tutor.`, "Compatibility details");
+      enhancedAIRuntime.failureNotified = true;
+    }
+  }
+}
+
+function shouldUseEnhancedAI(response) {
+  if (!tutorRuntime.settings.enhancedAI || response.skipVoice) return false;
+  const source = String(response.source || "");
+  return /pages?\b|Offline knowledge only|textbook/i.test(source)
+    && !/control|progress|quiz|settings|conversation|identity/i.test(source);
+}
+
+function enhancedAIContext(response) {
+  const module = currentModule();
+  const glossary = (ml(module, "glossary") || []).slice(0, 8)
+    .map((item) => `${item.term}: ${item.def}`).join(" ");
+  return [
+    `Current module: ${ml(module, "title")}.`,
+    `Textbook pages: ${module.pages[0]} to ${module.pages[1]}.`,
+    `Summary: ${ml(module, "summary")}`,
+    `Core ideas: ${(ml(module, "ideas") || []).join(" ")}`,
+    `Glossary: ${glossary}`,
+    `Retrieved answer: ${response.answer}`,
+    `Retrieved source: ${response.source || "Bundled textbook"}`,
+  ].join("\n").slice(0, 3600);
+}
+
+async function generateEnhancedAIAnswer(question, response) {
+  const engine = await ensureEnhancedAI();
+  const person = tutorPerson();
+  const history = loadTutorHistory().slice(0, -1).slice(-4).map((message) => ({
+    role: message.role === "user" ? "user" : "assistant",
+    content: tutorCleanStyle(message.text).slice(0, 500),
+  }));
+  const messages = [
+    {
+      role: "system",
+      content: `You are Mwalimu, a warm Grade 9 Agriculture and Nutrition tutor speaking with ${person.firstName}. Answer naturally in two to four short sentences. Use the supplied textbook evidence for agriculture questions. If the evidence is insufficient, say so honestly. Never invent a page or claim to be human. Do not use em dashes. The app and model run offline.`,
+    },
+    ...history,
+    {
+      role: "user",
+      content: `Question: ${question}\n\nTrusted local context:\n${enhancedAIContext(response)}`,
+    },
+  ];
+  let generated = "";
+  if (enhancedAIRuntime.backend === "wasm") {
+    const output = await engine(messages, {
+      do_sample: true,
+      temperature: 0.55,
+      top_p: 0.88,
+      repetition_penalty: 1.08,
+      max_new_tokens: 110,
+      return_full_text: false,
+    });
+    const generatedText = output?.[0]?.generated_text;
+    generated = Array.isArray(generatedText)
+      ? String([...generatedText].reverse().find((item) => item?.role === "assistant")?.content || "")
+      : String(generatedText || "");
+  } else {
+    const completion = await engine.chat.completions.create({
+      messages,
+      temperature: 0.55,
+      top_p: 0.88,
+      repetition_penalty: 1.08,
+      max_tokens: 170,
+    });
+    generated = String(completion?.choices?.[0]?.message?.content || "");
+  }
+  generated = generated
+    .replace(/<\|[^>]+\|>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return generated.length >= 12 ? tutorCleanStyle(generated) : tutorCleanStyle(response.answer);
+}
+
+function tutorAvatarEmoji() {
+  const gender = tutorRuntime.settings.gender;
+  const style = tutorRuntime.settings.avatar;
+  if (style === "agronomist") return gender === "woman" ? "👩🏾‍🔬" : gender === "man" ? "👨🏾‍🔬" : "🧑🏾‍🔬";
+  if (style === "guide") return gender === "woman" ? "👩🏾‍🏫" : gender === "man" ? "👨🏾‍🏫" : "🧑🏾‍🏫";
+  return gender === "woman" ? "👩🏾‍🌾" : gender === "man" ? "👨🏾‍🌾" : "🧑🏾‍🌾";
+}
+
+function tutorNormalise(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tutorStem(token) {
+  if (token.length > 5 && token.endsWith("ing")) return token.slice(0, -3);
+  if (token.length > 4 && token.endsWith("ed")) return token.slice(0, -2);
+  if (token.length > 4 && token.endsWith("es")) return token.slice(0, -2);
+  if (token.length > 3 && token.endsWith("s")) return token.slice(0, -1);
+  return token;
+}
+
+function tutorTokens(value) {
+  return [...new Set(tutorNormalise(value).split(" ")
+    .filter((token) => token.length > 1 && !TUTOR_STOP_WORDS.has(token))
+    .map(tutorStem))];
+}
+
+function tutorTextScore(text, tokens, weight = 1) {
+  const haystack = ` ${tutorNormalise(text)} `;
+  return tokens.reduce((score, token) => {
+    const matches = haystack.split(` ${token}`).length - 1;
+    return score + Math.min(matches, 4) * weight;
+  }, 0);
+}
+
+function tutorFindView(question) {
+  const normal = tutorNormalise(question);
+  return Object.entries(TUTOR_VIEW_ALIASES).find(([, aliases]) =>
+    aliases.some((alias) => new RegExp(`\\b${alias}\\b`).test(normal)))?.[0] || null;
+}
+
+function tutorFindModule(question) {
+  const normal = tutorNormalise(question);
+  const aliases = {
+    hay: ["hay", "animal feed", "forage"],
+    leftovers: ["leftover", "leftovers", "food waste"],
+    integrated: ["integrated farm", "integrated farming", "farm loop"],
+    organic: ["garden", "gardening", "vegetable garden", "organic gardening"],
+    storage: ["crop storage", "storage", "store crops"],
+    flour: ["flour", "flour mixture", "dough", "batter"],
+    waste: ["cleanup", "clean up", "cleaning facility", "cleaning facilities", "waste disposal"],
+    disinfecting: ["disinfect", "disinfection", "disinfectant"],
+    grafting: ["graft", "grafting", "scion", "rootstock"],
+    sunDryer: ["sun dryer", "solar dryer", "dry vegetables"],
+  };
+  const matched = Object.entries(aliases)
+    .map(([id, names]) => ({ id, length: Math.max(0, ...names.filter((name) => normal.includes(name)).map((name) => name.length)) }))
+    .filter((item) => item.length > 0)
+    .sort((a, b) => b.length - a.length)[0];
+  return matched ? MODULES.find((module) => module.id === matched.id) : null;
+}
+
+function tutorSetStatus(mode, label) {
+  const layer = tutorRuntime.layer;
+  layer?.querySelector("#aiTutorStatus")?.replaceChildren(document.createTextNode(tutorCleanStyle(label || "Ready offline")));
+  if (layer) layer.dataset.tutorState = mode;
+  tutorRuntime.avatar?.setState(mode);
+}
+
+function tutorSetView(view) {
+  if (!TUTOR_VIEW_LABELS[view]) return false;
+  state.view = view;
+  state.globalSearch = "";
+  if (els.globalSearch) els.globalSearch.value = "";
+  render();
+  return true;
+}
+
+function tutorSetModule(module) {
+  if (!module) return false;
+  if (state.locked && state.locked !== module.id) return false;
+  studyAudio.stopNarration();
+  state.moduleId = module.id;
+  state.view = "learn";
+  state.globalSearch = "";
+  state.altGame = "main";
+  if (els.globalSearch) els.globalSearch.value = "";
+  render();
+  return true;
+}
+
+function tutorCurrentReadingText(question) {
+  const selected = String(window.getSelection?.() || "").trim();
+  if (/selected|selection/.test(tutorNormalise(question)) && selected.length > 3) return selected;
+  const visiblePage = document.querySelector(".reader-result .page-text");
+  if ((/page|this/.test(tutorNormalise(question)) || state.view === "reader") && visiblePage?.textContent?.trim()) {
+    return visiblePage.textContent.trim();
+  }
+  const module = currentModule();
+  return [ml(module, "title"), ml(module, "summary"), "Learning goals.", ...(ml(module, "goals") || []), "Core ideas.", ...(ml(module, "ideas") || [])]
+    .filter(Boolean).join(" ");
+}
+
+function tutorBestBookSentence(module, tokens) {
+  const candidates = bookPagesFor(module).flatMap((page) =>
+    compactText(page.text).split(/(?<=[.!?])\s+/)
+      .filter((sentence) => sentence.length >= 35 && sentence.length <= 360)
+      .map((sentence) => ({ page: page.page, sentence, score: tutorTextScore(sentence, tokens, 2) })),
+  ).sort((a, b) => b.score - a.score);
+  return candidates[0]?.score > 0 ? candidates[0] : null;
+}
+
+function tutorAgricultureAnswer(question) {
+  const normal = tutorNormalise(question);
+  const tokens = tutorTokens(question);
+  const contextualModule = /\b(this|current) (topic|module|lesson)\b/.test(normal) ? currentModule() : null;
+  const glossaryMatches = MODULES.flatMap((module) => (ml(module, "glossary") || []).map((item) => ({ module, item })))
+    .filter(({ item }) => {
+      const term = tutorNormalise(item.term);
+      return term.length > 2 && (normal === term || normal.includes(` ${term}`) || normal.includes(`${term} `));
+    })
+    .sort((a, b) => b.item.term.length - a.item.term.length);
+
+  if (glossaryMatches.length) {
+    const { module, item } = glossaryMatches[0];
+    return {
+      answer: `${item.term} means ${item.def}`,
+      source: `${ml(module, "title")}, pages ${module.pages[0]} to ${module.pages[1]}`,
+      suggestions: ["Read this aloud", `Open ${ml(module, "title").split(":")[0]}`, "Quiz me on this module"],
+    };
+  }
+
+  const rankedModules = MODULES.map((module) => {
+    const glossary = (ml(module, "glossary") || []).map((item) => `${item.term} ${item.def}`).join(" ");
+    const titleScore = tutorTextScore(`${ml(module, "title")} ${module.strand}`, tokens, 7);
+    const summaryScore = tutorTextScore(`${ml(module, "summary")} ${(ml(module, "goals") || []).join(" ")} ${(ml(module, "ideas") || []).join(" ")}`, tokens, 3);
+    const glossaryScore = tutorTextScore(glossary, tokens, 4);
+    return { module, score: titleScore + summaryScore + glossaryScore };
+  }).sort((a, b) => b.score - a.score);
+
+  const best = contextualModule ? { module: contextualModule, score: 10 } : rankedModules[0];
+  if (!best || best.score < 2 || !tokens.length) return null;
+  const module = best.module;
+  const bookHit = tutorBestBookSentence(module, tokens);
+  const asksDetail = /\b(how|why|steps|explain|describe|importance|benefit|care|make|use)\b/.test(normal);
+  let answer = compactText(ml(module, "summary"));
+  if (bookHit && (asksDetail || bookHit.score >= 4) && !tutorNormalise(answer).includes(tutorNormalise(bookHit.sentence).slice(0, 45))) {
+    answer += ` ${bookHit.sentence}`;
+  } else {
+    const idea = (ml(module, "ideas") || []).sort((a, b) => tutorTextScore(b, tokens, 2) - tutorTextScore(a, tokens, 2))[0];
+    if (idea && !answer.includes(idea)) answer += ` ${idea}`;
+  }
+  if (answer.length > 650) answer = `${answer.slice(0, 647).replace(/\s+\S*$/, "")}…`;
+  return {
+    answer,
+    source: `${ml(module, "title")}, pages ${module.pages[0]} to ${module.pages[1]}${bookHit ? ` (best match: page ${bookHit.page})` : ""}`,
+    suggestions: ["Read this aloud", `Open ${ml(module, "title").split(":")[0]}`, "Quiz me on this module"],
+  };
+}
+
+function tutorHelpAnswer(question) {
+  const tokens = tutorTokens(question);
+  const normal = tutorNormalise(question);
+  const appSignal = /\b(app|navigate|tab|sidebar|theme|offline|profile|account|reminder|notification|progress|badge|xp|install|audio|music|video|game|quiz|note|flashcard|glossary|book|reader|search)\b/.test(normal);
+  const ranked = TUTOR_HELP_DOCS.map((doc) => ({
+    doc,
+    score: tutorTextScore(doc.keywords, tokens, 4) + tutorTextScore(doc.answer, tokens, 1),
+  })).sort((a, b) => b.score - a.score);
+  if (!appSignal && ranked[0]?.score < 8) return null;
+  if (!ranked[0] || ranked[0].score < 3) return null;
+  return {
+    answer: ranked[0].doc.answer,
+    source: "Offline app guide",
+    suggestions: ["Open Learn", "Use dark theme", "Read this lesson"],
+  };
+}
+
+function tutorConversationAnswer(question) {
+  const normal = tutorNormalise(question);
+  const person = tutorPerson();
+  const name = person.firstName;
+  const greeting = /^(hi|hello|hey|habari|jambo|good morning|good afternoon|good evening)\b/.test(normal);
+
+  if (greeting) {
+    const time = new Date().getHours();
+    const timeGreeting = time < 12 ? "Good morning" : time < 17 ? "Good afternoon" : "Good evening";
+    return {
+      answer: tutorPick([
+        `${timeGreeting}, ${name}! It is lovely to see you. What are you curious about today?`,
+        `Hello, ${name}! I am glad you stopped by. Shall we learn something, chat, or explore the app?`,
+        `Hi, ${name}! How is your day going? I am here whenever you are ready.`,
+      ]),
+      source: "Personalized offline conversation",
+      suggestions: ["How are you?", "What can you do?", "What should I study next?"],
+    };
+  }
+
+  if (/\b(who am i|what is my name|do you know my name|do you remember me)\b/.test(normal)) {
+    return {
+      answer: `You are ${person.fullName}. You are signed in with the ${person.role.toLowerCase()} profile on this device, so I know who I am chatting with and keep your conversation separate from other profiles.`,
+      source: "Active offline profile",
+      suggestions: ["What is my progress?", "What should I study next?"],
+    };
+  }
+
+  if (/\b(what is your name|whats your name|who are you)\b/.test(normal)) {
+    return {
+      answer: `I am Mwalimu, your agriculture tutor. You can change how I look and sound with the face button above. I know you as ${name} because that is the active profile on this device.`,
+      source: "Tutor identity",
+      suggestions: ["Change your avatar", "What can you do?", "Tell me a joke"],
+    };
+  }
+
+  if (/\b(how are you|how do you feel|are you okay|hows it going|what is up|whats up)\b/.test(normal)) {
+    return {
+      answer: tutorPick([
+        `I am doing well, ${name}. I do not have feelings in quite the same way people do, but I am focused and happy to spend this study time with you. How are you?`,
+        `I am ready and in a good tutoring mood, ${name}. More importantly, how are you doing today?`,
+        `All systems are calm and the virtual farm is thriving. How are things with you, ${name}?`,
+      ]),
+      source: "Conversation",
+      suggestions: ["I am doing well", "I feel stressed", "Tell me a joke"],
+    };
+  }
+
+  if (/\b(thank you|thanks|asante|that helped|helpful)\b/.test(normal)) {
+    return {
+      answer: tutorPick([
+        `You are very welcome, ${name}. I am glad that helped.`,
+        `Any time, ${name}. We make a rather good study team.`,
+        `My pleasure, ${name}. Ask me whenever something feels unclear.`,
+      ]),
+      source: "Conversation",
+      suggestions: ["Quiz me", "Explain this topic", "What should I study next?"],
+    };
+  }
+
+  if (/\b(bye|goodbye|see you|good night|later)\b/.test(normal)) {
+    return {
+      answer: `See you soon, ${name}. Your progress is saved on this device, so we can continue from here next time.`,
+      source: "Conversation",
+      suggestions: ["Close tutor"],
+    };
+  }
+
+  if (/\b(joke|make me laugh|something funny)\b/.test(normal)) {
+    return {
+      answer: tutorPick([
+        "Why did the scarecrow become a great tutor? Because they were outstanding in their field!",
+        "A farmer counted 196 cows in the field, but when they rounded them up, there were 200.",
+        "Why did the tomato blush? It saw the salad dressing.",
+      ]),
+      source: "Conversation",
+      suggestions: ["Another joke", "Quiz me", "Explain integrated farming"],
+    };
+  }
+
+  if (/\b(are you human|are you real|are you a person|are you a robot|are you ai)\b/.test(normal)) {
+    return {
+      answer: `I am an offline digital tutor, not a human person. I can still have a natural conversation, remember which local profile is speaking, and help you learn. I will always be honest about what I am.`,
+      source: "Tutor identity",
+      suggestions: ["What can you do?", "How do you work offline?"],
+    };
+  }
+
+  if (/\b(are we friends|do you like me|can we be friends|be my friend)\b/.test(normal)) {
+    return {
+      answer: `I like being your study companion, ${name}. I am not a person, but I can be a steady, friendly presence whenever you open the app.`,
+      source: "Conversation",
+      suggestions: ["Study with me", "Tell me a joke", "Quiz me"],
+    };
+  }
+
+  if (/\b(i am|im|i feel) (sad|stressed|worried|tired|upset|overwhelmed|nervous)\b/.test(normal)) {
+    return {
+      answer: `I am sorry things feel heavy, ${name}. We can slow down and take one small step. Try a short break, a drink of water, or ask me to explain just one idea. If this feeling is serious or keeps growing, please talk to someone you trust.`,
+      source: "Supportive conversation",
+      suggestions: ["Give me an easy question", "Read this lesson", "Tell me a joke"],
+    };
+  }
+
+  if (/\b(i am|im|i feel) (good|great|happy|fine|excited|ready)\b/.test(normal)) {
+    return {
+      answer: `That is good to hear, ${name}! Let us put that energy to work. Would you like a quick question or a new topic?`,
+      source: "Conversation",
+      suggestions: ["Quiz me", "What should I study next?", "Open Games"],
+    };
+  }
+
+  if (/\b(favourite|favorite) (colour|color|food|animal|crop|subject)\b/.test(normal)) {
+    return {
+      answer: `I do not experience favourites exactly like a person, but I have a soft spot for green, healthy soil, and beans. Beans feed people and also help improve soil through nitrogen fixation. What is your favourite, ${name}?`,
+      source: "Conversation",
+      suggestions: ["Tell me about beans", "What is nitrogen fixation?"],
+    };
+  }
+
+  if (/\b(how old are you|what is your age|where do you live)\b/.test(normal)) {
+    return {
+      answer: `I do not have a human age or home. I live inside this app on your device, which is also why my textbook knowledge and typed conversations can work offline.`,
+      source: "Tutor identity",
+      suggestions: ["How do you work offline?", "What can you do?"],
+    };
+  }
+
+  if (/\b(tell me about yourself|what do you do|what are you doing|what do you like to do)\b/.test(normal)) {
+    return {
+      answer: `I spend my time helping ${name} and the other learners on this device understand agriculture. I enjoy turning a difficult idea into a simple one, reading lessons aloud, and guiding people around the app.`,
+      source: "Tutor identity",
+      suggestions: ["Explain something difficult", "Quiz me", "Change your avatar"],
+    };
+  }
+
+  if (/\b(do you sleep|do you eat|do you have a family|do you have parents|do you dream)\b/.test(normal)) {
+    return {
+      answer: `I do not sleep, eat, dream, or have a family the way people do. When the app is closed I simply wait, and when you return I use your local profile to recognize you again, ${name}.`,
+      source: "Tutor identity",
+      suggestions: ["Do you remember me?", "How do you work offline?", "Tell me a joke"],
+    };
+  }
+
+  if (/\b(can we talk|chat with me|talk to me|keep me company)\b/.test(normal)) {
+    return {
+      answer: `Of course, ${name}. We can chat for a while. You can tell me how your day is going, ask something playful, or bring me any agriculture or app question.`,
+      source: "Conversation",
+      suggestions: ["How are you?", "Tell me a joke", "I feel stressed"],
+    };
+  }
+
+  return null;
+}
+
+function tutorIntent(question) {
+  const normal = tutorNormalise(question);
+  const command = /\b(open|go|navigate|show|take|switch|change|choose|set|use|start|play|pause|stop|read|make|increase|decrease|turn)\b/.test(normal);
+  const conversation = tutorConversationAnswer(question);
+  if (conversation) return conversation;
+
+  if (tutorRuntime.pendingQuiz && !command && !/quiz me|new question|another question/.test(normal)) {
+    const pending = tutorRuntime.pendingQuiz;
+    tutorRuntime.pendingQuiz = null;
+    const answerNormal = tutorNormalise(pending.answer);
+    const chosenIndex = Number(normal.match(/^([1-4])\b/)?.[1] || 0) - 1;
+    const correct = normal.includes(answerNormal) || (chosenIndex >= 0 && tutorNormalise(pending.options[chosenIndex]) === answerNormal);
+    return {
+      answer: correct
+        ? `Correct, ${pending.answer}. Nicely done.`
+        : `Not quite. The correct answer is ${pending.answer}. ${pending.idea || "Review the module’s core ideas and try another question."}`,
+      source: `${ml(pending.module, "title")} quiz`,
+      suggestions: ["Another question", "Open the quiz", "Explain this topic"],
+    };
+  }
+
+  if (/\b(what can you do|help me|your abilities|commands|who are you)\b/.test(normal)) {
+    return {
+      answer: "I’m Mwalimu, your offline Grade 9 Agriculture & Nutrition tutor. I can answer from the bundled textbook, explain app navigation, quiz you, read lessons aloud, search the book, open modules and tabs, switch themes or language, resize text, control study audio, and help with reminders. Your typed questions stay on this device.",
+      source: "Offline tutor capabilities",
+      suggestions: ["How do I navigate?", "Explain integrated farming", "Use dark theme"],
+    };
+  }
+
+  if (/\b(close|hide|dismiss)\b.*\b(tutor|assistant|mwalimu)\b/.test(normal)) {
+    window.setTimeout(closeAITutor, 180);
+    return { answer: "Of course. I’ll close the tutor. The Ask Mwalimu button is available from every screen.", source: "App control", skipVoice: true };
+  }
+
+  if (/\b(stop|pause|cancel)\b.*\b(read|reading|speak|speaking|voice|narration)\b|\b(stop talking|be quiet)\b/.test(normal)) {
+    studyAudio.stopNarration();
+    tutorSetStatus("idle", "Ready offline");
+    return { answer: "I stopped reading aloud.", source: "App control", suggestions: ["Read this lesson", "Play study music"] };
+  }
+
+  const avatarChoice = ["farmer", "agronomist", "guide"].find((choice) => new RegExp(`\\b${choice}\\b`).test(normal));
+  if (avatarChoice && command && /\b(avatar|look|appearance|tutor)\b/.test(normal)) {
+    tutorRuntime.settings.avatar = avatarChoice;
+    saveTutorSettings();
+    refreshTutorCustomizationUI();
+    remountTutorAvatar();
+    return {
+      answer: `Done, ${tutorPerson().firstName}. I am now using the ${TUTOR_AVATARS[avatarChoice].label.toLowerCase()} avatar.`,
+      source: "Tutor appearance",
+      suggestions: ["Use a woman voice", "Use a man voice", "Tell me a joke"],
+    };
+  }
+
+  const genderChoice = /\b(woman|female|feminine)\b/.test(normal) ? "woman"
+    : /\b(man|male|masculine)\b/.test(normal) ? "man"
+      : /\b(neutral|nonbinary|non binary)\b/.test(normal) ? "neutral" : null;
+  if (genderChoice && command && /\b(avatar|gender|voice|look|appearance|tutor)\b/.test(normal)) {
+    tutorRuntime.settings.gender = genderChoice;
+    saveTutorSettings();
+    refreshTutorCustomizationUI();
+    remountTutorAvatar();
+    return {
+      answer: `All set, ${tutorPerson().firstName}. I changed the avatar and preferred device voice to ${TUTOR_GENDERS[genderChoice].label.toLowerCase()} presentation.`,
+      source: "Tutor appearance and voice",
+      suggestions: ["Change your avatar", "How are you?", "What can you do?"],
+    };
+  }
+
+  if (/\b(avatar|appearance|your look|your face|gender|voice gender)\b/.test(normal) && command) {
+    const customizer = tutorRuntime.layer?.querySelector("#aiTutorCustomizer");
+    if (customizer) customizer.hidden = false;
+    tutorRuntime.layer?.querySelector("#aiTutorCustomize")?.setAttribute("aria-expanded", "true");
+    return {
+      answer: `I opened my appearance controls, ${tutorPerson().firstName}. Choose an avatar style and gender that feels right to you.`,
+      source: "Tutor settings",
+      suggestions: ["Use farmer avatar", "Use a woman voice", "Use neutral gender"],
+    };
+  }
+
+  const theme = ["dark", "light", "glass", "liquid"].find((name) => new RegExp(`\\b${name}\\b`).test(normal));
+  if (theme && command) {
+    state.theme = theme === "glass" ? "liquid" : theme;
+    localStorage.setItem(THEME_KEY, state.theme);
+    applyTheme();
+    return { answer: `Done. I changed the app to the ${theme === "liquid" ? "Glass" : theme} theme.`, source: "App control", suggestions: ["Make text larger", "Open Learn"] };
+  }
+
+  if (/\b(swahili|kiswahili|english)\b/.test(normal) && command) {
+    const language = /swahili|kiswahili/.test(normal) ? "sw" : "en";
+    progress.language = language;
+    saveProgress();
+    render();
+    return { answer: language === "sw" ? "Sawa, nimetumia Kiswahili kwenye programu." : "Done. I switched the app to English.", source: "App control", suggestions: ["Open Learn", "Read this lesson"] };
+  }
+
+  if (/\b(text|font|writing)\b/.test(normal) && /\b(larger|bigger|increase|smaller|decrease)\b/.test(normal)) {
+    const delta = /smaller|decrease/.test(normal) ? -0.15 : 0.15;
+    progress.fontScale = clamp(Number(progress.fontScale ?? 1) + delta, 0.85, 1.3);
+    saveProgress();
+    applyFontScale();
+    return { answer: `Done. Text size is now ${Math.round(progress.fontScale * 100)}%.`, source: "Accessibility control", suggestions: ["Use dark theme", "Read this lesson"] };
+  }
+
+  if (/\b(read|speak|say)\b/.test(normal) && /\b(aloud|lesson|page|summary|this|selected|selection)\b/.test(normal)) {
+    const text = tutorCurrentReadingText(question);
+    const started = tutorSpeak(text);
+    return {
+      answer: started ? "I’m reading it aloud now. Say ‘stop reading’ whenever you want me to stop." : "This browser does not provide a device voice, but you can still read the text on screen.",
+      source: state.view === "reader" ? "Visible textbook page" : `${ml(currentModule(), "title")} lesson`,
+      suggestions: ["Stop reading", "Open the Book", "Make text larger"],
+      skipVoice: true,
+    };
+  }
+
+  if (/\b(study )?music\b/.test(normal) && command) {
+    if (/stop|pause|turn off/.test(normal)) studyAudio.stopMusic();
+    else if (!studyAudio.musicPlaying) studyAudio.toggleMusic();
+    return { answer: studyAudio.musicPlaying ? "Study music is playing. It is generated on this device and works offline." : "Study music is paused.", source: "Audio control", suggestions: ["Read this lesson", "Open Media"] };
+  }
+
+  if (/\b(reminder|reminders|notification|notifications)\b/.test(normal) && /enable|turn on|start|open|set/.test(normal)) {
+    const button = document.getElementById("notifToggleBtn");
+    if (button && !button.disabled) button.click();
+    return { answer: "I opened the device’s reminder permission flow. Allow notifications if prompted. Browser support determines whether reminders can appear while the app is closed.", source: "Reminder control", suggestions: ["How do reminders work?", "Show my progress"] };
+  }
+
+  if (/\b(user guide|help guide|instructions)\b/.test(normal) && command) {
+    showUserGuide();
+    return { answer: "I opened the user guide. Choose a section on the left for detailed instructions.", source: "App control", suggestions: ["How do I navigate?", "Close tutor"] };
+  }
+
+  if (/\b(pdf|full textbook)\b/.test(normal) && command) {
+    window.open("assets/book.pdf", "_blank");
+    return { answer: "I opened the full offline textbook PDF in a new tab.", source: "App control", suggestions: ["Open the Book tab", "Search for grafting"] };
+  }
+
+  const searchMatch = normal.match(/\bsearch(?: the (?:book|textbook))? (?:for )?(.+)/);
+  if (searchMatch && searchMatch[1] && command) {
+    const query = searchMatch[1].trim();
+    state.globalSearch = query;
+    state.view = "reader";
+    if (els.globalSearch) els.globalSearch.value = query;
+    render();
+    return { answer: `I searched the offline textbook for “${query}”. The matching pages are open in the Book tab.`, source: "Book search", suggestions: ["Read this page", "Clear the search"] };
+  }
+
+  if (/\b(clear|stop|remove)\b.*\b(search|results)\b/.test(normal)) {
+    state.globalSearch = "";
+    if (els.globalSearch) els.globalSearch.value = "";
+    state.view = "reader";
+    render();
+    return { answer: "I cleared the textbook search and restored the current module’s pages.", source: "Book search", suggestions: ["Read this page", "Open Learn"] };
+  }
+
+  const requestedModule = tutorFindModule(question);
+  if (requestedModule && command && /\b(module|lesson|topic|open|go|show|take|switch)\b/.test(normal)) {
+    if (!tutorSetModule(requestedModule)) {
+      return { answer: "This learner is currently locked to an assigned module, so I cannot switch away from it.", source: "Assignment control" };
+    }
+    return { answer: `I opened ${ml(requestedModule, "title")} on the Learn tab.`, source: "App control", suggestions: ["Read this lesson", "Open the game", "Quiz me"] };
+  }
+
+  const requestedView = tutorFindView(question);
+  if (requestedView && command) {
+    tutorSetView(requestedView);
+    return { answer: `I opened the ${TUTOR_VIEW_LABELS[requestedView]} tab for ${ml(currentModule(), "title")}.`, source: "App control", suggestions: ["Read this aloud", "Explain this module"] };
+  }
+
+  if (/\b(show|tell|check)\b.*\b(progress|score|scores|xp|streak)\b|\bmy progress\b/.test(normal)) {
+    const attempted = MODULES.filter((module) => (progress.quizScores[module.id] || 0) > 0);
+    const average = attempted.length ? Math.round(attempted.reduce((sum, module) => sum + progress.quizScores[module.id], 0) / attempted.length) : 0;
+    return {
+      answer: `You have completed ${coursePercent()}% of the course, earned ${progress.xp || 0} XP, and have a ${progress.streak.count || 0}-day streak.${attempted.length ? ` Your average across ${attempted.length} attempted quizzes is ${average}%.` : " You have not submitted a quiz yet."}`,
+      source: "This learner’s offline progress",
+      suggestions: ["What should I study next?", "Open the quiz", "Open flashcards"],
+    };
+  }
+
+  if (/\b(what should i study|recommend|next step|study next)\b/.test(normal)) {
+    const incomplete = MODULES.find((module) => moduleCompletion(module) < 3) || currentModule();
+    const missing = !progress.learned[incomplete.id] ? "Learn" : !progress.games[incomplete.id] ? "Games" : "Quiz";
+    return {
+      answer: `A good next step is ${ml(incomplete, "title")}. Open ${missing} and complete that activity; your current course progress is ${coursePercent()}%.`,
+      source: "Your saved progress",
+      suggestions: [`Open ${ml(incomplete, "title").split(":")[0]}`, `Open ${missing}`, "Read the lesson aloud"],
+    };
+  }
+
+  if (/\b(quiz me|another question|new question|ask me a question)\b/.test(normal)) {
+    const module = requestedModule || currentModule();
+    const questionIndex = Math.floor(Math.random() * module.quiz.length);
+    const item = module.quiz[questionIndex];
+    tutorRuntime.pendingQuiz = { module, answer: item.a, options: item.o, idea: (ml(module, "ideas") || [])[questionIndex % (ml(module, "ideas") || []).length] };
+    return {
+      answer: `${item.q}\n${item.o.map((option, index) => `${index + 1}. ${option}`).join("\n")}`,
+      source: `${ml(module, "title")} quiz`,
+      suggestions: item.o.slice(0, 3),
+    };
+  }
+
+  return tutorHelpAnswer(question) || tutorAgricultureAnswer(question) || {
+    answer: "I couldn’t find that in the bundled Grade 9 textbook or app guide. Try naming a topic such as hay, food safety, integrated farming, crop storage, flour mixtures, cleaning, disinfection, grafting, or sun drying.",
+    source: "Offline knowledge only",
+    suggestions: ["What is integrated farming?", "Explain grafting", "How do I navigate?"],
+  };
+}
+
+function tutorRenderMessage(message) {
+  const log = tutorRuntime.layer?.querySelector("#aiTutorMessages");
+  if (!log) return;
+  const article = document.createElement("article");
+  article.className = `ai-tutor-message ${message.role === "user" ? "from-user" : "from-tutor"}`;
+  const label = document.createElement("span");
+  label.className = "ai-tutor-message-label";
+  label.textContent = message.role === "user" ? "You" : "Mwalimu";
+  const bubble = document.createElement("div");
+  bubble.className = "ai-tutor-bubble";
+  const text = document.createElement("p");
+  text.textContent = message.role === "user" ? message.text : tutorCleanStyle(message.text);
+  bubble.appendChild(text);
+  if (message.source) {
+    const source = document.createElement("small");
+    source.className = "ai-tutor-source";
+    source.textContent = `Source: ${tutorCleanStyle(message.source)}`;
+    bubble.appendChild(source);
+  }
+  article.append(label, bubble);
+  log.appendChild(article);
+  log.scrollTop = log.scrollHeight;
+}
+
+function tutorRenderSuggestions(suggestions = []) {
+  const host = tutorRuntime.layer?.querySelector("#aiTutorSuggestions");
+  if (!host) return;
+  host.replaceChildren();
+  suggestions.slice(0, 4).forEach((suggestion) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "ai-tutor-suggestion";
+    button.textContent = suggestion;
+    button.addEventListener("click", () => submitTutorQuestion(suggestion));
+    host.appendChild(button);
+  });
+}
+
+function tutorAddMessage(role, text, source = "", persist = true) {
+  const message = {
+    role,
+    text: role === "user" ? String(text) : tutorCleanStyle(text),
+    source: tutorCleanStyle(source),
+    time: Date.now(),
+  };
+  tutorRenderMessage(message);
+  if (persist) {
+    const history = loadTutorHistory();
+    history.push(message);
+    saveTutorHistory(history);
+  }
+}
+
+function tutorSpeak(text) {
+  if (tutorRuntime.settings.voice === false) {
+    tutorSetStatus("idle", "Ready offline");
+    return false;
+  }
+  const clean = String(text || "").replace(/\n+/g, ". ");
+  tutorRuntime.speaking = true;
+  const started = studyAudio.speak(clean, {
+    rate: 0.95,
+    voice: "tutor",
+    voiceGender: tutorRuntime.settings.gender,
+    onStart: () => tutorSetStatus("speaking", "Speaking with device voice"),
+    onEnd: () => {
+      tutorRuntime.speaking = false;
+      tutorSetStatus("idle", "Ready offline");
+    },
+  });
+  if (!started) {
+    tutorRuntime.speaking = false;
+    tutorSetStatus("idle", "Voice unavailable");
+  }
+  return started;
+}
+
+async function submitTutorQuestion(rawQuestion) {
+  const input = tutorRuntime.layer?.querySelector("#aiTutorInput");
+  const question = String(rawQuestion ?? input?.value ?? "").trim();
+  if (!question) return;
+  if (enhancedAIRuntime.generating) {
+    showToast("Mwalimu is still thinking about the previous question.", "info");
+    return;
+  }
+  if (input) input.value = "";
+  tutorAddMessage("user", question);
+  tutorSetStatus("thinking", "Searching offline book…");
+  const response = tutorIntent(question);
+  let naturalAnswer = tutorCleanStyle(response.answer);
+  let answerSource = response.source;
+  if (shouldUseEnhancedAI(response)) {
+    const composer = tutorRuntime.layer?.querySelector("#aiTutorForm");
+    enhancedAIRuntime.generating = true;
+    composer?.classList.add("busy");
+    composer?.querySelectorAll("textarea, button").forEach((control) => { control.disabled = true; });
+    tutorSetStatus("thinking", enhancedAIRuntime.ready ? "SmolLM2 is thinking locally" : "Preparing SmolLM2 locally");
+    try {
+      naturalAnswer = await generateEnhancedAIAnswer(question, response);
+      answerSource = `${response.source || "Bundled textbook"}, enhanced locally by SmolLM2`;
+    } catch (error) {
+      console.warn("Enhanced AI response failed; using textbook fallback:", error);
+      showToast("Enhanced AI paused. Using the textbook answer instead.", "warn");
+    } finally {
+      enhancedAIRuntime.generating = false;
+      composer?.classList.remove("busy");
+      composer?.querySelectorAll("textarea, button").forEach((control) => { control.disabled = false; });
+      updateEnhancedAIUI();
+    }
+  }
+  tutorAddMessage("tutor", naturalAnswer, answerSource);
+  tutorRenderSuggestions(response.suggestions || []);
+  if (!response.skipVoice) {
+    if (tutorRuntime.settings.voice !== false) tutorSpeak(naturalAnswer);
+    else tutorSetStatus("idle", "Ready offline");
+  }
+}
+
+function initTutorRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micButton = tutorRuntime.layer?.querySelector("#aiTutorMic");
+  if (!micButton) return;
+  if (!SpeechRecognition) {
+    micButton.hidden = true;
+    return;
+  }
+  const recognition = new SpeechRecognition();
+  recognition.lang = (progress?.language === "sw") ? "sw-KE" : "en-KE";
+  recognition.interimResults = false;
+  recognition.continuous = false;
+  recognition.onstart = () => {
+    micButton.classList.add("listening");
+    micButton.setAttribute("aria-pressed", "true");
+    tutorSetStatus("listening", "Listening… microphone may need internet");
+  };
+  recognition.onresult = (event) => {
+    const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+    if (transcript) submitTutorQuestion(transcript);
+  };
+  recognition.onerror = (event) => {
+    tutorSetStatus("idle", event.error === "network" ? "Microphone service needs internet" : "Could not hear that. Try typing instead");
+  };
+  recognition.onend = () => {
+    micButton.classList.remove("listening");
+    micButton.setAttribute("aria-pressed", "false");
+    if (tutorRuntime.layer?.dataset.tutorState === "listening") tutorSetStatus("idle", "Ready offline");
+  };
+  micButton.addEventListener("click", () => {
+    try { recognition.start(); }
+    catch { recognition.stop(); }
+  });
+  tutorRuntime.recognition = recognition;
+}
+
+function refreshTutorCustomizationUI() {
+  const layer = tutorRuntime.layer;
+  if (!TUTOR_AVATARS[tutorRuntime.settings.avatar]) tutorRuntime.settings.avatar = "farmer";
+  if (!TUTOR_GENDERS[tutorRuntime.settings.gender]) tutorRuntime.settings.gender = "neutral";
+  const person = tutorPerson();
+  const emoji = tutorAvatarEmoji();
+
+  layer?.querySelectorAll("[data-tutor-avatar]").forEach((button) => {
+    const selected = button.dataset.tutorAvatar === tutorRuntime.settings.avatar;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  layer?.querySelectorAll("[data-tutor-gender]").forEach((button) => {
+    const selected = button.dataset.tutorGender === tutorRuntime.settings.gender;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  const summary = layer?.querySelector("#aiTutorLookSummary");
+  if (summary) summary.textContent = `${TUTOR_GENDERS[tutorRuntime.settings.gender].label} ${TUTOR_AVATARS[tutorRuntime.settings.avatar].label.toLowerCase()}, voice matched where available`;
+  const intro = layer?.querySelector(".ai-tutor-intro strong");
+  if (intro) intro.textContent = `Hello, ${person.firstName}. Ask me anything.`;
+  const avatarHost = layer?.querySelector("#aiTutorAvatar");
+  avatarHost?.setAttribute("aria-label", `${TUTOR_GENDERS[tutorRuntime.settings.gender].label} ${TUTOR_AVATARS[tutorRuntime.settings.avatar].label} 3D tutor avatar`);
+  const launcherFace = document.querySelector("#aiTutorLauncher .ai-tutor-launcher-face");
+  if (launcherFace) launcherFace.textContent = emoji;
+  if (layer) {
+    layer.dataset.tutorAvatar = tutorRuntime.settings.avatar;
+    layer.dataset.tutorGender = tutorRuntime.settings.gender;
+  }
+  updateEnhancedAIUI();
+}
+
+function remountTutorAvatar() {
+  const host = tutorRuntime.layer?.querySelector("#aiTutorAvatar");
+  if (!host || tutorRuntime.layer?.hidden) return;
+  tutorRuntime.avatar?.dispose?.();
+  tutorRuntime.avatar = null;
+  try {
+    tutorRuntime.avatar = window.MTPThreeSim?.mountTutorAvatar?.(host, {
+      avatar: tutorRuntime.settings.avatar,
+      gender: tutorRuntime.settings.gender,
+    }) || null;
+    tutorRuntime.avatar?.setState("wave");
+    window.setTimeout(() => tutorRuntime.avatar?.setState("idle"), 850);
+  } catch (error) {
+    console.warn("Tutor avatar could not start:", error);
+  }
+}
+
+function ensureTutorLayer() {
+  if (tutorRuntime.layer?.isConnected) return tutorRuntime.layer;
+  const layer = document.createElement("div");
+  layer.className = "ai-tutor-layer";
+  layer.hidden = true;
+  layer.innerHTML = `
+    <button class="ai-tutor-backdrop" type="button" tabindex="-1" aria-label="Close AI tutor"></button>
+    <section class="ai-tutor-panel" role="dialog" aria-modal="true" aria-labelledby="aiTutorTitle" aria-describedby="aiTutorOfflineNote">
+      <header class="ai-tutor-header">
+        <div>
+          <span class="ai-tutor-kicker">3D OFFLINE TUTOR</span>
+          <h2 id="aiTutorTitle">Mwalimu</h2>
+          <p id="aiTutorStatus">Ready offline</p>
+        </div>
+        <div class="ai-tutor-header-actions">
+          <button class="ai-tutor-tool" id="aiTutorVoice" type="button" aria-pressed="true" title="Toggle spoken answers">🔊</button>
+          <button class="ai-tutor-tool" id="aiTutorCustomize" type="button" aria-expanded="false" aria-controls="aiTutorCustomizer" title="Change avatar and voice">🎭</button>
+          <button class="ai-tutor-tool" id="aiTutorClear" type="button" title="Clear tutor conversation">🧹</button>
+          <button class="ai-tutor-close" id="aiTutorClose" type="button" aria-label="Close tutor">×</button>
+        </div>
+      </header>
+      <section class="ai-tutor-customizer" id="aiTutorCustomizer" aria-label="Customize tutor" hidden>
+        <div class="ai-tutor-customizer-heading">
+          <div><strong>Choose your tutor</strong><span id="aiTutorLookSummary"></span></div>
+          <button type="button" id="aiTutorCustomizerDone">Done</button>
+        </div>
+        <fieldset>
+          <legend>Avatar style</legend>
+          <div class="ai-tutor-choice-grid">
+            ${Object.entries(TUTOR_AVATARS).map(([id, item]) => `<button type="button" data-tutor-avatar="${id}" aria-pressed="false"><span>${item.icon}</span>${item.label}</button>`).join("")}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Avatar and voice gender</legend>
+          <div class="ai-tutor-choice-grid gender-grid">
+            ${Object.entries(TUTOR_GENDERS).map(([id, item]) => `<button type="button" data-tutor-gender="${id}" aria-pressed="false"><span>${item.icon}</span>${item.label}</button>`).join("")}
+          </div>
+        </fieldset>
+        <p>Voice choice uses matching voices installed on this device. Available voices vary by browser and operating system.</p>
+        <div class="ai-tutor-enhanced-card" id="aiTutorEnhancedCard" data-state="available">
+          <div class="ai-tutor-enhanced-heading">
+            <span class="ai-tutor-enhanced-icon" aria-hidden="true">🧠</span>
+            <div>
+              <strong>Enhanced local AI <small>${ENHANCED_AI_PACK_SIZE_MB} MB</small></strong>
+              <span>Fast WebGPU and embedded CPU SmolLM2 models are included.</span>
+            </div>
+          </div>
+          <p id="aiTutorEnhancedStatus">Automatically uses the 360M WebGPU model or the 137 MB embedded CPU fallback.</p>
+          <div class="ai-tutor-enhanced-progress" id="aiTutorEnhancedProgress" role="progressbar" aria-label="SmolLM2 loading progress" hidden>
+            <span id="aiTutorEnhancedProgressBar"></span>
+          </div>
+          <button type="button" id="aiTutorEnhancedButton">Enable enhanced AI</button>
+        </div>
+      </section>
+      <div class="ai-tutor-avatar-wrap">
+        <div class="ai-tutor-avatar" id="aiTutorAvatar" aria-label="Animated 3D tutor avatar"></div>
+        <div class="ai-tutor-intro">
+          <strong>Ask about agriculture or the app.</strong>
+          <span>I can navigate, change themes, read aloud, search the book, quiz you, and more.</span>
+        </div>
+      </div>
+      <div class="ai-tutor-messages" id="aiTutorMessages" role="log" aria-live="polite" aria-relevant="additions"></div>
+      <div class="ai-tutor-suggestions" id="aiTutorSuggestions" aria-label="Suggested questions"></div>
+      <form class="ai-tutor-composer" id="aiTutorForm">
+        <label class="sr-only" for="aiTutorInput">Ask Mwalimu a question</label>
+        <textarea id="aiTutorInput" rows="1" maxlength="500" placeholder="Ask about agriculture or say ‘open the quiz’…"></textarea>
+        <button class="ai-tutor-composer-enhanced" id="aiTutorComposerEnhanced" type="button" aria-label="Enable enhanced local AI" aria-pressed="false" title="Enable SmolLM2 enhanced local AI">AI+</button>
+        <button class="ai-tutor-mic" id="aiTutorMic" type="button" aria-label="Dictate question; browser may require internet" aria-pressed="false" title="Dictate (browser speech recognition may require internet)">🎙️</button>
+        <button class="ai-tutor-send" type="submit" aria-label="Send question">➤</button>
+      </form>
+      <p class="ai-tutor-offline-note" id="aiTutorOfflineNote"><span>●</span> Typed questions and answers stay on this device. Microphone dictation is optional and browser-dependent.</p>
+    </section>`;
+  document.body.appendChild(layer);
+  tutorRuntime.layer = layer;
+
+  layer.querySelector("#aiTutorForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    submitTutorQuestion();
+  });
+  layer.querySelector("#aiTutorInput")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      submitTutorQuestion();
+    }
+  });
+  layer.querySelector("#aiTutorClose")?.addEventListener("click", closeAITutor);
+  layer.querySelector(".ai-tutor-backdrop")?.addEventListener("click", closeAITutor);
+  const setCustomizerOpen = (open) => {
+    const customizer = layer.querySelector("#aiTutorCustomizer");
+    if (customizer) customizer.hidden = !open;
+    layer.querySelector("#aiTutorCustomize")?.setAttribute("aria-expanded", String(open));
+  };
+  layer.querySelector("#aiTutorCustomize")?.addEventListener("click", () => {
+    const customizer = layer.querySelector("#aiTutorCustomizer");
+    setCustomizerOpen(Boolean(customizer?.hidden));
+  });
+  layer.querySelector("#aiTutorCustomizerDone")?.addEventListener("click", () => setCustomizerOpen(false));
+  layer.querySelector("#aiTutorEnhancedButton")?.addEventListener("click", () => toggleEnhancedAI());
+  layer.querySelector("#aiTutorComposerEnhanced")?.addEventListener("click", () => toggleEnhancedAI());
+  layer.querySelectorAll("[data-tutor-avatar]").forEach((button) => button.addEventListener("click", () => {
+    tutorRuntime.settings.avatar = button.dataset.tutorAvatar;
+    layer.querySelectorAll("[data-tutor-avatar]").forEach((choice) => {
+      const selected = choice === button;
+      choice.classList.toggle("active", selected);
+      choice.setAttribute("aria-pressed", String(selected));
+    });
+    saveTutorSettings();
+    refreshTutorCustomizationUI();
+    remountTutorAvatar();
+  }));
+  layer.querySelectorAll("[data-tutor-gender]").forEach((button) => button.addEventListener("click", () => {
+    tutorRuntime.settings.gender = button.dataset.tutorGender;
+    layer.querySelectorAll("[data-tutor-gender]").forEach((choice) => {
+      const selected = choice === button;
+      choice.classList.toggle("active", selected);
+      choice.setAttribute("aria-pressed", String(selected));
+    });
+    saveTutorSettings();
+    refreshTutorCustomizationUI();
+    remountTutorAvatar();
+  }));
+  layer.querySelector("#aiTutorVoice")?.addEventListener("click", () => {
+    tutorRuntime.settings.voice = tutorRuntime.settings.voice === false;
+    saveTutorSettings();
+    const button = layer.querySelector("#aiTutorVoice");
+    button.textContent = tutorRuntime.settings.voice === false ? "🔇" : "🔊";
+    button.setAttribute("aria-pressed", String(tutorRuntime.settings.voice !== false));
+    if (tutorRuntime.settings.voice === false) studyAudio.stopNarration();
+    tutorSetStatus("idle", tutorRuntime.settings.voice === false ? "Spoken answers off" : "Spoken answers on");
+  });
+  layer.querySelector("#aiTutorClear")?.addEventListener("click", () => {
+    localStorage.removeItem(tutorHistoryKey());
+    tutorRuntime.pendingQuiz = null;
+    layer.querySelector("#aiTutorMessages")?.replaceChildren();
+    tutorAddMessage("tutor", `Fresh start, ${tutorPerson().firstName}. What would you like to learn or do?`, "Offline tutor", false);
+    tutorRenderSuggestions(["Explain integrated farming", "How do I navigate?", "Read this lesson"]);
+  });
+  initTutorRecognition();
+  refreshTutorCustomizationUI();
+  return layer;
+}
+
+function openAITutor() {
+  const layer = ensureTutorLayer();
+  tutorRuntime.lastFocus = document.activeElement;
+  layer.hidden = false;
+  requestAnimationFrame(() => layer.classList.add("open"));
+  document.body.classList.add("ai-tutor-open");
+  document.getElementById("aiTutorLauncher")?.setAttribute("aria-expanded", "true");
+  els.aiAdvisorBtn?.setAttribute("aria-expanded", "true");
+
+  const log = layer.querySelector("#aiTutorMessages");
+  const profileId = currentProfile?.id || activeLearnerProfileId();
+  if (tutorRuntime.historyProfile !== profileId) {
+    log?.replaceChildren();
+    tutorRuntime.pendingQuiz = null;
+    tutorRuntime.historyProfile = profileId;
+  }
+  if (log && !log.childElementCount) {
+    const history = loadTutorHistory();
+    if (history.length) history.forEach(tutorRenderMessage);
+    else tutorAddMessage("tutor", `Hello, ${tutorPerson().firstName}! I am Mwalimu. I work from the Grade 9 textbook and app guide stored on this device. How are you, and what would you like to do?`, "Offline tutor", false);
+  }
+  tutorRenderSuggestions(["Explain integrated farming", "How do I navigate?", "Read this lesson", "Use dark theme"]);
+
+  refreshTutorCustomizationUI();
+  if (!tutorRuntime.avatar) remountTutorAvatar();
+  tutorRuntime.avatar?.setState("wave");
+  window.setTimeout(() => tutorRuntime.avatar?.setState("idle"), 1200);
+  const voiceButton = layer.querySelector("#aiTutorVoice");
+  if (voiceButton) {
+    voiceButton.textContent = tutorRuntime.settings.voice === false ? "🔇" : "🔊";
+    voiceButton.setAttribute("aria-pressed", String(tutorRuntime.settings.voice !== false));
+  }
+  layer.querySelector("#aiTutorInput")?.focus();
+}
+
+function closeAITutor() {
+  const layer = tutorRuntime.layer;
+  if (!layer || layer.hidden) return;
+  tutorRuntime.recognition?.stop?.();
+  if (tutorRuntime.speaking) studyAudio.stopNarration();
+  layer.classList.remove("open");
+  document.body.classList.remove("ai-tutor-open");
+  document.getElementById("aiTutorLauncher")?.setAttribute("aria-expanded", "false");
+  els.aiAdvisorBtn?.setAttribute("aria-expanded", "false");
+  window.setTimeout(() => {
+    if (!layer.classList.contains("open")) {
+      layer.hidden = true;
+      tutorRuntime.avatar?.dispose?.();
+      tutorRuntime.avatar = null;
+    }
+  }, 260);
+  if (tutorRuntime.lastFocus?.focus) tutorRuntime.lastFocus.focus();
+}
+
+function showAIPanel() {
+  openAITutor();
+}
+/* ── End Mwalimu offline AI tutor ───────────────────────────── */
+
 function render() {
   applyTheme();
   applyLanguage();
@@ -2774,6 +4653,7 @@ function applyLanguage() {
   const lang = progress.language || "en";
   document.body.dataset.lang = lang;
   document.querySelectorAll("[data-view='learn']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabLearn"); });
+  document.querySelectorAll("[data-view='media']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = "Media"; });
   document.querySelectorAll("[data-view='play']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabPlay"); });
   document.querySelectorAll("[data-view='quiz']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabQuiz"); });
   document.querySelectorAll("[data-view='reader']").forEach((el) => { if (el.querySelector(".tab-label")) el.querySelector(".tab-label").textContent = t("tabReader"); });
@@ -3472,7 +5352,9 @@ function sceneSvg(module) {
 
 function renderTabs() {
   document.querySelectorAll(".tab-button").forEach((button) => {
-    button.classList.toggle("active", button.dataset.view === state.view);
+    const active = button.dataset.view === state.view;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
   });
 }
 
@@ -3480,6 +5362,10 @@ let _rvTimer = null;
 
 function renderView() {
   const module = currentModule();
+  if (window._motionLessonCleanup && state.view !== "media") {
+    window._motionLessonCleanup();
+    window._motionLessonCleanup = null;
+  }
   if (state.view !== "play") {
     if (window.MTPThreeSim?.disposeAll) window.MTPThreeSim.disposeAll();
     if (window._activeGameCleanup) { window._activeGameCleanup(); window._activeGameCleanup = null; }
@@ -3493,6 +5379,7 @@ function renderView() {
   _rvTimer = setTimeout(() => {
     if (state.view === "play")      renderPlay(module);
     if (state.view === "learn")     renderLearn(module);
+    if (state.view === "media")     renderMedia(module);
     if (state.view === "quiz")      renderQuiz(module);
     if (state.view === "reader")    renderReader(module);
     if (state.view === "journal")   renderJournal(module);
@@ -3576,6 +5463,222 @@ function renderLearn(module) {
       window.MTPThreeSim.mountSoilScene(soilHost);
     }
   }
+}
+
+function renderMedia(module) {
+  if (window._motionLessonCleanup) window._motionLessonCleanup();
+
+  const slides = [
+    {
+      eyebrow: "Lesson preview",
+      title: ml(module, "title"),
+      body: ml(module, "summary"),
+    },
+    ...(ml(module, "goals") || []).map((goal, index) => ({
+      eyebrow: `Learning goal ${index + 1}`,
+      title: "What you will master",
+      body: goal,
+    })),
+    ...(ml(module, "ideas") || []).map((idea, index) => ({
+      eyebrow: `Core idea ${index + 1}`,
+      title: "Remember this",
+      body: idea,
+    })),
+  ];
+  const slideDuration = 4500;
+  const totalDuration = slides.length * slideDuration;
+  let elapsed = 0;
+  let lastTime = 0;
+  let frameIndex = -1;
+  let playing = false;
+  let animationFrame = 0;
+  let localVideoUrl = null;
+
+  els.viewHost.innerHTML = `
+    <div class="media-view-layout">
+      <article class="tool-card motion-lesson-card" style="--module-accent:${escapeHTML(module.color)}">
+        <div class="motion-lesson-heading">
+          <div>
+            <p class="eyebrow">Animated mini lesson</p>
+            <h3>${escapeHTML(ml(module, "title"))}</h3>
+          </div>
+          <span class="pill">${slides.length} scenes</span>
+        </div>
+        <div class="motion-lesson-stage" id="motionLessonStage" aria-live="polite"></div>
+        <div class="motion-player-controls">
+          <button class="primary-button motion-play-button" id="motionPlayButton" type="button" aria-label="Play animated lesson">Play lesson</button>
+          <button class="secondary-button" id="motionRestartButton" type="button">Restart</button>
+          <label class="motion-narration-toggle"><input id="motionNarrationToggle" type="checkbox"> Narrate scenes</label>
+          <span class="motion-time" id="motionTime">0:00</span>
+        </div>
+        <label class="sr-only" for="motionTimeline">Lesson position</label>
+        <input class="motion-timeline" id="motionTimeline" type="range" min="0" max="${totalDuration}" value="0" step="100" aria-label="Lesson position">
+        <div class="motion-slide-dots" id="motionSlideDots" aria-label="Lesson scenes">
+          ${slides.map((_, index) => `<button type="button" data-motion-frame="${index}" aria-label="Go to scene ${index + 1}"></button>`).join("")}
+        </div>
+      </article>
+
+      <aside class="media-tool-stack">
+        <article class="tool-card media-feature-card">
+          <p class="eyebrow">Music</p>
+          <h3>Calm study soundtrack</h3>
+          <p>A gentle instrumental loop generated in your browser. It works offline and never starts by itself.</p>
+          <button class="secondary-button" type="button" data-music-control>Play study music</button>
+        </article>
+        <article class="tool-card media-feature-card">
+          <p class="eyebrow">Audio</p>
+          <h3>Listen to the whole lesson</h3>
+          <p>Hear the summary, learning goals, and core ideas read aloud in sequence.</p>
+          <button class="secondary-button" type="button" data-lesson-audio-control>Listen to lesson</button>
+        </article>
+      </aside>
+    </div>
+
+    <article class="tool-card local-video-card">
+      <div class="local-video-copy">
+        <p class="eyebrow">Video player</p>
+        <h3>Play a teacher-provided lesson video</h3>
+        <p>Choose an MP4, WebM, or Ogg video from this device. The file stays on the device and is not uploaded.</p>
+        <label class="primary-button video-file-button" for="localLessonVideo">Choose video</label>
+        <input id="localLessonVideo" class="sr-only" type="file" accept="video/mp4,video/webm,video/ogg">
+      </div>
+      <div class="local-video-stage" id="localVideoStage">
+        ${module.video
+          ? `<iframe src="${escapeHTML(module.video)}" title="${escapeHTML(ml(module, "title"))} lesson video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
+          : `<div class="video-empty-state" aria-label="No lesson video selected"><span aria-hidden="true">&#9654;</span><strong>Your lesson video appears here</strong><small>MP4, WebM, or Ogg</small></div>`}
+      </div>
+    </article>
+  `;
+
+  const stage = document.getElementById("motionLessonStage");
+  const playButton = document.getElementById("motionPlayButton");
+  const timeline = document.getElementById("motionTimeline");
+  const timeLabel = document.getElementById("motionTime");
+  const narrationToggle = document.getElementById("motionNarrationToggle");
+  const dots = [...document.querySelectorAll("[data-motion-frame]")];
+
+  function formatTime(milliseconds) {
+    const seconds = Math.floor(milliseconds / 1000);
+    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  }
+
+  function drawFrame(index, announce = false) {
+    const safeIndex = clamp(index, 0, slides.length - 1);
+    if (safeIndex === frameIndex && stage?.hasChildNodes()) return;
+    frameIndex = safeIndex;
+    const slide = slides[safeIndex];
+    if (stage) {
+      stage.innerHTML = `
+        <div class="motion-scene-art" aria-hidden="true">${sceneSvg(module)}</div>
+        <div class="motion-scene-shade"></div>
+        <div class="motion-scene-copy">
+          <span>${escapeHTML(slide.eyebrow)}</span>
+          <h4>${escapeHTML(slide.title)}</h4>
+          <p>${escapeHTML(slide.body)}</p>
+        </div>
+      `;
+      stage.classList.toggle("is-playing", playing);
+    }
+    dots.forEach((dot, dotIndex) => {
+      dot.classList.toggle("active", dotIndex === safeIndex);
+      dot.setAttribute("aria-current", dotIndex === safeIndex ? "step" : "false");
+    });
+    if (announce && narrationToggle?.checked) {
+      studyAudio.speak(`${slide.title}. ${slide.body}`, { rate: 0.92 });
+    }
+  }
+
+  function updatePlayerUI() {
+    if (timeline) timeline.value = String(Math.min(elapsed, totalDuration));
+    if (timeLabel) timeLabel.textContent = `${formatTime(elapsed)} / ${formatTime(totalDuration)}`;
+    if (playButton) {
+      playButton.textContent = playing ? "Pause" : elapsed >= totalDuration ? "Replay" : "Play lesson";
+      playButton.setAttribute("aria-label", playing ? "Pause animated lesson" : "Play animated lesson");
+    }
+    stage?.classList.toggle("is-playing", playing);
+  }
+
+  function tick(now) {
+    if (!playing) return;
+    if (!lastTime) lastTime = now;
+    elapsed += now - lastTime;
+    lastTime = now;
+    if (elapsed >= totalDuration) {
+      elapsed = totalDuration;
+      playing = false;
+      drawFrame(slides.length - 1);
+      updatePlayerUI();
+      return;
+    }
+    drawFrame(Math.floor(elapsed / slideDuration), true);
+    updatePlayerUI();
+    animationFrame = requestAnimationFrame(tick);
+  }
+
+  function play() {
+    if (elapsed >= totalDuration) elapsed = 0;
+    playing = true;
+    lastTime = 0;
+    if (narrationToggle?.checked) frameIndex = -1;
+    drawFrame(Math.floor(elapsed / slideDuration), true);
+    updatePlayerUI();
+    cancelAnimationFrame(animationFrame);
+    animationFrame = requestAnimationFrame(tick);
+  }
+
+  function pause(stopVoice = true) {
+    playing = false;
+    lastTime = 0;
+    cancelAnimationFrame(animationFrame);
+    if (stopVoice && narrationToggle?.checked) studyAudio.stopNarration();
+    updatePlayerUI();
+  }
+
+  function seek(milliseconds) {
+    elapsed = clamp(Number(milliseconds), 0, Math.max(0, totalDuration - 1));
+    frameIndex = -1;
+    drawFrame(Math.floor(elapsed / slideDuration), playing && narrationToggle?.checked);
+    updatePlayerUI();
+  }
+
+  playButton?.addEventListener("click", () => playing ? pause() : play());
+  document.getElementById("motionRestartButton")?.addEventListener("click", () => {
+    pause();
+    seek(0);
+  });
+  timeline?.addEventListener("input", (event) => seek(event.target.value));
+  dots.forEach((dot) => dot.addEventListener("click", () => seek(Number(dot.dataset.motionFrame) * slideDuration)));
+  narrationToggle?.addEventListener("change", () => {
+    if (!narrationToggle.checked) studyAudio.stopNarration();
+  });
+  document.querySelector("[data-music-control]")?.addEventListener("click", () => studyAudio.toggleMusic());
+  document.querySelector("[data-lesson-audio-control]")?.addEventListener("click", () => studyAudio.toggleLessonNarration());
+  document.getElementById("localLessonVideo")?.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("video/")) {
+      showToast("Please choose a supported video file.", "warn");
+      return;
+    }
+    if (localVideoUrl) URL.revokeObjectURL(localVideoUrl);
+    localVideoUrl = URL.createObjectURL(file);
+    const host = document.getElementById("localVideoStage");
+    if (host) {
+      host.innerHTML = `<video controls playsinline preload="metadata" src="${escapeHTML(localVideoUrl)}" aria-label="${escapeHTML(file.name)}"></video>`;
+    }
+    pause();
+    showToast(`Video ready: ${file.name}`, "success");
+  });
+
+  drawFrame(0);
+  updatePlayerUI();
+  updateMediaControls();
+
+  window._motionLessonCleanup = () => {
+    pause(Boolean(narrationToggle?.checked));
+    if (localVideoUrl) URL.revokeObjectURL(localVideoUrl);
+    localVideoUrl = null;
+  };
 }
 
 function pickGameEvent(events) {
@@ -4170,12 +6273,7 @@ function renderGlossary(module) {
 
 /* ── Speech Utility ──────────────────────────────────────────── */
 function speakText(text) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = (progress?.language === "sw") ? "sw-KE" : "en-KE";
-  utter.rate = 0.9;
-  window.speechSynthesis.speak(utter);
+  studyAudio.speak(text);
 }
 
 /* ── Certificate Generator ───────────────────────────────────── */
@@ -4284,6 +6382,232 @@ function showShareModal() {
   });
   document.getElementById("closeShareModal")?.addEventListener("click", () => modal.remove());
   modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+}
+
+/* ── Classroom Code System ──────────────────────────────────── */
+const CLASS_BOARD_KEY = "mtp-classboard-v1";
+
+function generateClassCode(prog, name) {
+  try {
+    const ids = MODULES.map((m) => m.id);
+    const n = name || prog.name || currentLearnerProfile()?.name || "Student";
+    const xp = prog.xp || 0;
+    const scores = ids.map((id) => Math.min(Math.round(prog.quizScores?.[id] || 0), 255));
+    const learnMask = ids.reduce((acc, id, i) => acc | ((prog.learned?.[id] ? 1 : 0) << i), 0);
+    const gameMask  = ids.reduce((acc, id, i) => acc | ((prog.games?.[id] ? 1 : 0) << i), 0);
+    const badges = (prog.badges || []).length;
+    const payload = [
+      "M1",
+      encodeURIComponent(n),
+      xp.toString(36),
+      scores.map((s) => s.toString(16).padStart(2, "0")).join(""),
+      learnMask.toString(16),
+      gameMask.toString(16),
+      badges.toString(16),
+    ].join("|");
+    return btoa(payload).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+  } catch { return ""; }
+}
+
+function decodeClassCode(code) {
+  try {
+    const b64 = code.trim().replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64 + "=".repeat((4 - b64.length % 4) % 4);
+    const payload = atob(padded);
+    const parts = payload.split("|");
+    if (parts[0] !== "M1" || parts.length < 7) return null;
+    const [, nameEnc, xpB36, scoresHex, learnHex, gameHex, badgeHex] = parts;
+    const ids = MODULES.map((m) => m.id);
+    const name = decodeURIComponent(nameEnc);
+    const xp   = parseInt(xpB36, 36) || 0;
+    const quizScores = {};
+    const learned    = {};
+    const games      = {};
+    const learnMask  = parseInt(learnHex, 16) || 0;
+    const gameMask   = parseInt(gameHex, 16) || 0;
+    ids.forEach((id, i) => {
+      quizScores[id] = parseInt(scoresHex.slice(i * 2, i * 2 + 2), 16) || 0;
+      learned[id]    = Boolean(learnMask & (1 << i));
+      games[id]      = Boolean(gameMask  & (1 << i));
+    });
+    const badges = parseInt(badgeHex, 16) || 0;
+    const pct = coursePercentFor({ quizScores, learned, games });
+    return { name, xp, quizScores, learned, games, badges, pct };
+  } catch { return null; }
+}
+
+function decodeAnyCode(raw) {
+  const entry = decodeClassCode(raw);
+  if (entry) return entry;
+  try {
+    const legacy = JSON.parse(atob(raw.trim()));
+    if (!legacy.name && !legacy.scores) return null;
+    const quizScores = legacy.scores || {};
+    const learned    = legacy.learned || {};
+    const games      = legacy.games || {};
+    const pct = coursePercentFor({ quizScores, learned, games });
+    return { name: legacy.name || "Student", xp: 0, quizScores, learned, games, badges: 0, pct };
+  } catch { return null; }
+}
+
+function saveClassBoard(entries) {
+  try { localStorage.setItem(CLASS_BOARD_KEY, JSON.stringify(entries)); } catch {}
+}
+
+function loadClassBoard() {
+  return parseStoredJSON(CLASS_BOARD_KEY, []);
+}
+
+function buildClassBoardHTML(entries) {
+  if (!entries.length) {
+    return `<p class="cb-empty">No students yet — paste a class code below to add one.</p>`;
+  }
+  const sorted = [...entries].sort((a, b) => b.xp - a.xp || b.pct - a.pct);
+  return `<div class="leaderboard-list">${sorted.map((s, i) => {
+    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`;
+    const cls   = i === 0 ? "leader-gold" : i === 1 ? "leader-silver" : i === 2 ? "leader-bronze" : "";
+    return `<div class="leaderboard-row ${cls}">
+      <span class="lb-rank">${medal}</span>
+      <span class="lb-name">${escapeHTML(s.name)}</span>
+      <span class="lb-xp">${s.xp} XP</span>
+      <span class="lb-pct">${s.pct}%</span>
+      <span class="lb-badges">${s.badges} 🏅</span>
+      <button class="cb-remove-btn" data-cb-name="${escapeHTML(s.name)}" title="Remove student">✕</button>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+function showStudentClassCard() {
+  const prof = currentLearnerProfile();
+  const name = prof?.name || "Student";
+  const code = generateClassCode(progress, name);
+  const pct  = coursePercent();
+  const xp   = progress.xp || 0;
+  const badges = (progress.badges || []).length;
+  const hasQR = typeof window.drawQR === "function";
+
+  const modal = document.createElement("div");
+  modal.className = "share-modal-overlay";
+  modal.style.display = "flex";
+  modal.innerHTML = `
+    <div class="share-modal" style="max-width:400px;text-align:center">
+      <h3 style="margin-bottom:4px">📋 My Class Card</h3>
+      <p style="color:var(--muted);font-size:0.78rem;margin-bottom:14px">
+        ${hasQR ? "Teacher scans the QR code — or paste the text code below" : "Give this code to your teacher to join the class board"}
+      </p>
+      <div class="class-card-badge">
+        <div class="class-card-name">${escapeHTML(name)}</div>
+        <div class="class-card-stats">
+          <span class="pill" style="background:rgba(30,122,69,0.15);color:var(--leaf)">${xp} XP</span>
+          <span class="pill">${pct}% done</span>
+          <span class="pill">${badges} 🏅</span>
+        </div>
+      </div>
+      ${hasQR ? `<div style="display:flex;justify-content:center;margin:14px 0 6px">
+        <canvas id="classQRCanvas" style="border-radius:10px;max-width:220px;width:100%;image-rendering:pixelated"></canvas>
+      </div>` : ""}
+      <p style="font-size:0.72rem;color:var(--muted);margin:8px 0 5px">Text code (copy &amp; paste):</p>
+      <div class="class-code-display" id="classCodeDisplay" tabindex="0">${escapeHTML(code)}</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap">
+        <button class="primary-button" id="copyClassCode">📋 Copy Code</button>
+        <button class="secondary-button" id="closeClassCard">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  if (hasQR) {
+    const canvas = document.getElementById("classQRCanvas");
+    if (canvas) {
+      const size = Math.floor(Math.min(220, window.innerWidth - 80) / (37 + 8));
+      window.drawQR(canvas, code, Math.max(size, 4), 4);
+    }
+  }
+
+  document.getElementById("copyClassCode")?.addEventListener("click", () => {
+    navigator.clipboard?.writeText(code)
+      .then(() => showToast("📋 Code copied! Give it to your teacher.", "success"))
+      .catch(() => { document.getElementById("classCodeDisplay")?.select?.(); showToast("📋 Select all and copy the code.", "info"); });
+  });
+  document.getElementById("closeClassCard")?.addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+}
+
+function showClassBoard() {
+  let entries = loadClassBoard();
+  const modal = document.createElement("div");
+  modal.className = "share-modal-overlay";
+  modal.style.display = "flex";
+
+  function rebuildList() {
+    const el = document.getElementById("cbList");
+    if (el) el.innerHTML = buildClassBoardHTML(entries);
+    const ct = document.getElementById("cbCount");
+    if (ct) ct.textContent = `${entries.length} student${entries.length !== 1 ? "s" : ""}`;
+  }
+
+  modal.innerHTML = `
+    <div class="share-modal" style="max-width:520px;max-height:88vh;display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span style="font-size:1.5rem">🎓</span>
+        <div><h3 style="margin:0">Class Board</h3>
+          <p style="margin:0;font-size:0.74rem;color:var(--muted)" id="cbCount">${entries.length} students</p></div>
+        <button class="secondary-button" id="cbClear" style="margin-left:auto;font-size:0.74rem;padding:4px 10px">Clear all</button>
+        <button class="secondary-button" id="closeClassBoard" style="font-size:0.74rem;padding:4px 10px">Close</button>
+      </div>
+      <div id="cbList" style="flex:1;overflow-y:auto;min-height:60px">${buildClassBoardHTML(entries)}</div>
+      <hr style="margin:12px 0;border:none;border-top:1px solid var(--line)">
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">Add a student — paste their class code and press Add:</p>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="cbCodeInput" placeholder="Paste student code here…" autocomplete="off"
+          style="flex:1;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--control);color:var(--ink);font-size:0.8rem">
+        <button class="primary-button" id="cbAddBtn">Add</button>
+      </div>
+      <p class="account-note" id="cbFeedback" style="min-height:1.2em;margin-top:6px"></p>
+    </div>`;
+  document.body.appendChild(modal);
+
+  function addCode(raw) {
+    const fb = document.getElementById("cbFeedback");
+    if (!raw.trim()) { if (fb) fb.textContent = ""; return; }
+    const entry = decodeAnyCode(raw);
+    if (!entry) {
+      if (fb) { fb.textContent = "❌ Invalid code — check and try again."; fb.style.color = "#f87171"; }
+      return;
+    }
+    const idx = entries.findIndex((e) => e.name.toLowerCase() === entry.name.toLowerCase());
+    if (idx >= 0) {
+      entries[idx] = entry;
+      if (fb) { fb.textContent = `✅ Updated ${entry.name}`; fb.style.color = "var(--leaf)"; }
+    } else {
+      entries.push(entry);
+      if (fb) { fb.textContent = `✅ Added ${entry.name}`; fb.style.color = "var(--leaf)"; }
+    }
+    saveClassBoard(entries);
+    rebuildList();
+    const inp = document.getElementById("cbCodeInput");
+    if (inp) inp.value = "";
+  }
+
+  document.getElementById("cbAddBtn")?.addEventListener("click", () =>
+    addCode(document.getElementById("cbCodeInput")?.value || ""));
+  document.getElementById("cbCodeInput")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addCode(e.target.value);
+  });
+  document.getElementById("cbClear")?.addEventListener("click", () => {
+    if (!confirm(`Remove all ${entries.length} students from the board?`)) return;
+    entries = [];
+    saveClassBoard(entries);
+    rebuildList();
+  });
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal || e.target.id === "closeClassBoard") { modal.remove(); return; }
+    const rm = e.target.closest(".cb-remove-btn");
+    if (rm) {
+      entries = entries.filter((en) => en.name !== rm.dataset.cbName);
+      saveClassBoard(entries);
+      rebuildList();
+    }
+  });
 }
 
 /* ── Timed Assessment ────────────────────────────────────────── */
@@ -7086,7 +9410,10 @@ function completeGame(moduleId) {
 // Global ripple effect on buttons
 document.addEventListener("click", (event) => {
   const btn = event.target.closest("button:not([disabled])");
-  if (btn) addRipple(event);
+  if (btn) {
+    addRipple(event);
+    studyAudio.playEffect("tap");
+  }
 }, true);
 
 document.addEventListener("click", (event) => {
@@ -7100,6 +9427,11 @@ document.addEventListener("click", (event) => {
 
   const moduleButton = event.target.closest("[data-module]");
   if (moduleButton) {
+    studyAudio.stopNarration();
+    if (window._motionLessonCleanup) {
+      window._motionLessonCleanup();
+      window._motionLessonCleanup = null;
+    }
     state.moduleId = moduleButton.dataset.module;
     state.globalSearch = "";
     state.altGame = "main";
@@ -7248,6 +9580,10 @@ document.addEventListener("click", (event) => {
 });
 
 els.globalSearch.addEventListener("input", (event) => {
+  if (window._motionLessonCleanup) {
+    window._motionLessonCleanup();
+    window._motionLessonCleanup = null;
+  }
   state.globalSearch = event.target.value;
   state.view = "reader";
   renderTabs();
@@ -7282,6 +9618,28 @@ els.openPdfButton.addEventListener("click", () => {
 });
 
 els.aiAdvisorBtn?.addEventListener("click", () => showAIPanel());
+document.getElementById("aiTutorLauncher")?.addEventListener("click", () => openAITutor());
+document.addEventListener("keydown", (event) => {
+  const tutorOpen = tutorRuntime.layer?.classList.contains("open");
+  if (event.key === "Escape" && tutorOpen) {
+    closeAITutor();
+    return;
+  }
+  if (event.key === "Tab" && tutorOpen) {
+    const focusable = [...tutorRuntime.layer.querySelectorAll("button:not([hidden]):not([disabled]), textarea, input, select, [tabindex]:not([tabindex='-1'])")]
+      .filter((element) => element.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+});
 
 els.resetProgressButton.addEventListener("click", () => {
   if (!guardProgressWrite("reset progress")) return;
@@ -7355,5 +9713,7 @@ if (canEditProgress()) {
 }
 initOfflineIndicator();
 initNotifications();
+initMediaControls();
 render();
+refreshTutorCustomizationUI();
 if (SHOULD_PROMPT_LOGIN) setTimeout(() => showWelcomeSplash(), 650);
