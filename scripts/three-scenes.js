@@ -3151,6 +3151,324 @@ function mountSoilScene(host) {
 }
 /* ── End Soil Cross-Section Scene ───────────────────────────── */
 
+/* ── Persistent 3D AI tutor avatar ──────────────────────────── */
+function mountTutorAvatar(host, options = {}) {
+  if (!host) return null;
+  if (host._mtpTutorController) host._mtpTutorController.dispose();
+  host.replaceChildren();
+
+  const avatarStyle = ["farmer", "agronomist", "guide"].includes(options.avatar) ? options.avatar : "farmer";
+  const gender = ["woman", "man", "neutral"].includes(options.gender) ? options.gender : "neutral";
+  const palettes = {
+    farmer: {
+      skin: 0x7a4b2e, skinLight: 0xa96f48, outfit: 0x23824f,
+      accent: 0x0e4930, cloth: 0xf2e6c8, hair: 0x171710,
+    },
+    agronomist: {
+      skin: 0x5e3826, skinLight: 0x8c5b3d, outfit: 0x236a8f,
+      accent: 0x123c5a, cloth: 0xf4f7f1, hair: 0x24150e,
+    },
+    guide: {
+      skin: 0x9a6547, skinLight: 0xc58a63, outfit: 0xb5672f,
+      accent: 0x315b32, cloth: 0xe8d3a3, hair: 0x301c14,
+    },
+  };
+  const palette = palettes[avatarStyle];
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 30);
+  camera.position.set(0, 1.35, 6.2);
+  camera.lookAt(0, 1.25, 0);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x000000, 0);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.12;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.domElement.setAttribute("aria-hidden", "true");
+  host.appendChild(renderer.domElement);
+
+  scene.add(new THREE.HemisphereLight(0xf5fff0, 0x315846, 2.4));
+  const key = new THREE.DirectionalLight(0xfff1d3, 3.4);
+  key.position.set(3.4, 5.5, 4.8);
+  key.castShadow = true;
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0x76d7ff, 2.0);
+  rim.position.set(-4, 2.5, -2.5);
+  scene.add(rim);
+
+  const avatar = new THREE.Group();
+  avatar.position.y = -1.1;
+  scene.add(avatar);
+
+  const skin = makeMat(palette.skin, 0.72, 0.0);
+  const skinLight = makeMat(palette.skinLight, 0.7, 0.0);
+  const green = makeMat(palette.outfit, 0.55, 0.05);
+  const greenDark = makeMat(palette.accent, 0.62, 0.02);
+  const cloth = makeMat(palette.cloth, 0.88, 0.0);
+  const hair = makeMat(palette.hair, 0.82, 0.0);
+  const white = makeMat(0xffffff, 0.42, 0.0);
+  const dark = makeMat(0x10251b, 0.5, 0.0);
+
+  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.83, 1.02, 1.65, 24), green);
+  torso.position.y = 0.15;
+  torso.scale.x = gender === "woman" ? 0.9 : gender === "man" ? 1.04 : 0.97;
+  torso.castShadow = true;
+  avatar.add(torso);
+
+  if (avatarStyle === "agronomist") {
+    const coatFront = new THREE.Mesh(new THREE.BoxGeometry(0.78, 1.34, 0.08), cloth);
+    coatFront.position.set(0, 0.16, 0.82);
+    coatFront.scale.x = gender === "woman" ? 0.88 : 1;
+    avatar.add(coatFront);
+    const coatLine = new THREE.Mesh(new THREE.BoxGeometry(0.035, 1.22, 0.025), greenDark);
+    coatLine.position.set(0, 0.15, 0.88);
+    avatar.add(coatLine);
+  }
+
+  const collar = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.08, 10, 24), cloth);
+  collar.position.set(0, 0.92, 0.02);
+  collar.rotation.x = Math.PI / 2;
+  avatar.add(collar);
+
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.31, 0.42, 18), skin);
+  neck.position.y = 1.05;
+  avatar.add(neck);
+
+  const headPivot = new THREE.Group();
+  headPivot.position.y = 1.78;
+  avatar.add(headPivot);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.72, 32, 24), skinLight);
+  head.scale.set(gender === "woman" ? 0.84 : gender === "man" ? 0.91 : 0.88, gender === "man" ? 1 : 1.04, 0.86);
+  head.castShadow = true;
+  headPivot.add(head);
+
+  const leftEar = new THREE.Mesh(new THREE.SphereGeometry(0.13, 14, 10), skin);
+  leftEar.position.set(-0.66, -0.02, 0);
+  leftEar.scale.set(0.65, 1.05, 0.55);
+  headPivot.add(leftEar);
+  const rightEar = leftEar.clone();
+  rightEar.position.x = 0.66;
+  headPivot.add(rightEar);
+
+  const hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.735, 28, 14, 0, Math.PI * 2, 0, Math.PI * 0.47), hair);
+  hairCap.position.y = 0.07;
+  hairCap.scale.set(0.9, 1.03, 0.88);
+  headPivot.add(hairCap);
+
+  if (gender === "woman") {
+    const backHair = new THREE.Mesh(new THREE.SphereGeometry(0.55, 22, 14), hair);
+    backHair.position.set(0, -0.05, -0.35);
+    backHair.scale.set(1.05, 1.18, 0.55);
+    headPivot.add(backHair);
+    [-0.56, 0.56].forEach((x) => {
+      const bun = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 12), hair);
+      bun.position.set(x, 0.23, -0.14);
+      headPivot.add(bun);
+    });
+  } else if (gender === "neutral") {
+    for (let i = 0; i < 7; i++) {
+      const curl = new THREE.Mesh(new THREE.SphereGeometry(0.105, 10, 8), hair);
+      curl.position.set(-0.48 + i * 0.16, 0.53 + Math.sin(i * 1.7) * 0.06, 0.12);
+      headPivot.add(curl);
+    }
+  }
+
+  const hat = new THREE.Group();
+  hat.position.y = 0.67;
+  hat.rotation.z = -0.035;
+  const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.075, 32), cloth);
+  brim.scale.z = 0.72;
+  brim.rotation.x = 0.06;
+  hat.add(brim);
+  const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.58, 0.48, 24), cloth);
+  crown.position.y = 0.23;
+  hat.add(crown);
+  const hatBand = new THREE.Mesh(new THREE.CylinderGeometry(0.59, 0.59, 0.11, 24), greenDark);
+  hatBand.position.y = 0.06;
+  hat.add(hatBand);
+  hat.visible = avatarStyle !== "agronomist";
+  if (avatarStyle === "guide") {
+    hat.scale.set(0.86, 0.82, 0.86);
+    hat.rotation.z = 0.06;
+  }
+  headPivot.add(hat);
+
+  const eyeGroups = [];
+  [-0.25, 0.25].forEach((x) => {
+    const eye = new THREE.Group();
+    eye.position.set(x, 0.08, 0.59);
+    const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.105, 16, 12), white);
+    sclera.scale.set(1, 0.8, 0.42);
+    eye.add(sclera);
+    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.052, 12, 10), dark);
+    pupil.position.z = 0.087;
+    pupil.scale.z = 0.5;
+    eye.add(pupil);
+    headPivot.add(eye);
+    eyeGroups.push(eye);
+  });
+
+  if (avatarStyle === "agronomist") {
+    const glasses = new THREE.Group();
+    glasses.position.z = 0.685;
+    [-0.25, 0.25].forEach((x) => {
+      const lens = new THREE.Mesh(
+        new THREE.TorusGeometry(0.145, 0.018, 8, 24),
+        makeMat(0x17354a, 0.32, 0.35),
+      );
+      lens.position.x = x;
+      glasses.add(lens);
+    });
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.025, 0.025), makeMat(0x17354a, 0.32, 0.35));
+    glasses.add(bridge);
+    headPivot.add(glasses);
+  }
+
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.095, 14, 10), skin);
+  nose.position.set(0, -0.08, 0.68);
+  nose.scale.set(0.7, 1.15, 0.75);
+  headPivot.add(nose);
+
+  const mouth = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 10), dark);
+  mouth.position.set(0, -0.34, 0.61);
+  mouth.scale.set(1.15, 0.16, 0.32);
+  headPivot.add(mouth);
+
+  const smile = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.018, 8, 24, Math.PI), makeMat(0xf2b0a2, 0.6));
+  smile.position.set(0, -0.30, 0.68);
+  smile.rotation.z = Math.PI;
+  smile.rotation.x = -0.05;
+  headPivot.add(smile);
+
+  const leftArm = new THREE.Group();
+  leftArm.position.set(-0.86, 0.72, 0);
+  leftArm.rotation.z = 0.18;
+  const leftSleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.27, 0.78, 16), green);
+  leftSleeve.position.y = -0.36;
+  leftArm.add(leftSleeve);
+  const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.23, 16, 12), skinLight);
+  leftHand.position.y = -0.82;
+  leftHand.scale.set(0.82, 1.15, 0.72);
+  leftArm.add(leftHand);
+  avatar.add(leftArm);
+
+  const rightArm = new THREE.Group();
+  rightArm.position.set(0.86, 0.72, 0);
+  rightArm.rotation.z = -0.18;
+  const rightSleeve = leftSleeve.clone();
+  rightSleeve.position.y = -0.36;
+  rightArm.add(rightSleeve);
+  const rightHand = leftHand.clone();
+  rightHand.position.y = -0.82;
+  rightArm.add(rightHand);
+  avatar.add(rightArm);
+
+  const badge = new THREE.Group();
+  badge.position.set(0.38, 0.4, 0.88);
+  const badgeDisc = new THREE.Mesh(new THREE.CircleGeometry(0.18, 24), cloth);
+  badge.add(badgeDisc);
+  const badgeLeaf = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 8), greenDark);
+  badgeLeaf.position.z = 0.02;
+  badgeLeaf.scale.set(0.55, 1.25, 0.35);
+  badgeLeaf.rotation.z = -0.65;
+  badge.add(badgeLeaf);
+  avatar.add(badge);
+
+  const shadow = new THREE.Mesh(
+    new THREE.CircleGeometry(1.25, 32),
+    new THREE.MeshBasicMaterial({ color: 0x0b3b25, transparent: true, opacity: 0.2, depthWrite: false }),
+  );
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.set(0, -1.08, 0.15);
+  scene.add(shadow);
+
+  let mode = "idle";
+  let pointerX = 0;
+  let pointerY = 0;
+  let disposed = false;
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+
+  function onPointerMove(event) {
+    const rect = host.getBoundingClientRect();
+    pointerX = ((event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5) * 2;
+    pointerY = ((event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5) * 2;
+  }
+  function onPointerLeave() { pointerX = 0; pointerY = 0; }
+  host.addEventListener("pointermove", onPointerMove);
+  host.addEventListener("pointerleave", onPointerLeave);
+
+  function resize() {
+    const width = Math.max(180, host.clientWidth || 180);
+    const height = Math.max(150, host.clientHeight || 150);
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  }
+  const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(resize) : null;
+  resizeObserver?.observe(host);
+  if (!resizeObserver) window.addEventListener("resize", resize);
+  resize();
+
+  renderer.setAnimationLoop((time) => {
+    const t = time * 0.001;
+    const motion = reducedMotion ? 0.22 : 1;
+    avatar.position.y = -1.1 + Math.sin(t * 1.5) * 0.025 * motion;
+    avatar.rotation.y += ((pointerX * 0.09) - avatar.rotation.y) * 0.04;
+    headPivot.rotation.x += ((pointerY * 0.045) - headPivot.rotation.x) * 0.04;
+
+    const blink = Math.sin(t * 0.72 + 1.1) > 0.992 ? 0.08 : 1;
+    eyeGroups.forEach((eye) => { eye.scale.y += (blink - eye.scale.y) * 0.5; });
+
+    if (mode === "speaking") {
+      mouth.scale.y = 0.28 + Math.abs(Math.sin(t * 11)) * 0.62;
+      smile.visible = false;
+      headPivot.rotation.z = Math.sin(t * 1.8) * 0.035 * motion;
+      rightArm.rotation.z = -0.28 - Math.sin(t * 2.3) * 0.13 * motion;
+    } else {
+      mouth.scale.y += (0.16 - mouth.scale.y) * 0.18;
+      smile.visible = true;
+      headPivot.rotation.z += ((mode === "thinking" ? -0.12 : 0) - headPivot.rotation.z) * 0.06;
+      if (mode === "listening") {
+        headPivot.rotation.y = Math.sin(t * 1.25) * 0.06 * motion;
+        rightArm.rotation.z = -0.55;
+      } else if (mode === "wave") {
+        rightArm.rotation.z = -1.75 + Math.sin(t * 5.2) * 0.24 * motion;
+      } else {
+        rightArm.rotation.z += (-0.18 - rightArm.rotation.z) * 0.08;
+        headPivot.rotation.y *= 0.9;
+      }
+    }
+    leftArm.rotation.z = 0.18 + Math.sin(t * 1.4) * 0.025 * motion;
+    renderer.render(scene, camera);
+  });
+
+  const controller = {
+    setState(next) {
+      mode = ["idle", "listening", "thinking", "speaking", "wave"].includes(next) ? next : "idle";
+    },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      renderer.setAnimationLoop(null);
+      resizeObserver?.disconnect();
+      if (!resizeObserver) window.removeEventListener("resize", resize);
+      host.removeEventListener("pointermove", onPointerMove);
+      host.removeEventListener("pointerleave", onPointerLeave);
+      disposeScene(scene);
+      renderer.dispose();
+      host.replaceChildren();
+      delete host._mtpTutorController;
+    },
+  };
+  host._mtpTutorController = controller;
+  return controller;
+}
+/* ── End persistent 3D AI tutor avatar ──────────────────────── */
+
 function disposeAll() {
   [...mounted.values()].forEach((c) => c.dispose());
 }
@@ -3163,6 +3481,7 @@ window.MTPThreeSim = {
   mountPestBlaster3D, mountFarmRaider3D, mountFlourFrenzy3D,
   mountLeftoverSortScene, mountWordSearchScene,
   mountSoilScene,
+  mountTutorAvatar,
   disposeAll,
 };
 window.dispatchEvent(new CustomEvent("mtp-three-ready"));
