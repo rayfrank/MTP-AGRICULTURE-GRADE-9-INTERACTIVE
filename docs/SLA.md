@@ -2,7 +2,7 @@
 
 ## Project
 
-**Product:** MTP Digital Agriculture & Nutrition Grade 9 Interactive Digital Content  
+**Product:** MTP Digital Agriculture Grade 9 Interactive Digital Content  
 **Subject/Lot:** Grade 9 Agriculture  
 **Provider:** Mountain Publishers / MTP Digital  
 **Client:** Kenya Institute of Curriculum Development (KICD) / Procuring Entity  
@@ -10,7 +10,7 @@
 
 ## 1. Purpose
 
-This Service Level Agreement defines the support, maintenance, response time, update, and escalation commitments for the MTP Digital Grade 9 Agriculture & Nutrition interactive HTML5 content package.
+This Service Level Agreement defines the support, maintenance, response time, update, and escalation commitments for the MTP Digital Grade 9 Agriculture interactive HTML5 content package.
 
 ## 2. Supported Content
 

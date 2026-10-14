@@ -1,3 +1,46 @@
+/* ── Storage ─────────────────────────────────────────────────── */
+// Some school PCs block or fill up browser storage (private windows, locked
+// profiles, file:// policies). Every read and write goes through this wrapper
+// so notes and progress keep working for the session instead of failing.
+const store = (() => {
+  const memory = new Map();
+  let backend = null;
+  let warned = false;
+  try {
+    const probe = "__mtp_storage_probe__";
+    window.localStorage.setItem(probe, "1");
+    window.localStorage.removeItem(probe);
+    backend = window.localStorage;
+  } catch {
+    backend = null;
+  }
+  const warn = () => {
+    if (warned) return;
+    warned = true;
+    setTimeout(() => showToast("This browser is not saving data permanently. Your notes are kept until you close the app; use Export progress to keep a copy.", "warn"), 1500);
+  };
+  if (!backend) warn();
+  return {
+    get persistent() { return Boolean(backend); },
+    getItem(key) {
+      if (memory.has(key)) return memory.get(key);
+      try { return backend ? backend.getItem(key) : null; } catch { return null; }
+    },
+    setItem(key, value) {
+      const text = String(value);
+      try {
+        if (backend) { backend.setItem(key, text); memory.delete(key); return; }
+      } catch { /* quota exceeded or blocked: fall through to memory */ }
+      memory.set(key, text);
+      warn();
+    },
+    removeItem(key) {
+      memory.delete(key);
+      try { backend?.removeItem(key); } catch { /* ignore */ }
+    },
+  };
+})();
+
 /* ── UI Utilities ───────────────────────────────────────────── */
 
 function addRipple(event)
@@ -226,6 +269,8 @@ function maybeShowTutorial(mount, gameId, steps) {
 const MODULES = [
   {
     id: "hay",
+    code: "1.1",
+    strandCode: "1.0",
     strand: "Conservation of Resources",
     title: "Conserving Animal Feed: Hay",
     pages: [1, 8],
@@ -262,8 +307,8 @@ const MODULES = [
       { term: "Stover", def: "Dried stalks and leaves of a crop (e.g., maize) left after grain is harvested." },
     ],
     links: [
-      { label: "Kenya Forage Handbook", url: "https://www.kari.org/forages" },
-      { label: "FAO Hay Making Guide", url: "https://www.fao.org/agriculture/crops/hay" },
+      { label: "FAO: Hay and straw conservation", url: "https://www.fao.org/4/x7660e/x7660e00.htm" },
+      { label: "KALRO: Kenya Agricultural and Livestock Research Organization", url: "https://kalro.org/" },
     ],
     video: null,
     quiz: [
@@ -286,6 +331,8 @@ const MODULES = [
   },
   {
     id: "leftovers",
+    code: "1.2",
+    strandCode: "1.0",
     strand: "Conservation of Resources",
     title: "Conserving Leftover Foods",
     pages: [9, 17],
@@ -321,8 +368,9 @@ const MODULES = [
       { term: "Spoilage", def: "The process by which food becomes unfit to eat due to bacteria, mould, or yeast." },
     ],
     links: [
-      { label: "KEBS Food Safety Standards", url: "https://www.kebs.org/food-safety" },
-      { label: "WHO Food Safety Tips", url: "https://www.who.int/news-room/fact-sheets/detail/food-safety" },
+      { label: "WHO: Five keys to safer food", url: "https://www.who.int/publications/i/item/9789241594639" },
+      { label: "WHO: Food safety fact sheet", url: "https://www.who.int/news-room/fact-sheets/detail/food-safety" },
+      { label: "FAO: Reducing food loss and waste", url: "https://www.fao.org/platform-food-loss-waste/en/" },
     ],
     video: null,
     quiz: [
@@ -345,12 +393,15 @@ const MODULES = [
   },
   {
     id: "integrated",
+    code: "1.3",
+    strandCode: "1.0",
     strand: "Conservation of Resources",
     title: "Integrated Farming",
     pages: [18, 22],
     color: "#226b8f",
     icon: "I",
-    game: "farmRaider",
+    game: "farmLoop",
+    challengeGame: "farmRaider",
     summary:
       "Recycle resources between crops, animals, fish, water, and waste to reduce cost and improve farm output.",
     goals: [
@@ -373,7 +424,7 @@ const MODULES = [
     ],
     glossary: [
       { term: "Integrated farming", def: "A system that combines crops, livestock, fish, and other activities so waste from one becomes input for another." },
-      { term: "Manure", def: "Animal dung used as a natural fertilizer to improve soil fertility." },
+      { term: "Manure", def: "Animal dung used as a natural fertiliser to improve soil fertility." },
       { term: "Compost", def: "Decomposed organic matter (plant and food waste) used to enrich soil." },
       { term: "Biogas", def: "Gas (mainly methane) produced from decomposing organic waste, used as fuel for cooking." },
       { term: "Crop residues", def: "Plant parts left in the field after harvest, such as stalks and leaves." },
@@ -381,8 +432,9 @@ const MODULES = [
       { term: "Resource recycling", def: "Using outputs from one process as inputs for another to reduce waste and cost." },
     ],
     links: [
-      { label: "FAO Integrated Farming", url: "https://www.fao.org/integrated-farming" },
-      { label: "KALRO Research Farms", url: "https://www.kalro.org" },
+      { label: "FAO: Agroecology Knowledge Hub", url: "https://www.fao.org/agroecology/en" },
+      { label: "Integrated farming (Wikipedia)", url: "https://en.wikipedia.org/wiki/Integrated_farming" },
+      { label: "KALRO research farms", url: "https://kalro.org/" },
     ],
     video: null,
     quiz: [
@@ -405,6 +457,8 @@ const MODULES = [
   },
   {
     id: "organic",
+    code: "2.1",
+    strandCode: "2.0",
     strand: "Food Production Processes",
     title: "Organic Gardening",
     pages: [23, 41],
@@ -419,7 +473,7 @@ const MODULES = [
       "Harvest crops at the right stage while observing hygiene.",
     ],
     ideas: [
-      "Organic gardening avoids over-reliance on artificial fertilizers and pesticides.",
+      "Organic gardening avoids over-reliance on artificial fertilisers and pesticides.",
       "Compost, manure, mulch, irrigation, and top dressing support healthy crops.",
       "Crop rotation, companion planting, field hygiene, and natural predators reduce pests and diseases.",
     ],
@@ -432,17 +486,17 @@ const MODULES = [
       "How does crop rotation help reduce pest and disease problems?",
     ],
     glossary: [
-      { term: "Organic gardening", def: "Growing food using natural methods without synthetic chemicals or fertilizers." },
+      { term: "Organic gardening", def: "Growing food using natural methods without synthetic chemicals or fertilisers." },
       { term: "Mulching", def: "Covering soil with plant material to conserve moisture, suppress weeds, and add nutrients." },
       { term: "Crop rotation", def: "Growing different crops on the same land in different seasons to break pest cycles and restore soil nutrients." },
       { term: "Companion planting", def: "Growing two or more crops close together so one benefits the other, e.g. by deterring pests." },
-      { term: "Top dressing", def: "Applying fertilizer or compost to the soil surface around growing plants to boost nutrition." },
+      { term: "Top dressing", def: "Applying fertiliser or compost to the soil surface around growing plants to boost nutrition." },
       { term: "Natural pesticide", def: "A pest control substance made from plants or minerals rather than synthetic chemicals." },
       { term: "Field hygiene", def: "Removing crop debris and diseased plants from the garden to prevent spread of pests and diseases." },
     ],
     links: [
-      { label: "Kenya Organic Agriculture Network", url: "https://www.koan.co.ke" },
-      { label: "FAO Organic Gardening Guide", url: "https://www.fao.org/organic-agriculture" },
+      { label: "FAO: Organic agriculture, environment and food security", url: "https://www.fao.org/4/y4137e/y4137e00.htm" },
+      { label: "Organic horticulture (Wikipedia)", url: "https://en.wikipedia.org/wiki/Organic_horticulture" },
     ],
     video: null,
     quiz: [
@@ -465,12 +519,15 @@ const MODULES = [
   },
   {
     id: "storage",
+    code: "2.2",
+    strandCode: "2.0",
     strand: "Food Production Processes",
     title: "Storage of Crop Produce",
     pages: [42, 46],
     color: "#7c5d2a",
     icon: "S",
-    game: "pestBlaster",
+    game: "storageInspector",
+    challengeGame: "pestBlaster",
     summary:
       "Prepare and manage granaries, rooms, bags, jars, and containers so grains and tubers remain safe.",
     goals: [
@@ -500,8 +557,9 @@ const MODULES = [
       { term: "Desiccant", def: "A substance that absorbs moisture, used to keep stored produce dry." },
     ],
     links: [
-      { label: "Post-Harvest Loss Kenya", url: "https://www.aphlis.net/en/page/8/kenya" },
-      { label: "FAO Storage Best Practices", url: "https://www.fao.org/post-harvest" },
+      { label: "APHLIS: Post-harvest losses in Kenya", url: "https://www.aphlis.net/en/page/8/kenya" },
+      { label: "FAO: Prevention of post-harvest food losses", url: "https://www.fao.org/4/x0039e/x0039e00.htm" },
+      { label: "FAO: Grain storage techniques", url: "https://www.fao.org/4/t1838e/T1838E00.htm" },
     ],
     video: null,
     quiz: [
@@ -524,12 +582,15 @@ const MODULES = [
   },
   {
     id: "flour",
+    code: "2.3",
+    strandCode: "2.0",
     strand: "Food Production Processes",
     title: "Cooking: Using Flour Mixtures",
     pages: [47, 54],
     color: "#b57922",
     icon: "F",
-    game: "flourFrenzy",
+    game: "flourMixer",
+    challengeGame: "flourFrenzy",
     summary:
       "Use batter and dough to prepare pancakes, chapati, mandazi, doughnuts, bread, and coated foods.",
     goals: [
@@ -560,8 +621,9 @@ const MODULES = [
       { term: "Deep frying", def: "Cooking food by submerging it fully in hot oil." },
     ],
     links: [
-      { label: "Kenya Home Science Association", url: "https://www.homescience.co.ke" },
-      { label: "Bread & Baking Basics", url: "https://www.bbga.org/resources/baking-basics" },
+      { label: "Batter (Wikipedia)", url: "https://en.wikipedia.org/wiki/Batter_(cooking)" },
+      { label: "Dough (Wikipedia)", url: "https://en.wikipedia.org/wiki/Dough" },
+      { label: "Wikibooks Cookbook: Batter", url: "https://en.wikibooks.org/wiki/Cookbook:Batter" },
     ],
     video: null,
     quiz: [
@@ -584,6 +646,8 @@ const MODULES = [
   },
   {
     id: "waste",
+    code: "3.1",
+    strandCode: "3.0",
     strand: "Hygiene Practices",
     title: "Cleaning Waste Disposal Facilities",
     pages: [55, 62],
@@ -619,8 +683,9 @@ const MODULES = [
       { term: "Cross-contamination", def: "The transfer of germs from a dirty surface or object to a clean one." },
     ],
     links: [
-      { label: "Ministry of Health Kenya — Sanitation", url: "https://www.health.go.ke/sanitation" },
-      { label: "WHO Hygiene Promotion", url: "https://www.who.int/teams/environment-climate-change-and-health/water-sanitation-and-health" },
+      { label: "WHO: Sanitation fact sheet", url: "https://www.who.int/news-room/fact-sheets/detail/sanitation" },
+      { label: "WHO: Water, sanitation and health", url: "https://www.who.int/teams/environment-climate-change-and-health/water-sanitation-and-health" },
+      { label: "Ministry of Health Kenya", url: "https://www.health.go.ke/" },
     ],
     video: null,
     quiz: [
@@ -643,6 +708,8 @@ const MODULES = [
   },
   {
     id: "disinfecting",
+    code: "3.2",
+    strandCode: "3.0",
     strand: "Hygiene Practices",
     title: "Disinfecting Clothing and Household Articles",
     pages: [63, 71],
@@ -679,8 +746,8 @@ const MODULES = [
       { term: "Communicable disease", def: "A disease that can spread from person to person through direct or indirect contact." },
     ],
     links: [
-      { label: "CDC Disinfection Guidelines", url: "https://www.cdc.gov/infectioncontrol/guidelines" },
-      { label: "WHO Infection Prevention", url: "https://www.who.int/infection-prevention" },
+      { label: "WHO: Infection prevention and control", url: "https://www.who.int/health-topics/infection-prevention-and-control" },
+      { label: "Disinfectant (Wikipedia)", url: "https://en.wikipedia.org/wiki/Disinfectant" },
     ],
     video: null,
     quiz: [
@@ -703,6 +770,8 @@ const MODULES = [
   },
   {
     id: "grafting",
+    code: "4.1",
+    strandCode: "4.0",
     strand: "Production Techniques",
     title: "Grafting in Plants",
     pages: [72, 75],
@@ -739,8 +808,9 @@ const MODULES = [
       { term: "Vegetative propagation", def: "Reproducing plants using non-seed parts such as cuttings, buds, or grafts." },
     ],
     links: [
-      { label: "KARI Horticulture Grafting Guide", url: "https://www.kari.org/horticulture" },
-      { label: "FAO Plant Propagation Manual", url: "https://www.fao.org/plant-production-protection" },
+      { label: "Grafting (Wikipedia)", url: "https://en.wikipedia.org/wiki/Grafting" },
+      { label: "FAO: Plant production and protection", url: "https://www.fao.org/plant-production-protection/en" },
+      { label: "KALRO horticulture research", url: "https://kalro.org/" },
     ],
     video: null,
     quiz: [
@@ -763,6 +833,8 @@ const MODULES = [
   },
   {
     id: "sunDryer",
+    code: "4.2",
+    strandCode: "4.0",
     strand: "Production Techniques",
     title: "Homemade Sun Dryer",
     pages: [76, 79],
@@ -799,8 +871,9 @@ const MODULES = [
       { term: "Moisture content", def: "The amount of water remaining in dried food, which must be low enough to prevent spoilage." },
     ],
     links: [
-      { label: "SOLARAID Food Drying Resources", url: "https://www.solaraid.org/resources" },
-      { label: "FAO Solar Food Drying", url: "https://www.fao.org/post-harvest/solar-drying" },
+      { label: "FAO: Preserving fruits and vegetables in rural areas (sun drying)", url: "https://www.fao.org/4/y4358e/y4358e00.htm" },
+      { label: "Solar dryer (Wikipedia)", url: "https://en.wikipedia.org/wiki/Solar_dryer" },
+      { label: "Food drying (Wikipedia)", url: "https://en.wikipedia.org/wiki/Food_drying" },
     ],
     video: null,
     quiz: [
@@ -823,6 +896,7 @@ const MODULES = [
   },
 ];
 
+// Storage keys keep their original names so learners keep their saved progress.
 const STORAGE_KEY = "agriNutritionGrade9Progress";
 const THEME_KEY = "agriNutritionGrade9Theme";
 const ACCOUNT_KEY = "agriNutritionGrade9Accounts";
@@ -854,7 +928,7 @@ const DEFAULT_ACCOUNTS = [
   { id: "parent-demo", role: "parent", name: "Parent" },
 ];
 
-const SHOULD_PROMPT_LOGIN = !localStorage.getItem(SESSION_KEY);
+const SHOULD_PROMPT_LOGIN = !store.getItem(SESSION_KEY);
 let offlineAccounts = [];
 let currentProfile = null;
 
@@ -894,13 +968,16 @@ const STRINGS = {
     certTitle: "Certificate of Achievement",
     certSub: "This is to certify that",
     certBody: "has successfully completed all modules of the",
-    certCourse: "Agriculture & Nutrition Grade 9 MTP Digital Course",
+    certCourse: "Agriculture Grade 9 MTP Digital Course",
     streakLabel: "day streak",
     weeklyLabel: "this week",
     assessmentTitle: "Timed Assessment",
     assessmentTimer: "Time remaining",
     assessmentSubmit: "Submit Assessment",
     promptsHeading: "Reflect further…",
+    strandLabel: "Strand",
+    substrandLabel: "Sub-strand",
+    pagesLabel: "Pages",
   },
   sw: {
     tabLearn: "Jifunze", tabPlay: "Michezo", tabQuiz: "Jaribio", tabReader: "Kitabu",
@@ -937,13 +1014,16 @@ const STRINGS = {
     certTitle: "Cheti cha Mafanikio",
     certSub: "Hii ni kuthibitisha kwamba",
     certBody: "amefanikiwa kukamilisha moduli zote za",
-    certCourse: "Kozi ya Kilimo na Lishe Darasa la 9",
+    certCourse: "Kozi ya Kilimo Darasa la 9",
     streakLabel: "siku mfululizo",
     weeklyLabel: "wiki hii",
     assessmentTitle: "Tathmini ya Wakati",
     assessmentTimer: "Muda uliobaki",
     assessmentSubmit: "Wasilisha Tathmini",
     promptsHeading: "Fikiria zaidi…",
+    strandLabel: "Mada",
+    substrandLabel: "Mada ndogo",
+    pagesLabel: "Kurasa",
   },
 };
 
@@ -971,7 +1051,7 @@ const MODULE_TRANSLATIONS = {
         { term: "Kunyauka", def: "Hatua ya kwanza ya kukausha ambapo malisho mapya yaliyokatwa hupoteza unyevu kupita kiasi." },
         { term: "Masalia ya mashina", def: "Mashina makavu na majani ya zao (k.m. mahindi) yaliyobaki baada ya nafaka kuvunwa." },
       ],
-      links: [{ label: "Mwongozo wa Malisho wa Kenya", url: "https://www.kari.org/forages" },{ label: "Mwongozo wa FAO wa Kutengeneza Nyasi", url: "https://www.fao.org/agriculture/crops/hay" }],
+      links: [{ label: "FAO: Uhifadhi wa nyasi kavu na majani", url: "https://www.fao.org/4/x7660e/x7660e00.htm" },{ label: "KALRO: Shirika la Utafiti wa Kilimo na Mifugo Kenya", url: "https://kalro.org/" }],
       quiz: [
         { q: "Mazao ya malisho yanapaswa kuvunwa katika hatua gani kwa nyasi ya ubora wa juu?", o: ["Hatua ya miche","Hatua ya maua","Baada ya kuoza","Wakati wa mvua"] },
         { q: "Kwa nini nyasi inapaswa kuhifadhiwa katika banda lililoinuliwa na lenye hewa?", o: ["Kuongeza unyevu","Kuihifadhi kavu na kupunguza upotevu wa lishe","Kuvutia wadudu","Kuifanya iwe nyeupe haraka"] },
@@ -995,7 +1075,7 @@ const MODULE_TRANSLATIONS = {
         { term: "Upotevu wa chakula", def: "Chakula kinachotupwa bila sababu, kupoteza pesa, nishati, na rasilimali." },
         { term: "Kuharibika", def: "Mchakato ambapo chakula kinakuwa kisifae kuliwa kutokana na bakteria, ukungu, au chachu." },
       ],
-      links: [{ label: "Viwango vya Usalama wa Chakula vya KEBS", url: "https://www.kebs.org/food-safety" },{ label: "Vidokezo vya Usalama wa Chakula vya WHO", url: "https://www.who.int/news-room/fact-sheets/detail/food-safety" }],
+      links: [{ label: "WHO: Funguo tano za chakula salama", url: "https://www.who.int/publications/i/item/9789241594639" },{ label: "WHO: Maelezo kuhusu usalama wa chakula", url: "https://www.who.int/news-room/fact-sheets/detail/food-safety" },{ label: "FAO: Kupunguza upotevu wa chakula", url: "https://www.fao.org/platform-food-loss-waste/en/" }],
       quiz: [
         { q: "Ni nini kifanyike na wali uliobaki wenye harufu ya ajabu?", o: ["Uhudumie baridi","Utupe","Uchanganye na viungo tu","Uhifadhi kwa wiki nyingine"] },
         { q: "Mazoea gani husaidia kuzuia uchafuzi wa chakula kilichobaki?", o: ["Kuacha wazi","Kuhifadhi kwa kufunikwa katika chombo safi","Kuiweka sakafuni","Kugusa kwa mikono michafu"] },
@@ -1020,7 +1100,7 @@ const MODULE_TRANSLATIONS = {
         { term: "Usalama wa chakula", def: "Upatikanaji wa kutosha wa chakula salama na chenye lishe kwa watu wote katika kaya au jamii." },
         { term: "Kurudia rasilimali", def: "Kutumia matokeo ya mchakato mmoja kama ingizo la mchakato mwingine kupunguza taka na gharama." },
       ],
-      links: [{ label: "Kilimo Changanyiko cha FAO", url: "https://www.fao.org/integrated-farming" },{ label: "Mashamba ya Utafiti ya KALRO", url: "https://www.kalro.org" }],
+      links: [{ label: "FAO: Kituo cha maarifa ya kilimo-ikolojia", url: "https://www.fao.org/agroecology/en" },{ label: "Kilimo changanyiko (Wikipedia, Kiingereza)", url: "https://en.wikipedia.org/wiki/Integrated_farming" },{ label: "Mashamba ya utafiti ya KALRO", url: "https://kalro.org/" }],
       quiz: [
         { q: "Wazo kuu la kilimo changanyiko ni nini?", o: ["Kutumia zao moja tu","Kurudia rasilimali ndani ya shamba","Kuepuka wanyama","Kuchoma masalia yote"] },
         { q: "Rasilimali gani kutoka kwa mifugo inaweza kuboresha bustani ya mazao?", o: ["Plastiki","Samadi","Moshi","Kutu"] },
@@ -1045,7 +1125,7 @@ const MODULE_TRANSLATIONS = {
         { term: "Dawa ya asilia ya wadudu", def: "Dawa ya kudhibiti wadudu iliyotengenezwa kutoka kwa mimea au madini badala ya kemikali bandia." },
         { term: "Usafi wa shamba", def: "Kuondoa masalia ya mazao na mimea yenye ugonjwa kutoka bustanini ili kuzuia kuenea kwa wadudu na magonjwa." },
       ],
-      links: [{ label: "Mtandao wa Kilimo Asilia wa Kenya", url: "https://www.koan.co.ke" },{ label: "Mwongozo wa FAO wa Bustani ya Kilimo Asilia", url: "https://www.fao.org/organic-agriculture" }],
+      links: [{ label: "FAO: Kilimo asilia, mazingira na usalama wa chakula", url: "https://www.fao.org/4/y4137e/y4137e00.htm" },{ label: "Bustani ya kilimo asilia (Wikipedia, Kiingereza)", url: "https://en.wikipedia.org/wiki/Organic_horticulture" }],
       quiz: [
         { q: "Mazoea gani husaidia kuzuia magugu na kuhifadhi unyevu wa udongo katika bustani ya kilimo asilia?", o: ["Matandazo","Kumwagilia kila siku","Kuchoma mboji","Kuacha udongo wazi"] },
         { q: "Kwa nini mazao yanayohusiana yanapaswa kupanda maeneo tofauti badala ya sehemu moja kila wakati?", o: ["Yanaweza kushiriki wadudu na magonjwa","Hayawezi kutumia maji","Yanazuia jua","Hayhitaji udongo"] },
@@ -1069,7 +1149,7 @@ const MODULE_TRANSLATIONS = {
         { term: "Shambulio la wadudu", def: "Idadi kubwa ya wadudu au panya wanaoishi ndani au kushambulia ghala au mazao." },
         { term: "Kifyonzaji cha unyevu", def: "Dutu inayofyonza unyevu, inayotumiwa kuweka mazao yaliyohifadhiwa yakiwa kavu." },
       ],
-      links: [{ label: "Upotevu wa Baada ya Mavuno Kenya", url: "https://www.aphlis.net/en/page/8/kenya" },{ label: "Mazoea Bora ya Uhifadhi ya FAO", url: "https://www.fao.org/post-harvest" }],
+      links: [{ label: "APHLIS: Upotevu wa baada ya mavuno Kenya", url: "https://www.aphlis.net/en/page/8/kenya" },{ label: "FAO: Kuzuia upotevu wa chakula baada ya mavuno", url: "https://www.fao.org/4/x0039e/x0039e00.htm" },{ label: "FAO: Mbinu za kuhifadhi nafaka", url: "https://www.fao.org/4/t1838e/T1838E00.htm" }],
       quiz: [
         { q: "Kwa nini ghala la mazao inapaswa kuwa kavu?", o: ["Kupunguza kuoza na ukuaji wa ukungu","Kulowesha nafaka","Kuvutia panya","Kuzuia mzunguko wa hewa"] },
         { q: "Kitendo gani kinazuia wadudu kuingia kwenye chombo cha kuhifadhi?", o: ["Kutumia kifuniko kinachofaa vizuri","Kukiacha wazi","Kuongeza maji","Kuweka sehemu zilizovunjika"] },
@@ -1094,7 +1174,7 @@ const MODULE_TRANSLATIONS = {
         { term: "Kukaanga kidogo", def: "Kupika chakula katika kiasi kidogo cha mafuta kwenye sufuria, ukigeuzisha kupika pande zote." },
         { term: "Kukaanga kwa mafuta mengi", def: "Kupika chakula kwa kuzamisha kabisa katika mafuta moto." },
       ],
-      links: [{ label: "Chama cha Sayansi ya Nyumbani cha Kenya", url: "https://www.homescience.co.ke" },{ label: "Misingi ya Mkate na Uoka", url: "https://www.bbga.org/resources/baking-basics" }],
+      links: [{ label: "Mchanganyiko mwepesi wa unga (Wikipedia, Kiingereza)", url: "https://en.wikipedia.org/wiki/Batter_(cooking)" },{ label: "Kinyunya cha unga (Wikipedia, Kiingereza)", url: "https://en.wikipedia.org/wiki/Dough" },{ label: "Kitabu cha mapishi: Batter (Kiingereza)", url: "https://en.wikibooks.org/wiki/Cookbook:Batter" }],
       quiz: [
         { q: "Mchanganyiko gani wa unga una muundo wa kutiririka?", o: ["Uji wa kupiga","Unga ulioandaliwa","Nyasi","Mboji"] },
         { q: "Bidhaa gani hutengenezwa kawaida kutoka kwa uji mwembamba?", o: ["Pancakes","Chapati","Mandazi","Mkate"] },
@@ -1118,7 +1198,7 @@ const MODULE_TRANSLATIONS = {
         { term: "Usafi wa mazingira", def: "Kudumisha hali za usafi ili kulinda afya na kuzuia magonjwa." },
         { term: "Maambukizo ya msalaba", def: "Uhamishaji wa vijidudu kutoka uso au kitu kichafu hadi kitu safi." },
       ],
-      links: [{ label: "Wizara ya Afya ya Kenya — Usafi", url: "https://www.health.go.ke/sanitation" },{ label: "Kukuza Usafi wa WHO", url: "https://www.who.int/teams/environment-climate-change-and-health/water-sanitation-and-health" }],
+      links: [{ label: "WHO: Maelezo kuhusu usafi wa mazingira", url: "https://www.who.int/news-room/fact-sheets/detail/sanitation" },{ label: "WHO: Maji, usafi na afya", url: "https://www.who.int/teams/environment-climate-change-and-health/water-sanitation-and-health" },{ label: "Wizara ya Afya Kenya", url: "https://www.health.go.ke/" }],
       quiz: [
         { q: "Kwa nini glavu zinapaswa kuvaliwa wakati wa kusafisha vifaa vya kutupa taka?", o: ["Kulinda mikono dhidi ya uchafu na vijidudu","Kukausha sinki","Kuongeza harufu mbaya","Kuhifadhi nafaka"] },
         { q: "Sinki iliyozibwa inaweza kusababisha nini?", o: ["Mkusanyiko wa uchafu na mifereji mibaya","Uingizaji hewa bora","Mazao makavu zaidi","Mazao safi zaidi"] },
@@ -1143,7 +1223,7 @@ const MODULE_TRANSLATIONS = {
         { term: "Kuungua kwa mvuke", def: "Kuungua kunakosababishwa na kioevu cha moto sana au mvuke." },
         { term: "Ugonjwa wa kuambukizana", def: "Ugonjwa unaoweza kuenea kutoka mtu hadi mtu kwa mawasiliano ya moja kwa moja au yasiyokuwa ya moja kwa moja." },
       ],
-      links: [{ label: "Mwongozo wa Usafi wa CDC", url: "https://www.cdc.gov/infectioncontrol/guidelines" },{ label: "Kuzuia Maambukizo ya WHO", url: "https://www.who.int/infection-prevention" }],
+      links: [{ label: "WHO: Kuzuia na kudhibiti maambukizo", url: "https://www.who.int/health-topics/infection-prevention-and-control" },{ label: "Dawa ya kuua vijidudu (Wikipedia, Kiingereza)", url: "https://en.wikipedia.org/wiki/Disinfectant" }],
       quiz: [
         { q: "Njia gani inatumia joto la juu la maji kuua vijidudu kwenye vitambaa vinavyofaa?", o: ["Kuchemsha","Matandazo","Uingizaji","Kubana nyasi"] },
         { q: "Njia gani inatumia mionzi ya UV nje ya nyumba?", o: ["Jua","Kutia chumvi","Kupiga vumbi","Kutengeneza mboji"] },
@@ -1168,7 +1248,7 @@ const MODULE_TRANSLATIONS = {
         { term: "Kalasi", def: "Tishu mpya inayokua juu ya jeraha au kiungo cha uingizaji ili kuiziba na kuiponya." },
         { term: "Uenezaji kwa mimea", def: "Kuzaliana mimea kwa kutumia sehemu zisizo za mbegu kama vipande, machipuo, au uingizaji." },
       ],
-      links: [{ label: "Mwongozo wa Uingizaji wa Bustani ya KARI", url: "https://www.kari.org/horticulture" },{ label: "Mwongozo wa FAO wa Uenezaji wa Mimea", url: "https://www.fao.org/plant-production-protection" }],
+      links: [{ label: "Uingizaji wa mimea (Wikipedia, Kiingereza)", url: "https://en.wikipedia.org/wiki/Grafting" },{ label: "FAO: Uzalishaji na ulinzi wa mimea", url: "https://www.fao.org/plant-production-protection/en" },{ label: "Utafiti wa bustani wa KALRO", url: "https://kalro.org/" }],
       quiz: [
         { q: "Sehemu ya juu ya mmea uliounganishwa inaitwa nini?", o: ["Chipukizi","Shina la msingi","Tray","Ghala"] },
         { q: "Kwa nini kiungo cha uingizaji kinafunikwa?", o: ["Kuzuia kuingia kwa maji na kuoza","Kukifanya kiwe huru","Kusimamisha ukuaji wote","Kuvutia wadudu"] },
@@ -1193,7 +1273,7 @@ const MODULE_TRANSLATIONS = {
         { term: "Athari ya chafu", def: "Kunaswa kwa joto ndani ya nafasi iliyofungwa, sawa na jinsi kiyoyozi cha jua kinavyofanya kazi." },
         { term: "Maudhui ya unyevu", def: "Kiasi cha maji kilichobaki kwenye chakula kilichokaushwa, ambacho lazima kiwe kidogo ya kutosha kuzuia kuharibika." },
       ],
-      links: [{ label: "Rasilimali za Kukausha Chakula za SOLARAID", url: "https://www.solaraid.org/resources" },{ label: "Ukaushaji wa Chakula kwa Jua wa FAO", url: "https://www.fao.org/post-harvest/solar-drying" }],
+      links: [{ label: "FAO: Kuhifadhi matunda na mboga vijijini (kukausha kwa jua)", url: "https://www.fao.org/4/y4358e/y4358e00.htm" },{ label: "Kikaushio cha jua (Wikipedia, Kiingereza)", url: "https://en.wikipedia.org/wiki/Solar_dryer" },{ label: "Kukausha chakula (Wikipedia, Kiingereza)", url: "https://en.wikipedia.org/wiki/Food_drying" }],
       quiz: [
         { q: "Kwa nini kiyoyozi cha jua kilichotengenezwa nyumbani kinahitaji kifuniko cha uwazi?", o: ["Kuruhusu jua kuingia na kunasa joto","Kuzuia mwanga wote","Kuweka mboga zikiwa na unyevu","Kualika wadudu"] },
         { q: "Kwa nini mboga za majani zinapaswa kupangwa katika safu moja?", o: ["Kuruhusu mzunguko wa hewa na kukausha sawasawa","Kuifanya kukausha kuwe polepole zaidi","Kuficha uchafu","Kuzuia joto"] },
@@ -1330,8 +1410,8 @@ function showUserGuide() {
     {
       id: "welcome", icon: "🏠", label: "Welcome",
       html: `<h3>Welcome to MTP Digital</h3>
-<p class='ug-lead'>Agriculture &amp; Nutrition Grade 9 — by Mountain Publishers</p>
-<div class='ug-tip'>This app covers all Grade 9 Agriculture &amp; Nutrition topics with interactive simulations, games, quizzes, and reading material — all available offline once installed.</div>
+<p class='ug-lead'>Agriculture Grade 9 — by Mountain Publishers</p>
+<div class='ug-tip'>This app covers all Grade 9 Agriculture strands and sub-strands with interactive simulations, games, quizzes, and reading material — all available offline once installed.</div>
 <div class='ug-card'><div class='ug-card-title'>📱 Install for offline use</div><div class='ug-card-body'>Tap <strong>Install App</strong> in the sidebar (or your browser's install prompt) to save the app to your device. Once installed, everything works without an internet connection.</div></div>
 <div class='ug-card'><div class='ug-card-title'>👤 Offline profiles</div><div class='ug-card-body'>Create up to 5 offline student profiles using the account button in the top bar. Each profile keeps its own progress, XP, badges, and notes — no login required.</div></div>
 <div class='ug-card'><div class='ug-card-title'>🌐 Language</div><div class='ug-card-body'>Switch between English and Swahili using the <strong>EN / SW</strong> toggle in the sidebar Settings panel.</div></div>`,
@@ -1339,18 +1419,36 @@ function showUserGuide() {
     {
       id: "navigate", icon: "🧭", label: "Navigation",
       html: `<h3>Finding Your Way</h3>
-<p class='ug-lead'>The sidebar on the left lists all 12 learning modules. The tabs at the top switch between views.</p>
+<p class='ug-lead'>The sidebar lists the 4 strands and their 10 sub-strands. Each sub-strand shows its code (for example <strong>1.1</strong>) and its textbook pages. The tabs at the top switch between views.</p>
 <table class='ug-table'>
   <tr><th>Tab</th><th>What it does</th></tr>
   <tr><td>📖 Learn</td><td>Illustrated lesson content, skill targets, and key facts for the selected module.</td></tr>
+  <tr><td>🎬 Media</td><td>Captioned lesson videos, step-by-step demonstrations and an animated mini lesson.</td></tr>
   <tr><td>🎮 Games</td><td>Interactive simulation or activity for the module. Includes Main Game, Term Match, and Word Search.</td></tr>
   <tr><td>❓ Quiz</td><td>Multiple-choice questions. Timed mode is available for exam practice.</td></tr>
-  <tr><td>📄 Book</td><td>Embedded PDF textbook reader for the full chapter.</td></tr>
-  <tr><td>📝 Notes</td><td>Personal journal — write and save notes for each module.</td></tr>
+  <tr><td>📄 Book</td><td>The textbook pages for the sub-strand, with the book's pictures, tables and activities. Search, bookmark pages and open the printed page.</td></tr>
+  <tr><td>📝 Notes</td><td>Personal journal — notes save automatically for each sub-strand.</td></tr>
   <tr><td>📇 Flashcards</td><td>Tap to flip vocabulary flashcards. Swipe or press Got it / Review again.</td></tr>
   <tr><td>🔤 Glossary</td><td>Searchable definitions for all key terms in the module.</td></tr>
 </table>
-<div class='ug-tip' style='margin-top:12px'>Click any module name in the left sidebar to switch. The current module is highlighted.</div>`,
+<div class='ug-tip' style='margin-top:12px'>Click any sub-strand in the left sidebar to switch. The current one is highlighted. When you come back later, the app opens where you stopped.</div>`,
+    },
+    {
+      id: "book", icon: "📄", label: "Book",
+      html: `<h3>The Book Tab and Bookmarks</h3>
+<p class='ug-lead'>Read the Learner's Book page by page, with its headings, numbered activities, tables and pictures.</p>
+<div class='ug-card'><div class='ug-card-title'>📖 Moving through the book</div><div class='ug-card-body'>Use <strong>Back</strong> and <strong>Next</strong>, or choose a page from the list. The list is grouped by sub-strand, so you can jump to any part of the book.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🔍 Pictures and key words</div><div class='ug-card-body'>Select a picture to enlarge it. Underlined key words open a short explanation that you can also listen to.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🔖 Bookmarks</div><div class='ug-card-body'>Press <strong>Bookmark this page</strong> to save a page. Your bookmarks appear above the page; select one to return to it. The app also remembers the sub-strand, tab and page where you stopped.</div></div>
+<div class='ug-card'><div class='ug-card-title'>📄 Printed page</div><div class='ug-card-body'>Press <strong>Printed page</strong> to open the same page in the PDF textbook.</div></div>`,
+    },
+    {
+      id: "media", icon: "🎬", label: "Media",
+      html: `<h3>Videos, Demonstrations and Captions</h3>
+<p class='ug-lead'>Everything you can listen to also has words on the screen.</p>
+<div class='ug-card'><div class='ug-card-title'>🎬 Lesson videos</div><div class='ug-card-body'>Press <strong>Play</strong> on the video. English captions are shown on the video, and the full text is written underneath. Select a line of the text to jump to that part of the video.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🪜 Step-by-step demonstrations</div><div class='ug-card-body'>Flour Mixtures and Homemade Sun Dryer have animated demonstrations. Press <strong>Play</strong>, or use <strong>Back</strong> and <strong>Next</strong> to go at your own pace. With <strong>Read each step aloud</strong> ticked, each step waits until its reading has finished, and the word being read is highlighted.</div></div>
+<div class='ug-card'><div class='ug-card-title'>🔊 Listening and captions</div><div class='ug-card-body'>When the app reads aloud, captions appear at the bottom of the screen. Use the music button in the top bar to turn captions on or off and to make the speech slower or faster.</div></div>`,
     },
     {
       id: "learn", icon: "📖", label: "Learning",
@@ -1364,14 +1462,14 @@ function showUserGuide() {
     {
       id: "games", icon: "🎮", label: "Games",
       html: `<h3>Games &amp; Simulations</h3>
-<p class='ug-lead'>Each module has a main game plus Term Match and Word Search.</p>
+<p class='ug-lead'>Each sub-strand has a main game plus Term Match and Word Search. Main games have no time limit and work with a mouse, touch or keyboard. Some sub-strands also have an optional fast-action <strong>Challenge</strong> game.</p>
 <div class='ug-tip'>On your first visit to each game a <strong>tutorial</strong> walks you through 4 steps — the last step lets you try the mechanic yourself before the real game starts.</div>
 <table class='ug-table'>
   <tr><th>Game</th><th>What you do</th></tr>
   <tr><td>🌾 Hay Lab</td><td>Adjust moisture, drying days, weather, and shelter sliders. Score 75+ to save.</td></tr>
   <tr><td>🗑️ Leftover Sort</td><td>Tap a food card, then assign it to Store / Reheat / Share / Discard.</td></tr>
   <tr><td>♻️ Farm Loop</td><td>Click 6 farm resources in the correct circular order.</td></tr>
-  <tr><td>🌱 Garden Planner</td><td>Select a tool, click plots, advance days. Harvest at stage 4. Score 75+.</td></tr>
+  <tr><td>🌱 Garden Planner</td><td>Select a tool, then a bed or <strong>Use tool on all suitable beds</strong>. Press <strong>Next day</strong> when ready. Harvest at stage 4. Score 75+.</td></tr>
   <tr><td>🏚️ Storage Inspector</td><td>Tick every safe storage practice. Score 80+.</td></tr>
   <tr><td>🥣 Flour Mixer</td><td>Slide flour and liquid until the mix type matches the target product.</td></tr>
   <tr><td>🗑️ Cleanup Order</td><td>Use Up / Down buttons to sort cleanup steps into the correct order.</td></tr>
@@ -1416,7 +1514,7 @@ function showUserGuide() {
       id: "flashcards", icon: "📇", label: "Flashcards",
       html: `<h3>Flashcards</h3>
 <p class='ug-lead'>Memorise key vocabulary before a quiz or exam.</p>
-<div class='ug-card'><div class='ug-card-title'>↩️ Flipping</div><div class='ug-card-body'>Tap a flashcard to flip it from the term to the definition. Tap again to flip back.</div></div>
+<div class='ug-card'><div class='ug-card-title'>↩️ Flipping</div><div class='ug-card-body'>Tap a flashcard (or press Enter) to flip it from the term to the definition. Use the arrow keys to move between cards. <strong>Listen to this side</strong> reads the side you can see, and <strong>Read each card aloud automatically</strong> reads every card as it appears.</div></div>
 <div class='ug-card'><div class='ug-card-title'>✅ Got it / 🔁 Review again</div><div class='ug-card-body'>After seeing a definition, press <strong>Got it</strong> if you knew the answer. Press <strong>Review again</strong> if you need another look. Cards you flag for review reappear at the end of the deck.</div></div>
 <div class='ug-card'><div class='ug-card-title'>📊 Completion tracking</div><div class='ug-card-body'>Completing a full flashcard deck earns XP and counts toward your progress. Your completion count is shown on your profile.</div></div>
 <div class='ug-tip'>Study flashcards in small sets — 5–10 cards at a time is more effective than doing all at once.</div>`,
@@ -1425,7 +1523,7 @@ function showUserGuide() {
       id: "notes", icon: "📝", label: "Notes",
       html: `<h3>Notes &amp; Journal</h3>
 <p class='ug-lead'>Write personal study notes for each module under the Notes tab.</p>
-<div class='ug-card'><div class='ug-card-title'>✏️ Writing notes</div><div class='ug-card-body'>Type in the text area and press <strong>Save notes</strong>. Notes are saved per module and per profile — they persist offline.</div></div>
+<div class='ug-card'><div class='ug-card-title'>✏️ Writing notes</div><div class='ug-card-body'>Type in the text area. Notes save automatically as you type (you can also press <strong>Save note</strong>). Notes are kept per sub-strand and per profile, offline. Teachers and parents can read the learner's notes and keep their own notes too.</div></div>
 <div class='ug-card'><div class='ug-card-title'>📤 Exporting</div><div class='ug-card-body'>Use the export button to download all your notes as a text file you can share or print.</div></div>
 <div class='ug-tip'>Use notes to write your own summaries after reading the Learn tab. Writing in your own words is one of the best study techniques.</div>`,
     },
@@ -1435,6 +1533,8 @@ function showUserGuide() {
 <p class='ug-lead'>Customise the app to suit your preferences.</p>
 <div class='ug-card'><div class='ug-card-title'>🎨 Themes</div><div class='ug-card-body'>Choose between <strong>Glass</strong> (default), <strong>Light</strong>, and <strong>Dark</strong> modes using the buttons in the top bar.</div></div>
 <div class='ug-card'><div class='ug-card-title'>🔤 Text size</div><div class='ug-card-body'>The <strong>Text size</strong> slider in the sidebar Settings panel scales all text. Useful on small screens or for accessibility.</div></div>
+<div class='ug-card'><div class='ug-card-title'>💬 Captions and speech speed</div><div class='ug-card-body'>Open the music button in the top bar to switch narration captions on or off and to set the speech speed.</div></div>
+<div class='ug-card'><div class='ug-card-title'>⌨️ Keyboard use</div><div class='ug-card-body'>Every control can be reached with the <strong>Tab</strong> key and used with <strong>Enter</strong> or <strong>Space</strong>. Arrow keys move between flashcards and between steps in a demonstration.</div></div>
 <div class='ug-card'><div class='ug-card-title'>🔔 Study reminders</div><div class='ug-card-body'>Press <strong>Enable reminders</strong> to allow notification reminders to study. Reminders only work when the app is installed as a PWA.</div></div>
 <div class='ug-card'><div class='ug-card-title'>🔄 Resetting progress</div><div class='ug-card-body'>The reset button (↺) in the top bar clears all progress for the current profile. This cannot be undone — use it only if you want to start fresh.</div></div>
 <div class='ug-card'><div class='ug-card-title'>📲 Installing the app</div><div class='ug-card-body'>Press <strong>Install App</strong> in the sidebar to install as a PWA. On iOS, use Safari → Share → Add to Home Screen. Once installed, the app works fully offline.</div></div>`,
@@ -1449,7 +1549,7 @@ function showUserGuide() {
 <div class='ug-tip'>⚡ <strong>Random events are real.</strong> In the Garden Planner, drought and pest events mirror what farmers actually face. Respond quickly — mulch plots before drought, spray pests before they spread.</div>
 <div class='ug-tip'>📝 <strong>Write notes in your own words.</strong> After each module, open Notes and summarise what you learned in 3–5 sentences. This is one of the most effective study strategies.</div>
 <div class='ug-tip'>🧑🏾‍🌾 <strong>Ask Mwalimu.</strong> The 3D AI tutor is available from every screen. It recognizes the active profile, can have friendly conversations, answers agriculture questions from the offline textbook, and controls safe app functions. Use the face button to change its avatar and gender. Typed questions never leave this device; optional microphone dictation depends on the browser and may require internet.</div>
-<div class='ug-card' style='margin-top:12px'><div class='ug-card-title'>📱 Mountain Publishers</div><div class='ug-card-body'>MTP Digital accompanies the Agriculture &amp; Nutrition Grade 9 textbook. Use both together for the best results. The Book tab opens the PDF chapter for the selected module.</div></div>`,
+<div class='ug-card' style='margin-top:12px'><div class='ug-card-title'>📱 Mountain Publishers</div><div class='ug-card-body'>MTP Digital accompanies the Agriculture Grade 9 Learner&#39;s Book. Use both together for the best results. The Book tab shows the textbook pages for the selected sub-strand; press Printed page to open the same page in the PDF.</div></div>`,
     },
   ];
 
@@ -1460,7 +1560,7 @@ function showUserGuide() {
       <div class='ug-header'>
         <div>
           <h2>📖 User Guide</h2>
-          <div class='ug-header-sub'>Agriculture &amp; Nutrition Grade 9 — MTP Digital</div>
+          <div class='ug-header-sub'>Agriculture Grade 9 — MTP Digital</div>
         </div>
         <button class='ug-close' aria-label='Close guide'>✕</button>
       </div>
@@ -1676,7 +1776,7 @@ function generateReportCard() {
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
   ctx.font = "bold 28px Arial";
-  ctx.fillText("Agriculture & Nutrition Grade 9 — MTP Digital", 450, 44);
+  ctx.fillText("Agriculture Grade 9 — MTP Digital", 450, 44);
   ctx.font = "19px Arial";
   ctx.fillText("Student Progress Report", 450, 80);
   ctx.fillStyle = "rgba(255,255,255,0.55)";
@@ -2274,7 +2374,7 @@ function _showStudentView() {
 
 function parseStoredJSON(key, fallback) {
   try {
-    const value = JSON.parse(localStorage.getItem(key));
+    const value = JSON.parse(store.getItem(key));
     return value == null ? fallback : value;
   } catch {
     return fallback;
@@ -2289,6 +2389,7 @@ function defaultProgress() {
     fontScale: 1, language: "en", badges: [],
     xp: 0, visitedModules: [], flashcardsDone: [],
     tutorialsSeen: [],
+    tools: AgriTools.normalize({}),
   };
 }
 
@@ -2311,6 +2412,7 @@ function normalizeProgress(saved) {
     visitedModules: saved.visitedModules  || base.visitedModules,
     flashcardsDone: saved.flashcardsDone  || base.flashcardsDone,
     tutorialsSeen: saved.tutorialsSeen || base.tutorialsSeen,
+    tools: AgriTools.normalize(saved.tools),
   };
 }
 
@@ -2319,7 +2421,7 @@ function profileProgressKey(profileId) {
 }
 
 function saveAccounts() {
-  localStorage.setItem(ACCOUNT_KEY, JSON.stringify(offlineAccounts));
+  store.setItem(ACCOUNT_KEY, JSON.stringify(offlineAccounts));
 }
 
 function ensureOfflineAccounts() {
@@ -2342,13 +2444,13 @@ function ensureOfflineAccounts() {
 }
 
 function migrateLegacyProgressToProfiles() {
-  if (localStorage.getItem(LEGACY_PROGRESS_MIGRATED_KEY)) return;
+  if (store.getItem(LEGACY_PROGRESS_MIGRATED_KEY)) return;
   const legacy = parseStoredJSON(STORAGE_KEY, null);
   const defaultStudent = offlineAccounts.find((account) => account.role === "student");
-  if (legacy && defaultStudent && !localStorage.getItem(profileProgressKey(defaultStudent.id))) {
-    localStorage.setItem(profileProgressKey(defaultStudent.id), JSON.stringify(normalizeProgress(legacy)));
+  if (legacy && defaultStudent && !store.getItem(profileProgressKey(defaultStudent.id))) {
+    store.setItem(profileProgressKey(defaultStudent.id), JSON.stringify(normalizeProgress(legacy)));
   }
-  localStorage.setItem(LEGACY_PROGRESS_MIGRATED_KEY, "1");
+  store.setItem(LEGACY_PROGRESS_MIGRATED_KEY, "1");
 }
 
 function getStudentProfiles() {
@@ -2361,11 +2463,11 @@ function getProfile(profileId) {
 
 function loadActiveProfile() {
   ensureOfflineAccounts();
-  const savedId = localStorage.getItem(SESSION_KEY);
+  const savedId = store.getItem(SESSION_KEY);
   const saved = getProfile(savedId);
   const fallback = getStudentProfiles()[0] || offlineAccounts[0];
   const profile = saved || fallback;
-  localStorage.setItem(SESSION_KEY, profile.id);
+  store.setItem(SESSION_KEY, profile.id);
   return profile;
 }
 
@@ -2376,10 +2478,10 @@ function activeLearnerProfileId() {
   // Parent: only from their linked children
   if (currentProfile.role === "parent") {
     const linked = getLinkedStudents(currentProfile).map(a => a.id);
-    const saved = localStorage.getItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`);
+    const saved = store.getItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`);
     if (saved && linked.includes(saved)) return saved;
     const fallback = linked[0] || getStudentProfiles()[0]?.id || currentProfile.id;
-    localStorage.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, fallback);
+    store.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, fallback);
     return fallback;
   }
 
@@ -2387,18 +2489,18 @@ function activeLearnerProfileId() {
   if (currentProfile.role === "teacher") {
     const classStudents = getTeacherStudents(currentProfile).map(a => a.id);
     const pool = classStudents.length ? classStudents : getStudentProfiles().map(a => a.id);
-    const saved = localStorage.getItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`);
+    const saved = store.getItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`);
     if (saved && pool.includes(saved)) return saved;
     const fallback = pool[0] || currentProfile.id;
-    localStorage.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, fallback);
+    store.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, fallback);
     return fallback;
   }
 
   const learnerIds = getStudentProfiles().map((account) => account.id);
-  const saved = localStorage.getItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`);
+  const saved = store.getItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`);
   if (saved && learnerIds.includes(saved)) return saved;
   const fallback = learnerIds[0] || currentProfile.id;
-  localStorage.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, fallback);
+  store.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, fallback);
   return fallback;
 }
 
@@ -2418,7 +2520,7 @@ function guardProgressWrite(action = "save progress") {
 }
 
 function logOut() {
-  localStorage.removeItem(SESSION_KEY);
+  store.removeItem(SESSION_KEY);
   currentProfile = null;
   showToast("Signed out. See you next time!", "info");
   setTimeout(() => showWelcomeSplash(), 320);
@@ -2429,7 +2531,7 @@ function switchProfile(profileId, silent = false) {
   const next = getProfile(profileId);
   if (!next) return;
   currentProfile = next;
-  localStorage.setItem(SESSION_KEY, next.id);
+  store.setItem(SESSION_KEY, next.id);
   progress = loadProgress(activeLearnerProfileId());
   state.quizAnswers = {};
   if (canEditProgress()) {
@@ -2437,12 +2539,13 @@ function switchProfile(profileId, silent = false) {
     checkBadges();
   }
   if (!silent) showToast(`Signed in as ${next.name} (${ACCOUNT_ROLES[next.role].label}).`, "success");
+  restorePosition(!silent);
   render();
 }
 
 function selectLearnerForViewer(learnerId) {
   if (!currentProfile || currentProfile.role === "student" || !getProfile(learnerId)) return;
-  localStorage.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, learnerId);
+  store.setItem(`${OBSERVED_LEARNER_KEY}:${currentProfile.id}`, learnerId);
   progress = loadProgress(activeLearnerProfileId());
   state.quizAnswers = {};
   showToast(`Viewing ${currentLearnerProfile()?.name || "student"} progress.`, "info");
@@ -2461,7 +2564,7 @@ function createOfflineAccount(name, role, extras = {}) {
   offlineAccounts.push(account);
   saveAccounts();
   if (cleanRole === "student") {
-    localStorage.setItem(profileProgressKey(id), JSON.stringify(defaultProgress()));
+    store.setItem(profileProgressKey(id), JSON.stringify(defaultProgress()));
   }
   switchProfile(id);
 }
@@ -2595,7 +2698,7 @@ const state = {
   view: "learn",
   globalSearch: "",
   quizAnswers: {},
-  theme: localStorage.getItem(THEME_KEY) || "liquid",
+  theme: store.getItem(THEME_KEY) || "liquid",
   timedMode: false,
   timedSecondsLeft: 60,
   timedTimer: null,
@@ -2603,13 +2706,16 @@ const state = {
   assessmentTimer: null,
   locked: null,
   altGame: "main",
+  readerPage: 1,
 };
+
+const VIEWS = ["learn", "media", "play", "quiz", "reader", "journal", "flashcard", "glossary", "tools"];
 
 const params = new URLSearchParams(window.location.search);
 if (MODULES.some((module) => module.id === params.get("module"))) {
   state.moduleId = params.get("module");
 }
-if (["learn", "media", "play", "quiz", "reader", "journal", "flashcard", "glossary"].includes(params.get("view"))) {
+if (VIEWS.includes(params.get("view"))) {
   state.view = params.get("view");
 }
 if (params.get("lock") && MODULES.some((m) => m.id === params.get("lock"))) {
@@ -2689,7 +2795,7 @@ function checkWeeklyGoal(moduleId) {
 }
 
 function saveProgress() {
-  localStorage.setItem(profileProgressKey(activeLearnerProfileId()), JSON.stringify(progress));
+  store.setItem(profileProgressKey(activeLearnerProfileId()), JSON.stringify(progress));
 }
 
 function currentModule() {
@@ -2700,11 +2806,58 @@ function currentModule() {
 
 const MEDIA_SETTINGS_KEY = "mtp-media-settings-v1";
 
+/* On-screen captions for everything read aloud, so learners who cannot hear
+   the narration can still follow it. The spoken word is highlighted. */
+const narrationCaptions = (() => {
+  let bar = null;
+  let textEl = null;
+  let labelEl = null;
+  let current = "";
+  function ensure() {
+    if (bar) return;
+    bar = document.createElement("section");
+    bar.className = "narration-captions";
+    bar.setAttribute("aria-label", "Narration captions");
+    bar.hidden = true;
+    bar.innerHTML = `
+      <div class="narration-captions-head">
+        <span class="narration-captions-label"></span>
+        <button type="button" class="narration-captions-stop">Stop audio</button>
+      </div>
+      <p class="narration-captions-text"></p>
+    `;
+    document.body.appendChild(bar);
+    textEl = bar.querySelector(".narration-captions-text");
+    labelEl = bar.querySelector(".narration-captions-label");
+    bar.querySelector(".narration-captions-stop").addEventListener("click", () => studyAudio.stopNarration());
+  }
+  return {
+    show(text, label) {
+      ensure();
+      current = String(text).trim();
+      labelEl.textContent = label ? `Reading aloud: ${label}` : "Reading aloud";
+      textEl.textContent = current;
+      bar.hidden = false;
+    },
+    mark(charIndex, charLength) {
+      if (!bar || bar.hidden) return;
+      const start = clamp(charIndex, 0, current.length);
+      const length = charLength || (current.slice(start).match(/^\S+/)?.[0].length ?? 0);
+      textEl.innerHTML = `${escapeHTML(current.slice(0, start))}<mark>${escapeHTML(current.slice(start, start + length))}</mark>${escapeHTML(current.slice(start + length))}`;
+    },
+    hide() {
+      if (bar) bar.hidden = true;
+    },
+  };
+})();
+
 const studyAudio = (() => {
   const saved = parseStoredJSON(MEDIA_SETTINGS_KEY, {});
   const prefs = {
     volume: clamp(Number(saved.volume ?? 0.45), 0, 1),
     sfx: saved.sfx !== false,
+    captions: saved.captions !== false,
+    rate: clamp(Number(saved.rate ?? 0.9), 0.6, 1.3),
   };
   let context = null;
   let masterGain = null;
@@ -2714,9 +2867,10 @@ const studyAudio = (() => {
   let narrationActive = false;
   let narrationIsLesson = false;
   let activeUtterance = null;
+  let activeRun = null;
 
   function saveSettings() {
-    localStorage.setItem(MEDIA_SETTINGS_KEY, JSON.stringify(prefs));
+    store.setItem(MEDIA_SETTINGS_KEY, JSON.stringify(prefs));
   }
 
   function ensureContext() {
@@ -2812,18 +2966,13 @@ const studyAudio = (() => {
     if (kind === "success") scheduleNote(880, context.currentTime + 0.11, 0.22, level, masterGain, "sine");
   }
 
-  function lessonScript(module) {
-    const goals = ml(module, "goals") || [];
-    const ideas = ml(module, "ideas") || [];
+  function lessonSegments(module) {
     const swahili = progress?.language === "sw";
     return [
-      ml(module, "title"),
-      ml(module, "summary"),
-      swahili ? "Malengo ya kujifunza." : "Learning goals.",
-      ...goals,
-      swahili ? "Mawazo muhimu." : "Core ideas.",
-      ...ideas,
-    ].filter(Boolean).join(" ");
+      { label: `${module.code} ${ml(module, "title")}`, text: `${ml(module, "title")}. ${ml(module, "summary")}` },
+      ...(ml(module, "goals") || []).map((goal, index) => ({ label: `${swahili ? "Lengo" : "Learning goal"} ${index + 1}`, text: goal })),
+      ...(ml(module, "ideas") || []).map((idea, index) => ({ label: `${swahili ? "Wazo muhimu" : "Core idea"} ${index + 1}`, text: idea })),
+    ];
   }
 
   function preferredVoice(language, gender = "neutral") {
@@ -2846,58 +2995,163 @@ const studyAudio = (() => {
     })[0] || null;
   }
 
-  function speak(text, options = {}) {
+  // Speech is queued one sentence at a time. Long single utterances are cut
+  // off or slurred by some browsers, and short chunks let the captions show
+  // exactly the words being spoken.
+  function speechChunks(text) {
+    const source = String(text).replace(/\s+/g, " ").trim();
+    const chunks = [];
+    const push = (from, to) => {
+      let piece = source.slice(from, to);
+      let offset = from;
+      while (piece.length > 220) {
+        const comma = piece.lastIndexOf(", ", 200);
+        const cut = comma > 60 ? comma + 2 : 200;
+        chunks.push({ text: piece.slice(0, cut), start: offset });
+        offset += cut;
+        piece = piece.slice(cut);
+      }
+      if (piece.trim()) chunks.push({ text: piece, start: offset });
+    };
+    const boundary = /[.!?]["')\]]*\s+(?=[A-Z0-9"'(])/g;
+    let start = 0;
+    let match;
+    while ((match = boundary.exec(source))) {
+      push(start, match.index + match[0].length);
+      start = match.index + match[0].length;
+    }
+    push(start, source.length);
+    return { source, chunks };
+  }
+
+  function speak(input, options = {}) {
     if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
       showToast("Narration is not supported in this browser.", "warn");
       return false;
     }
     stopNarration();
-    const utterance = new SpeechSynthesisUtterance(String(text));
-    utterance.lang = (progress?.language === "sw") ? "sw-KE" : "en-KE";
-    utterance.rate = options.rate || 0.9;
-    utterance.pitch = options.voice === "tutor"
-      ? options.voiceGender === "woman" ? 1.06 : options.voiceGender === "man" ? 0.94 : 1
-      : 1;
-    utterance.volume = prefs.volume;
-    const voice = preferredVoice(utterance.lang, options.voiceGender);
-    if (voice) utterance.voice = voice;
+    const segments = Array.isArray(input) ? input : [{ label: options.label || "", text: String(input ?? "") }];
+    const queue = segments.flatMap((segment) =>
+      speechChunks(segment.text).chunks.map((chunk) => ({ ...chunk, label: segment.label })),
+    );
+    if (!queue.length) return false;
+    const run = { queue, position: 0, options, started: false };
+    const lang = progress?.language === "sw" ? "sw-KE" : "en-KE";
+    const voice = preferredVoice(lang, options.voiceGender);
+    const captionsWanted = options.captions !== false;
+    activeRun = run;
     narrationActive = true;
     narrationIsLesson = Boolean(options.lesson);
-    activeUtterance = utterance;
-    utterance._mtpOnEnd = options.onEnd;
-    utterance.onstart = () => options.onStart?.();
+
     const finish = (event) => {
-      if (activeUtterance !== utterance) return;
+      if (activeRun !== run) return;
+      activeRun = null;
+      activeUtterance = null;
       narrationActive = false;
       narrationIsLesson = false;
-      activeUtterance = null;
+      narrationCaptions.hide();
       updateMediaControls();
-      utterance._mtpOnEnd?.(event);
+      options.onEnd?.(event);
     };
-    utterance.onend = finish;
-    utterance.onerror = finish;
-    window.speechSynthesis.speak(utterance);
+    const speakNext = () => {
+      if (activeRun !== run) return;
+      if (run.position >= queue.length) {
+        finish({ type: "end" });
+        return;
+      }
+      const chunk = queue[run.position++];
+      const utterance = new SpeechSynthesisUtterance(chunk.text);
+      utterance.lang = lang;
+      utterance.rate = clamp(prefs.rate * ((options.rate || 0.9) / 0.9), 0.5, 1.5);
+      utterance.pitch = options.voice === "tutor"
+        ? options.voiceGender === "woman" ? 1.06 : options.voiceGender === "man" ? 0.94 : 1
+        : 1;
+      utterance.volume = prefs.volume;
+      if (voice) utterance.voice = voice;
+      // Some PCs have no speech voice installed: nothing starts, or it "ends"
+      // instantly. Fall back to text so players never wait forever.
+      let chunkStarted = false;
+      const unavailable = () => {
+        if (activeRun !== run) return;
+        activeRun = null;
+        activeUtterance = null;
+        narrationActive = false;
+        narrationIsLesson = false;
+        window.speechSynthesis.cancel();
+        narrationCaptions.hide();
+        updateMediaControls();
+        showToast("Read-aloud is not available on this device. The words stay on the screen.", "warn");
+        options.onEnd?.({ type: "unavailable" });
+      };
+      const watchdog = setTimeout(() => { if (!chunkStarted) unavailable(); }, 4500);
+      utterance.onstart = () => {
+        chunkStarted = true;
+        clearTimeout(watchdog);
+        if (activeRun !== run) return;
+        if (!run.started) {
+          run.started = true;
+          options.onStart?.();
+        }
+        if (captionsWanted && prefs.captions) narrationCaptions.show(chunk.text, chunk.label);
+        options.onChunk?.(chunk);
+      };
+      utterance.onboundary = (event) => {
+        if (activeRun !== run || (event.name && event.name !== "word")) return;
+        if (captionsWanted && prefs.captions) narrationCaptions.mark(event.charIndex, event.charLength);
+        options.onBoundary?.(chunk.start + event.charIndex, event.charLength, chunk);
+      };
+      utterance.onend = () => {
+        clearTimeout(watchdog);
+        if (!chunkStarted) unavailable();
+        else speakNext();
+      };
+      utterance.onerror = (event) => {
+        clearTimeout(watchdog);
+        if (event.error === "interrupted" || event.error === "canceled") return;
+        if (!chunkStarted) unavailable();
+        else speakNext();
+      };
+      activeUtterance = utterance;
+      window.speechSynthesis.speak(utterance);
+    };
+    window.speechSynthesis.resume?.();
+    speakNext();
     updateMediaControls();
     return true;
   }
 
   function stopNarration() {
-    const stoppedUtterance = activeUtterance;
+    const run = activeRun;
+    activeRun = null;
+    activeUtterance = null;
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     narrationActive = false;
     narrationIsLesson = false;
-    activeUtterance = null;
+    narrationCaptions.hide();
     updateMediaControls();
-    stoppedUtterance?._mtpOnEnd?.({ type: "cancel" });
+    run?.options.onEnd?.({ type: "cancel" });
   }
 
   function toggleLessonNarration() {
     if (narrationActive && narrationIsLesson) stopNarration();
     else {
-      const sceneNarration = document.getElementById("motionNarrationToggle");
-      if (sceneNarration) sceneNarration.checked = false;
-      speak(lessonScript(currentModule()), { lesson: true });
+      // Pause any scene or demonstration player so two narrations never overlap.
+      window.dispatchEvent(new CustomEvent("mtp-pause-players"));
+      speak(lessonSegments(currentModule()), { lesson: true });
     }
+  }
+
+  function setRate(value) {
+    prefs.rate = clamp(Number(value), 0.6, 1.3);
+    saveSettings();
+    updateMediaControls();
+  }
+
+  function toggleCaptions() {
+    prefs.captions = !prefs.captions;
+    if (!prefs.captions) narrationCaptions.hide();
+    saveSettings();
+    updateMediaControls();
   }
 
   function setVolume(value) {
@@ -2920,6 +3174,8 @@ const studyAudio = (() => {
   return {
     get volume() { return prefs.volume; },
     get effectsEnabled() { return prefs.sfx; },
+    get captionsEnabled() { return prefs.captions; },
+    get rate() { return prefs.rate; },
     get musicPlaying() { return musicPlaying; },
     get narrationActive() { return narrationActive; },
     get narrationIsLesson() { return narrationIsLesson; },
@@ -2927,9 +3183,13 @@ const studyAudio = (() => {
     stopMusic,
     playEffect,
     speak,
+    speechChunks,
     stopNarration,
     toggleLessonNarration,
+    lessonSegments,
     toggleEffects,
+    toggleCaptions,
+    setRate,
     setVolume,
   };
 })();
@@ -2975,12 +3235,43 @@ function updateMediaControls() {
     button.setAttribute("aria-pressed", String(active));
     button.textContent = active ? "Stop lesson audio" : "Listen to lesson";
   });
+  document.querySelectorAll("[data-captions-control]").forEach((button) => {
+    button.classList.toggle("active", studyAudio.captionsEnabled);
+    button.setAttribute("aria-pressed", String(studyAudio.captionsEnabled));
+    const hint = button.querySelector("small");
+    if (hint) hint.textContent = studyAudio.captionsEnabled ? "On" : "Off";
+  });
+  const rateSlider = document.getElementById("speechRateSlider");
+  const rateOutput = document.getElementById("speechRateOutput");
+  if (rateSlider && document.activeElement !== rateSlider) rateSlider.value = String(studyAudio.rate);
+  if (rateOutput) rateOutput.value = studyAudio.rate < 0.8 ? "Slow" : studyAudio.rate > 1.05 ? "Fast" : "Normal";
+}
+
+function addCaptionAndSpeedControls(dock) {
+  const actions = dock?.querySelector(".media-dock-actions");
+  if (!actions || document.getElementById("captionsToggleButton")) return;
+  actions.insertAdjacentHTML("beforeend", `
+    <button class="media-action-button compact" id="captionsToggleButton" type="button" aria-pressed="true" data-captions-control>
+      <span class="media-action-icon" aria-hidden="true">CC</span>
+      <span><strong>Captions</strong><small>On</small></span>
+    </button>
+  `);
+  dock.querySelector(".media-volume-control")?.insertAdjacentHTML("afterend", `
+    <label class="media-volume-control" for="speechRateSlider">
+      <span>Speech</span>
+      <input id="speechRateSlider" type="range" min="0.6" max="1.3" value="0.9" step="0.05" aria-describedby="speechRateOutput">
+      <output id="speechRateOutput" for="speechRateSlider">Normal</output>
+    </label>
+  `);
+  document.getElementById("captionsToggleButton")?.addEventListener("click", () => studyAudio.toggleCaptions());
+  document.getElementById("speechRateSlider")?.addEventListener("input", (event) => studyAudio.setRate(event.target.value));
 }
 
 function initMediaControls() {
   const dock = document.getElementById("mediaDock");
   const openButton = document.getElementById("mediaControlsButton");
   const closeButton = document.getElementById("mediaDockClose");
+  addCaptionAndSpeedControls(dock);
   const setOpen = (open) => {
     const returnFocus = !open && dock?.contains(document.activeElement);
     dock?.classList.toggle("open", open);
@@ -3044,14 +3335,18 @@ function bookPagesFor(module) {
   );
 }
 
+// Windows-1252 punctuation that was decoded as Latin-1 shows as an empty box
+// on some PCs; map it (and smart quotes) to characters every font has.
+const SAFE_PUNCTUATION = {
+  "\u0091": "'", "\u0092": "'", "\u0093": "\"", "\u0094": "\"", "\u0095": "•",
+  "\u0096": "-", "\u0097": "-", "‘": "'", "’": "'", "“": "\"", "”": "\"",
+};
+
 function compactText(text) {
   return String(text)
-    .replaceAll("Â’s", "'s")
     .replaceAll("Â’", "'")
     .replaceAll("Â–", "-")
-    .replace(/\b([a-z])([A-Z])/g, "$1 $2")
-    .replace(/([a-z])([0-9])/g, "$1 $2")
-    .replace(/([.,;:!?])([A-Za-z])/g, "$1 $2")
+    .replace(/[\u0091-\u0097‘’“”]/g, (ch) => SAFE_PUNCTUATION[ch] || ch)
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -3236,7 +3531,7 @@ function loadTutorHistory() {
 }
 
 function saveTutorHistory(messages) {
-  localStorage.setItem(tutorHistoryKey(), JSON.stringify(messages.slice(-AI_TUTOR_MAX_MESSAGES)));
+  store.setItem(tutorHistoryKey(), JSON.stringify(messages.slice(-AI_TUTOR_MAX_MESSAGES)));
 }
 
 function tutorPerson() {
@@ -3264,7 +3559,7 @@ function tutorCleanStyle(value) {
 }
 
 function saveTutorSettings() {
-  localStorage.setItem(AI_TUTOR_SETTINGS_KEY, JSON.stringify(tutorRuntime.settings));
+  store.setItem(AI_TUTOR_SETTINGS_KEY, JSON.stringify(tutorRuntime.settings));
 }
 
 function enhancedAIIsSupported() {
@@ -3640,7 +3935,7 @@ async function generateEnhancedAIAnswer(question, response) {
   const messages = [
     {
       role: "system",
-      content: `You are Mwalimu, a warm Grade 9 Agriculture and Nutrition tutor speaking with ${person.firstName}. Answer naturally in two to four short sentences. Use the supplied textbook evidence for agriculture questions. If the evidence is insufficient, say so honestly. Never invent a page or claim to be human. Do not use em dashes. The app and model run offline.`,
+      content: `You are Mwalimu, a warm Grade 9 Agriculture tutor speaking with ${person.firstName}. Answer naturally in two to four short sentences. Use the supplied textbook evidence for agriculture questions. If the evidence is insufficient, say so honestly. Never invent a page or claim to be human. Do not use em dashes. The app and model run offline.`,
     },
     ...history,
     {
@@ -3778,7 +4073,7 @@ function tutorSetModule(module) {
 function tutorCurrentReadingText(question) {
   const selected = String(window.getSelection?.() || "").trim();
   if (/selected|selection/.test(tutorNormalise(question)) && selected.length > 3) return selected;
-  const visiblePage = document.querySelector(".reader-result .page-text");
+  const visiblePage = document.getElementById("readerPageArticle") || document.querySelector(".reader-result .page-text");
   if ((/page|this/.test(tutorNormalise(question)) || state.view === "reader") && visiblePage?.textContent?.trim()) {
     return visiblePage.textContent.trim();
   }
@@ -4039,7 +4334,7 @@ function tutorIntent(question) {
 
   if (/\b(what can you do|help me|your abilities|commands|who are you)\b/.test(normal)) {
     return {
-      answer: "I’m Mwalimu, your offline Grade 9 Agriculture & Nutrition tutor. I can answer from the bundled textbook, explain app navigation, quiz you, read lessons aloud, search the book, open modules and tabs, switch themes or language, resize text, control study audio, and help with reminders. Your typed questions stay on this device.",
+      answer: "I’m Mwalimu, your offline Grade 9 Agriculture tutor. I can answer from the bundled textbook, explain app navigation, quiz you, read lessons aloud, search the book, open modules and tabs, switch themes or language, resize text, control study audio, and help with reminders. Your typed questions stay on this device.",
       source: "Offline tutor capabilities",
       suggestions: ["How do I navigate?", "Explain integrated farming", "Use dark theme"],
     };
@@ -4098,7 +4393,7 @@ function tutorIntent(question) {
   const theme = ["dark", "light", "glass", "liquid"].find((name) => new RegExp(`\\b${name}\\b`).test(normal));
   if (theme && command) {
     state.theme = theme === "glass" ? "liquid" : theme;
-    localStorage.setItem(THEME_KEY, state.theme);
+    store.setItem(THEME_KEY, state.theme);
     applyTheme();
     return { answer: `Done. I changed the app to the ${theme === "liquid" ? "Glass" : theme} theme.`, source: "App control", suggestions: ["Make text larger", "Open Learn"] };
   }
@@ -4285,6 +4580,7 @@ function tutorSpeak(text) {
   tutorRuntime.speaking = true;
   const started = studyAudio.speak(clean, {
     rate: 0.95,
+    captions: false, // the answer is already written in the chat window
     voice: "tutor",
     voiceGender: tutorRuntime.settings.gender,
     onStart: () => tutorSetStatus("speaking", "Speaking with device voice"),
@@ -4557,7 +4853,7 @@ function ensureTutorLayer() {
     tutorSetStatus("idle", tutorRuntime.settings.voice === false ? "Spoken answers off" : "Spoken answers on");
   });
   layer.querySelector("#aiTutorClear")?.addEventListener("click", () => {
-    localStorage.removeItem(tutorHistoryKey());
+    store.removeItem(tutorHistoryKey());
     tutorRuntime.pendingQuiz = null;
     layer.querySelector("#aiTutorMessages")?.replaceChildren();
     tutorAddMessage("tutor", `Fresh start, ${tutorPerson().firstName}. What would you like to learn or do?`, "Offline tutor", false);
@@ -4639,6 +4935,7 @@ function render() {
   renderView();
   renderStreakAndGoal();
   renderXPBar();
+  savePosition();
   if (state.locked) {
     const lockBanner = document.getElementById("assignmentBanner");
     if (lockBanner) {
@@ -4673,20 +4970,27 @@ function applyFontScale() {
 
 function renderModuleList() {
   const modules = state.locked ? MODULES.filter((m) => m.id === state.locked) : MODULES;
+  let strandShown = "";
   els.moduleList.innerHTML = modules.map((module) => {
     const done = moduleCompletion(module) === 3;
     const active = module.id === state.moduleId;
+    const strandHeading = module.strandCode !== strandShown
+      ? `<p class="strand-label"><span>${t("strandLabel")} ${module.strandCode}</span>${escapeHTML(ml(module, "strand"))}</p>`
+      : "";
+    strandShown = module.strandCode;
     return `
-      <button class="module-button ${active ? "active" : ""} ${done ? "done" : ""}" data-module="${module.id}">
-        <span class="module-icon" style="background:${module.color}">${module.icon}</span>
+      ${strandHeading}
+      <button class="module-button ${active ? "active" : ""} ${done ? "done" : ""}" data-module="${module.id}" aria-current="${active ? "page" : "false"}">
+        <span class="module-icon" style="background:${module.color}" aria-hidden="true">${module.code}</span>
         <span>
           <span class="module-title">${escapeHTML(ml(module, "title"))}</span>
-          <span class="module-pages">Pages ${module.pages[0]}-${module.pages[1]} - ${moduleCompletion(module)}/3</span>
+          <span class="module-pages">${t("substrandLabel")} ${module.code} · ${t("pagesLabel")} ${module.pages[0]}–${module.pages[1]} · ${moduleCompletion(module)}/3</span>
         </span>
         <span class="module-check">OK</span>
       </button>
     `;
-  }).join("");}
+  }).join("");
+}
 
 
 function renderProgress() {
@@ -4990,7 +5294,7 @@ function showWelcomeSplash() {
     return `
       <div class="welcome-brand">
         <img src="media/mtplogo.png" alt="MTP Logo" onerror="this.style.display='none'">
-        <h1>Agriculture &amp; Nutrition</h1>
+        <h1>Agriculture</h1>
         <p>Grade 9 · MTP Digital</p>
       </div>
     `;
@@ -5289,7 +5593,7 @@ function showAccountSettings() {
     if (!confirm(`Delete account "${account.name}"? This cannot be undone.`)) return;
     offlineAccounts = offlineAccounts.filter(a => a.id !== account.id);
     saveAccounts();
-    localStorage.removeItem(profileProgressKey(account.id));
+    store.removeItem(profileProgressKey(account.id));
     const fallback = getStudentProfiles()[0] || offlineAccounts[0];
     if (fallback) switchProfile(fallback.id, true);
     modal.remove(); showToast("Account deleted.", "info");
@@ -5315,8 +5619,8 @@ function renderHero() {
     : `<span class="pill" title="Read-only role view">${escapeHTML(ACCOUNT_ROLES[currentProfile?.role]?.label || "Viewer")} viewing ${escapeHTML(learner?.name || "student")}</span>`;
   els.moduleHero.innerHTML = `
     <div class="hero-copy">
-      <p class="eyebrow">MTP Digital &mdash; ${escapeHTML(ml(module, "strand"))}</p>
-      <h2>${escapeHTML(ml(module, "title"))}</h2>
+      <p class="eyebrow">${t("strandLabel")} ${module.strandCode}: ${escapeHTML(ml(module, "strand"))}</p>
+      <h2><span class="hero-code">${t("substrandLabel")} ${module.code}</span> ${escapeHTML(ml(module, "title"))}</h2>
       <p>${escapeHTML(ml(module, "summary"))}</p>
       <div class="hero-meta">
         <span class="pill" title="Click the Book tab to read">📖 Pages ${module.pages[0]}–${module.pages[1]}</span>
@@ -5362,6 +5666,7 @@ let _rvTimer = null;
 
 function renderView() {
   const module = currentModule();
+  if (state.view !== "tools") AgriTools.cleanup();
   if (window._motionLessonCleanup && state.view !== "media") {
     window._motionLessonCleanup();
     window._motionLessonCleanup = null;
@@ -5385,6 +5690,7 @@ function renderView() {
     if (state.view === "journal")   renderJournal(module);
     if (state.view === "flashcard") renderFlashcard(module);
     if (state.view === "glossary")  renderGlossary(module);
+    if (state.view === "tools")     AgriTools.render();
 
     void els.viewHost.offsetWidth;
 
@@ -5399,19 +5705,21 @@ function renderLearn(module) {
   const speakerBtn = (text) => hasSpeech
     ? `<button class="speak-btn ghost-button" data-speak="${escapeHTML(text)}" title="Listen" aria-label="Listen">🔊</button>`
     : "";
-  const videoCard = module.video ? `
-    <article class="tool-card video-embed-card" style="animation-delay:0.28s">
-      <p class="eyebrow">🎬 Video</p>
-      <h3>${t("watchVideo")}</h3>
-      <div class="video-thumb" id="videoThumb_${module.id}">
-        <button class="primary-button" id="loadVideoBtn">${t("watchVideo")}</button>
-      </div>
+  const lessonVideos = LESSON_VIDEOS[module.id] || [];
+  const lessonDemo = LESSON_DEMOS[module.id];
+  const videoCard = (lessonVideos.length || lessonDemo) ? `
+    <article class="tool-card" style="animation-delay:0.28s">
+      <p class="eyebrow">🎬 Watch and listen</p>
+      <h3>${lessonDemo ? "Step-by-step demonstration" : "Lesson video"}</h3>
+      <p>${escapeHTML(lessonDemo ? lessonDemo.title.replace(/^Demonstration: /, "Watch: ") : lessonVideos[0].title)}. Every video and demonstration has English captions and written text.</p>
+      <button class="secondary-button" type="button" data-view="media">Open the Media tab</button>
     </article>` : "";
   const linksCard = (module.links && module.links.length) ? `
     <article class="tool-card" style="animation-delay:0.32s">
       <p class="eyebrow">🔗 ${t("relatedLinks")}</p>
+      <p class="link-note">These trusted websites open in a new tab and need an internet connection.</p>
       <div class="activity-strip">
-        ${module.links.map((lnk, li) => { const label = (ml(module, "links") || [])[li]?.label ?? lnk.label; return `<a class="activity-chip" href="${escapeHTML(lnk.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a>`; }).join("")}
+        ${module.links.map((lnk, li) => { const label = (ml(module, "links") || [])[li]?.label ?? lnk.label; return `<a class="activity-chip link-chip" href="${escapeHTML(lnk.url)}" target="_blank" rel="noopener noreferrer" data-external-link>${escapeHTML(label)}<span class="sr-only"> (opens in a new tab)</span></a>`; }).join("")}
       </div>
     </article>` : "";
   els.viewHost.innerHTML = `
@@ -5451,12 +5759,6 @@ function renderLearn(module) {
     ${videoCard}${linksCard}
     ${module.id === "organic" ? `<article class="tool-card" style="animation-delay:0.38s;padding:16px"><p class="eyebrow">🌱 Soil Cross-Section</p><h3>Soil layers explorer</h3><p style="margin-bottom:10px;font-size:0.9rem">Hover over each layer to learn its role in plant growth.</p><div id="soilSceneHost" style="width:100%;height:280px;border-radius:12px;overflow:hidden"></div></article>` : ""}
   `;
-  if (module.video) {
-    document.getElementById("loadVideoBtn")?.addEventListener("click", () => {
-      const thumb = document.getElementById(`videoThumb_${module.id}`);
-      if (thumb) thumb.innerHTML = `<iframe src="${escapeHTML(module.video)}" width="100%" height="240" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius:10px"></iframe>`;
-    }, { once: true });
-  }
   if (module.id === "organic") {
     const soilHost = document.getElementById("soilSceneHost");
     if (soilHost && window.MTPThreeSim?.mountSoilScene) {
@@ -5465,194 +5767,603 @@ function renderLearn(module) {
   }
 }
 
+/* ── Lesson media: captioned videos, demonstrations, scene player ── */
+
+// Every bundled video has English captions (cues: [start, end, text] in
+// seconds) that are shown on the video and listed as a clickable transcript.
+const LESSON_VIDEOS = {
+  hay: [{
+    src: "media/videos/hay-rake.webm",
+    title: "Turning cut forage so that it dries evenly",
+    about: "A tractor-drawn rake turns rows of cut grass in the field. On a small farm the same job is done with a hand rake (page 3).",
+    sound: "This clip has no sound.",
+    credit: "\"Hay rake video\" by Wikideas1, CC0 1.0, Wikimedia Commons.",
+    loop: true,
+    cues: [
+      [0, 1.6, "A tractor pulls a rotary rake across a field of cut grass."],
+      [1.6, 3.2, "The rake turns the drying forage into rows so that it dries evenly before baling."],
+    ],
+  }],
+  leftovers: [{
+    src: "media/videos/leftovers-refrigerate.webm",
+    title: "Refrigerate leftovers quickly",
+    about: "A short animation about storing leftover food safely in a refrigerator.",
+    sound: "The key message also appears as text on the screen.",
+    credit: "\"Always refrigerate perishable food within 2 hours\", Centers for Disease Control and Prevention, public domain, Wikimedia Commons.",
+    cues: [
+      [0, 3.4, "A cartoon food-safety hero opens a refrigerator stocked with covered containers of leftover food."],
+      [3.4, 7.5, "Refrigerate perishable food and leftovers within 2 hours. Chill them within 1 hour if the temperature is above 32 degrees Celsius (90 degrees Fahrenheit)."],
+    ],
+  }],
+  organic: [{
+    src: "media/videos/composting-basics.webm",
+    title: "Composting: the basic principles",
+    about: "An illustrated explanation of how compost is made from organic waste. Compost is the main organic manure used in organic gardening (pages 26 to 31).",
+    sound: "English subtitles are part of the video picture. The written summary below gives the main points.",
+    credit: "\"Composting 1 - Basic principles\" by Graineahumus (de la graine a l'humus), CC BY 4.0, Wikimedia Commons.",
+    burnedIn: true,
+    cues: [
+      [0, 10, "Title: Composting 1, basic principles."],
+      [10, 20, "Compost means \"composed\" or \"mixed\". It comes from the Latin word compositus."],
+      [20, 30, "Composting is the breakdown of organic materials by living things that need air (oxygen), under controlled conditions. There are many ways to compost."],
+      [30, 50, "It can be done with earthworms (vermicomposting), with bacteria and fungi in a rotating composter, or in heaps and containers, the most traditional methods."],
+      [50, 70, "Compost needs nitrogen, carbon, air and water. Nitrogen comes mainly from organic waste such as food scraps. Carbon comes mainly from shredded wood and dry plant material, which lets air move through the pile."],
+      [70, 90, "Air is added by mixing or turning. The compost should be neither too dry nor too wet, and is best sheltered from wind and rain."],
+      [90, 120, "Add one volume of organic waste for every volume of shredded dry material. Shredded wood is ideal because it keeps the heap open and airy; sawdust can be used, but not in large amounts."],
+      [120, 150, "Mix new waste briefly into the heap with a rake. Stir the compost from time to time. A compost thermometer shows how active the bacteria are."],
+      [150, 176, "Turn the compost about every 3 months. Semi-mature compost can be used after about 6 months, and it is mature after about 9 months. Mature compost has a pleasant forest smell."],
+      [176, 201, "Credits for the video, music and photographs."],
+    ],
+  }],
+  storage: [{
+    src: "media/videos/grain-bins.webm",
+    title: "Large-scale grain storage structures",
+    about: "An aerial view of metal grain bins. Compare them with the granaries, bags and containers on pages 42 and 43: every store must keep grain dry, clean, cool and safe from pests.",
+    sound: "This clip has no sound.",
+    credit: "\"Grain bins\" by Wikideas1, CC0 1.0, Wikimedia Commons.",
+    cues: [
+      [0, 10, "Aerial view of a group of large metal grain bins (silos) on a farm."],
+      [10, 20, "The bins stand on concrete bases and have tight, sloping roofs that keep rain and pests out of the stored grain."],
+      [20, 30, "White vapour rises from the drying equipment beside the bins. Grain is dried before storage so that it does not rot or grow mould."],
+      [30, 39, "Clean, dry, sealed and well-ventilated stores keep grain safe until it is used."],
+    ],
+  }],
+  waste: [{
+    src: "media/videos/cleaning-toilet.webm",
+    title: "Cleaning a toilet step by step",
+    about: "A cleaner shows the order for cleaning a toilet safely. Compare the steps with the procedures for cleaning a waste bin and a sink on pages 57 to 59.",
+    sound: "Each step name also appears as text on the screen.",
+    credit: "\"Cleaning the Toilet\", TESDA Online Program, public domain (Philippines Government), Wikimedia Commons.",
+    cues: [
+      [0, 10, "Title: Cleaning the toilet."],
+      [10, 14, "Step 1: Wear protective gloves."],
+      [14, 17, "Step 2: Flush the toilet."],
+      [17, 20, "Step 3: Spray toilet bowl cleaner inside the bowl."],
+      [20, 32, "Step 4: Wipe the cistern (tank), its lid and the flush handle with a damp cloth."],
+      [32, 38, "Step 5: Wipe the seat cover and the seat."],
+      [38, 47, "Step 6: Clean the tissue holder and the wall tiles around the toilet."],
+      [47, 51, "Wipe the outside of the toilet."],
+      [51, 60, "Step 7: Scrub the inside of the bowl and under the rim with a toilet brush."],
+      [60, 67, "Step 8: Wipe the rim and the seat with a clean cloth."],
+      [67, 73, "Step 9: Flush the toilet again to rinse the bowl."],
+    ],
+  }],
+  disinfecting: [{
+    src: "media/videos/hand-washing-laundry.webm",
+    title: "Washing clothes by hand before disinfecting",
+    about: "Clothes must be washed and rinsed thoroughly before they are boiled, ironed or rinsed in disinfectant (pages 65 to 69). This clip shows two traditional ways of washing by hand.",
+    sound: "",
+    credit: "\"Rhof-handwaschen\" by HelgeRieder, CC BY-SA 3.0, Wikimedia Commons.",
+    cues: [
+      [0, 11, "Women wash clothes by hand, rubbing them on washboards with soap. This is the friction method of washing."],
+      [11, 21.1, "A wash plunger pushes clothes up and down in a tub of soapy water to loosen dirt before rinsing."],
+    ],
+  }],
+  grafting: [{
+    src: "media/videos/plant-grafting.webm",
+    title: "Grafting mango and avocado seedlings",
+    about: "A teacher demonstrates three grafting methods. Watch how the scion and rootstock are cut, joined and tied, and compare with the steps on pages 73 and 74.",
+    sound: "The teacher speaks Portuguese. The English captions describe each step.",
+    credit: "\"Enxertia por garfagem\" by Nevinho (Prof. Antonio Jose Pacheco Leao, IFB Planaltina), CC BY-SA 3.0, Wikimedia Commons.",
+    cues: [
+      [0, 8, "Video introduction. The narration is in Portuguese; these captions describe each step in English."],
+      [8, 16, "Title: Grafting by cleft graft and whip graft."],
+      [16, 40, "The teacher shows a young rootstock seedling and a scion cut from a tree that has the qualities he wants."],
+      [40, 48, "Method 1: cleft graft (in Portuguese, fenda cheia)."],
+      [48, 64, "He trims the base of the scion into a smooth V-shaped wedge using a sharp knife."],
+      [64, 88, "The top of the rootstock is cut off and split down the middle to make a cleft."],
+      [88, 120, "The scion wedge is pushed into the cleft so that the bark of the scion lines up with the bark of the rootstock."],
+      [120, 150, "The graft union is wrapped tightly with grafting tape to hold it firm and keep water out."],
+      [150, 168, "A clear plastic strip covers the scion to keep it moist while the graft heals."],
+      [168, 192, "Method 2: another cleft graft (fenda vazia). Watch how the scion is fitted so that its bark lines up with the rootstock bark, then tied."],
+      [192, 236, "Method 3: whip graft (ingles simples). Matching slanting cuts are made on a scion and rootstock of the same thickness. They are joined and wrapped with tape."],
+      [236, 249, "Credits."],
+    ],
+  }],
+  sunDryer: [{
+    src: "media/videos/solar-heat.webm",
+    title: "Related: how a box traps the sun's heat",
+    about: "This NASA activity builds a small solar oven. It uses the same ideas as a sun dryer: a clear cover lets sunlight in and traps heat, and dark surfaces absorb heat. A vegetable dryer also needs air openings so that moisture can escape.",
+    sound: "Narrated in English. Captions are NASA's official captions.",
+    credit: "\"How to Make Solar Oven S'mores\", NASA Scientific Visualization Studio, public domain, Wikimedia Commons.",
+    cues: [[0.38,4.17,"Add s'more fun to your day with a DIY solar oven."],[8.55,13.85,"The Sun is our most important source of energy and makes life possible here on Earth,"],[14.01,16.77,"but did you know you can also cook with it?"],[16.77,22.77,"All you need is a warm, sunny day and a few things you can find around your house."],[22.98,28.57,"A pizza box, aluminum foil, tape, clear plastic wrap,"],[28.57,34.08,"a ruler, scissors, a black sheet of paper, and for the s'mores,"],[34.08,37.58,"marshmallows, chocolate, and graham crackers."],[37.79,39.46,"Ready to get started?"],[40.54,46.17,"Use the scissors to cut a square in the lid of the pizza box,"],[46.34,49.22,"but keep one side uncut."],[49.22,54.05,"Try to leave about one inch between the sides of the box"],[54.14,57.14,"and the edge of the lid."],[57.47,59.52,"Then fold up the flap"],[59.52,64.31,"you just cut so it stands up when the box lid is closed."],[64.73,68.98,"Cover the inside of the flap with aluminum foil."],[70.36,73.36,"Use tape to hold it in place."],[74.2,78.12,"Next, open the pizza box and cover the opening"],[78.12,81.21,"you just cut with clear plastic wrap."],[82.16,85.17,"Use tape to hold it in place."],[86.25,91.13,"Now cover the bottom of the box with aluminum foil."],[91.8,94.68,"Then place a sheet of black paper"],[94.68,98.47,"in the center of the box, on top of the aluminum foil."],[99.02,101.43,"Use tape to hold it in place."],[102.14,105.4,"Using dark-colored paper is important"],[105.52,110.98,"because it soaks up sunlight and releases heat better than light colored paper."],[111.44,114.41,"This helps get our oven nice and hot."],[114.86,115.41,"Okay."],[115.41,116.95,"Time to get cooking!"],[118.37,123.16,"Start by finding a sunny spot to place your solar oven."],[123.46,128.21,"Then open the box and place graham crackers on the black paper."],[130.92,133.84,"Top each graham cracker with a marshmallow."],[136.55,138.76,"Close the box lid tightly."],[138.76,141.77,"Use a ruler to prop open the flap."],[143.48,149.52,"As the sunlight warms the black paper, the plastic wrap will trap all the heat inside."],[150.48,154.74,"Check on the marshmallows every 15 minutes until they are soft."],[156.03,160.45,"Once they are soft, carefully open the box and place"],[160.45,164,"a chocolate square on top of each marshmallow."],[164.62,170.67,"Close the box lid again and use the ruler to prop open the flap."],[171.34,176.38,"Watch as the chocolate melts all over the marshmallows."],[176.55,182.85,"Once that's done, open the box and add a graham cracker on top of each marshmallow."],[185.14,188.06,"Ta-da! Cooking is s'more fun when you use the Sun."]],
+  }],
+};
+
+/* Illustrations for the step-by-step demonstrations (viewBox 480 x 270).
+   Elements with anim-* classes move only while the player is running and
+   stay still when the learner has asked for reduced motion. */
+const demoArt = (() => {
+  const label = (x, y, text, anchor = "middle") =>
+    `<text x="${x}" y="${y}" text-anchor="${anchor}" class="demo-label">${text}</text>`;
+  // Each scene is drawn slightly smaller above a caption strip, so the
+  // caption never covers the picture.
+  const scene = (background, content, caption) => `<svg viewBox="0 0 480 270" role="img">
+    <rect width="480" height="270" fill="${background}"/>
+    <g transform="translate(29 2) scale(0.88)">${content}</g>
+    <rect x="0" y="240" width="480" height="30" fill="rgba(255,255,255,0.92)"/>
+    <text x="240" y="260" text-anchor="middle" class="demo-label demo-caption">${caption}</text>
+  </svg>`;
+  const table = `<rect x="0" y="214" width="480" height="56" fill="#d9b88a"/><rect x="0" y="210" width="480" height="8" fill="#c49a64"/>`;
+  const ground = `<rect y="226" width="480" height="44" fill="#b9cf9a"/>`;
+  const bowl = (cx, top, w, fill = "#f6efe2") =>
+    `<path d="M${cx - w / 2} ${top} Q${cx - w / 2} ${top + w * 0.5} ${cx} ${top + w * 0.5} Q${cx + w / 2} ${top + w * 0.5} ${cx + w / 2} ${top}Z" fill="#dfe7ee" stroke="#6f8796" stroke-width="3"/>
+     <ellipse cx="${cx}" cy="${top}" rx="${w / 2}" ry="${w * 0.09}" fill="${fill}" stroke="#6f8796" stroke-width="3"/>`;
+  const whisk = (x, y, cls = "") =>
+    `<g class="${cls}" style="transform-origin:${x}px ${y + 70}px"><line x1="${x}" y1="${y}" x2="${x}" y2="${y + 40}" stroke="#8a5a2b" stroke-width="7" stroke-linecap="round"/>
+     <path d="M${x} ${y + 40} q-16 18 0 40 q16 -22 0 -40 M${x} ${y + 40} q-8 20 0 40 q8 -20 0 -40" fill="none" stroke="#9aa7b0" stroke-width="2.5"/></g>`;
+  const sun = (cx, cy) => `<g class="anim-pulse"><circle cx="${cx}" cy="${cy}" r="26" fill="#f7c948"/>${Array.from({ length: 8 }, (_, i) => {
+    const a = (i * Math.PI) / 4;
+    return `<line x1="${cx + Math.cos(a) * 34}" y1="${cy + Math.sin(a) * 34}" x2="${cx + Math.cos(a) * 46}" y2="${cy + Math.sin(a) * 46}" stroke="#f2a60c" stroke-width="4" stroke-linecap="round"/>`;
+  }).join("")}</g>`;
+  const thermometer = (x, top, height, level) =>
+    `<rect x="${x}" y="${top}" width="12" height="${height}" rx="6" fill="#ffffff" stroke="#8a9aa6" stroke-width="2"/><rect x="${x + 3}" y="${top + height - level - 4}" width="6" height="${level}" fill="#e53935"/><circle cx="${x + 6}" cy="${top + height}" r="8" fill="#e53935" stroke="#8a9aa6" stroke-width="2"/>`;
+  const frame = (cover = false, tray = false, leaves = false) => `
+    <g>
+      <line x1="150" y1="200" x2="150" y2="236" stroke="#7b4f25" stroke-width="7"/><line x1="330" y1="200" x2="330" y2="236" stroke="#7b4f25" stroke-width="7"/>
+      <line x1="185" y1="186" x2="185" y2="222" stroke="#7b4f25" stroke-width="6"/><line x1="365" y1="186" x2="365" y2="222" stroke="#7b4f25" stroke-width="6"/>
+      ${cover ? `<path d="M140 200 L140 120 L240 80 L340 120 L340 200 Z" fill="rgba(170,215,245,0.45)"/><path d="M175 186 L175 106 L275 66 L375 106 L375 186" fill="rgba(170,215,245,0.3)" stroke="none"/>` : ""}
+      <rect x="140" y="120" width="200" height="80" fill="none" stroke="#7b4f25" stroke-width="6"/>
+      <path d="M140 120 L240 80 L340 120" fill="none" stroke="#7b4f25" stroke-width="6"/>
+      <path d="M140 120 L175 106 L275 66 L240 80 M340 120 L375 106 L375 186 L340 200 M275 66 L375 106" fill="none" stroke="#8d6034" stroke-width="4"/>
+      ${tray ? `<rect x="150" y="160" width="180" height="16" fill="#cfd8dc" stroke="#78909c" stroke-width="2"/>${Array.from({ length: 17 }, (_, i) => `<line x1="${158 + i * 10}" y1="160" x2="${158 + i * 10}" y2="176" stroke="#90a4ae" stroke-width="1"/>`).join("")}` : ""}
+      ${leaves ? Array.from({ length: 7 }, (_, i) => `<ellipse cx="${166 + i * 24}" cy="157" rx="12" ry="5" fill="#3f8f3a" transform="rotate(${i % 2 ? 12 : -12} ${166 + i * 24} 157)"/>`).join("") : ""}
+      ${cover ? `<path d="M140 200 L140 120 L240 80 L340 120 L340 200" fill="none" stroke="rgba(90,150,200,0.9)" stroke-width="2" stroke-dasharray="6 4"/>` : ""}
+    </g>`;
+  return {
+    flourGather: scene("#f7faf6", `${table}
+      <rect x="22" y="120" width="70" height="92" rx="8" fill="#f3e9d7" stroke="#b08a52" stroke-width="3"/>${label(57, 172, "FLOUR")}
+      <rect x="104" y="170" width="22" height="42" rx="6" fill="#ffffff" stroke="#8a9aa6" stroke-width="3"/>${label(115, 236, "salt")}
+      <ellipse cx="160" cy="196" rx="15" ry="19" fill="#fbf3e4" stroke="#c9a77c" stroke-width="3"/>${label(160, 236, "egg")}
+      <path d="M196 130 h52 l-6 82 h-40z" fill="rgba(255,255,255,0.9)" stroke="#8a9aa6" stroke-width="3"/><rect x="199" y="150" width="46" height="60" fill="#f5f2ea"/>${label(222, 236, "milk/water")}
+      <path d="M272 140 h20 v-20 h12 v20 h20 v72 h-52z" fill="#f6d36b" stroke="#c49b21" stroke-width="3"/>${label(298, 236, "oil (fat)")}
+      ${bowl(380, 170, 84)}${label(380, 236, "bowl")}
+      <g transform="translate(348 72)"><ellipse cx="34" cy="20" rx="30" ry="11" fill="#e7edf1" stroke="#7a8b99" stroke-width="3"/><line x1="64" y1="20" x2="96" y2="8" stroke="#7a8b99" stroke-width="5" stroke-linecap="round"/></g>${label(382, 66, "sieve")}
+      ${whisk(448, 112)}${label(448, 236, "whisk")}`,
+      "Flour, salt, egg, liquid and fat, ready to mix"),
+    flourSieve: scene("#f7faf6", `${table}${bowl(240, 128, 180, "#f8f4ec")}
+      <ellipse cx="240" cy="122" rx="62" ry="10" fill="#ffffff"/>
+      <g><ellipse cx="240" cy="46" rx="84" ry="18" fill="#e7edf1" stroke="#7a8b99" stroke-width="3"/><ellipse cx="240" cy="46" rx="70" ry="12" fill="#f8f4ec" stroke="#b9c4cc" stroke-width="2" stroke-dasharray="3 3"/><line x1="324" y1="46" x2="392" y2="24" stroke="#7a8b99" stroke-width="7" stroke-linecap="round"/></g>
+      ${Array.from({ length: 14 }, (_, i) => `<circle cx="${186 + (i * 9) % 108}" cy="${70 + (i % 3) * 6}" r="3" fill="#ffffff" stroke="#e2d6c0" class="anim-fall" style="animation-delay:${(i * 0.13).toFixed(2)}s"/>`).join("")}`,
+      "Sieving removes lumps and adds air"),
+    flourWell: scene("#d9b88a", `
+      <circle cx="240" cy="125" r="112" fill="#dfe7ee" stroke="#6f8796" stroke-width="4"/><circle cx="240" cy="125" r="92" fill="#f6efe2"/>
+      <circle cx="240" cy="125" r="38" fill="#e3d4bb"/><circle cx="240" cy="125" r="24" fill="#d8c6a8"/>
+      <path d="M392 60 L282 108" stroke="#2b3a32" stroke-width="3"/><polygon points="282,108 296,94 300,110" fill="#2b3a32"/>
+      ${label(398, 52, "the well", "start")}`,
+      "A hollow (well) in the centre of the flour"),
+    flourLiquid: scene("#f7faf6", `${table}${bowl(230, 128, 180)}
+      <ellipse cx="230" cy="128" rx="42" ry="8" fill="#f2d888"/>
+      <g transform="rotate(-28 370 60)"><path d="M340 30 h64 l-8 70 h-48z" fill="rgba(255,255,255,0.95)" stroke="#8a9aa6" stroke-width="3"/><rect x="344" y="52" width="56" height="46" fill="#f5f2ea"/></g>
+      <path d="M326 70 Q286 92 246 124" fill="none" stroke="#f5f2ea" stroke-width="8" stroke-linecap="round" class="anim-pour"/>
+      <g transform="translate(58 96)"><path d="M0 0 h56 l-8 50 h-40z" fill="#ffffff" stroke="#8a9aa6" stroke-width="3"/><ellipse cx="28" cy="10" rx="22" ry="6" fill="#f2c94c"/></g>
+      ${label(86, 172, "beaten egg")}${label(424, 128, "milk or water")}`,
+      "Pour the egg and half of the liquid into the well"),
+    flourFat: scene("#f7faf6", `${table}${bowl(230, 128, 180)}
+      <ellipse cx="230" cy="128" rx="48" ry="9" fill="#efe1b5"/>
+      <g transform="rotate(18 290 50)"><ellipse cx="260" cy="50" rx="24" ry="10" fill="#d7dde2" stroke="#7a8b99" stroke-width="3"/><line x1="284" y1="50" x2="360" y2="50" stroke="#7a8b99" stroke-width="7" stroke-linecap="round"/></g>
+      ${[0, 1, 2].map((i) => `<ellipse cx="242" cy="${76 + i * 14}" rx="4" ry="6" fill="#f2b705" class="anim-drip" style="animation-delay:${i * 0.35}s"/>`).join("")}
+      ${label(338, 110, "1 tablespoon oil or", "start")}${label(338, 128, "melted margarine", "start")}`,
+      "Fat makes the batter smooth and stops it sticking"),
+    flourWhisk: scene("#f7faf6", `${table}${bowl(240, 124, 200, "#f3e6c4")}
+      ${[[202, 120], [226, 126], [258, 118], [282, 125], [242, 130]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="6" fill="#e9d6a6" stroke="#cdb57c" class="anim-dissolve" style="animation-delay:${i * 0.4}s"/>`).join("")}
+      ${whisk(240, 30, "anim-stir")}
+      <path d="M150 104 q-26 18 0 36" fill="none" stroke="#2b3a32" stroke-width="2.5"/><polygon points="150,140 142,132 154,132" fill="#2b3a32"/>
+      <path d="M330 104 q26 18 0 36" fill="none" stroke="#2b3a32" stroke-width="2.5"/><polygon points="330,140 326,130 338,134" fill="#2b3a32"/>`,
+      "Whisk from the centre outwards until there are no lumps"),
+    flourCheck: scene("#f7faf6", `${table}${bowl(160, 128, 180, "#f3e6c4")}
+      <g transform="rotate(-20 200 44)"><ellipse cx="160" cy="46" rx="26" ry="11" fill="#d7dde2" stroke="#7a8b99" stroke-width="3"/><line x1="186" y1="46" x2="260" y2="46" stroke="#7a8b99" stroke-width="7" stroke-linecap="round"/></g>
+      <path d="M158 58 Q160 92 160 124" fill="none" stroke="#f3e6c4" stroke-width="7" stroke-linecap="round" class="anim-pour"/>
+      ${label(160, 236, "thin batter pours")}
+      <g transform="translate(330 70)"><ellipse cx="40" cy="40" rx="30" ry="14" fill="#e9d6a6" stroke="#b79a5c" stroke-width="3"/><path d="M14 46 q26 26 52 0" fill="#e9d6a6"/><line x1="70" y1="38" x2="120" y2="20" stroke="#7a8b99" stroke-width="7" stroke-linecap="round"/></g>
+      ${label(380, 160, "thick batter")}${label(380, 178, "coats the spoon")}`,
+      "Thin batter flows off smoothly; thick batter coats the spoon"),
+    flourCook: scene("#eef2ef", `
+      <rect x="110" y="196" width="260" height="40" rx="6" fill="#5b6770"/><circle cx="240" cy="196" r="8" fill="#f28c28"/>
+      <ellipse cx="240" cy="172" rx="130" ry="26" fill="#3b4148"/><ellipse cx="240" cy="166" rx="118" ry="20" fill="#2b2f33"/>
+      <line x1="370" y1="172" x2="460" y2="156" stroke="#3b4148" stroke-width="12" stroke-linecap="round"/>
+      <ellipse cx="236" cy="164" rx="92" ry="14" fill="#efd590"/>
+      ${[[210, 162], [236, 166], [262, 160], [226, 156], [254, 168]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="3.5" fill="none" stroke="#c9a54c" stroke-width="1.5" class="anim-pop" style="animation-delay:${i * 0.3}s"/>`).join("")}
+      <g transform="rotate(30 150 70)"><ellipse cx="150" cy="86" rx="26" ry="12" fill="#c9d3da" stroke="#6f8796" stroke-width="3"/><line x1="124" y1="82" x2="70" y2="30" stroke="#6f8796" stroke-width="6" stroke-linecap="round"/></g>`,
+      "Pour a thin layer, cook until bubbles form, then flip"),
+    dryerGather: scene("#f7faf6", `${table}
+      ${[0, 1, 2].map((i) => `<rect x="20" y="${150 + i * 16}" width="140" height="12" rx="3" fill="#a0703e" stroke="#7b4f25" stroke-width="2"/>`).join("")}${label(90, 236, "timber off-cuts")}
+      <rect x="180" y="140" width="84" height="66" fill="#eceff1" stroke="#78909c" stroke-width="2"/>${Array.from({ length: 8 }, (_, i) => `<line x1="${186 + i * 10}" y1="140" x2="${186 + i * 10}" y2="206" stroke="#90a4ae"/><line x1="180" y1="${146 + i * 8}" x2="264" y2="${146 + i * 8}" stroke="#90a4ae"/>`).join("")}${label(222, 236, "wire mesh")}
+      <path d="M284 136 h86 l-10 72 h-80z" fill="rgba(170,215,245,0.55)" stroke="#5a96c8" stroke-width="2"/>${label(326, 236, "clear polythene")}
+      ${thermometer(424, 118, 80, 40)}${label(432, 236, "thermometer")}
+      ${label(240, 62, "You also need nails, a hammer and strong tape")}`,
+      "Materials for a homemade sun dryer"),
+    dryerFrame: scene("#eef4e8", `${ground}${frame()}`, "Build a strong frame with legs and a sloping top"),
+    dryerTray: scene("#eef4e8", `${ground}${frame(false, true)}`, "Fit a wire-mesh tray so air can pass under the vegetables"),
+    dryerCover: scene("#eef4e8", `${ground}${frame(true, true)}
+      <rect x="146" y="186" width="20" height="8" fill="#eef4e8" stroke="#5a96c8"/><rect x="314" y="186" width="20" height="8" fill="#eef4e8" stroke="#5a96c8"/>
+      <path d="M96 190 h44" stroke="#2f80c2" stroke-width="3" class="anim-flow"/><path d="M340 100 h44" stroke="#d9822b" stroke-width="3" class="anim-flow"/>
+      ${label(76, 178, "air in")}${label(410, 90, "moist air out")}`,
+      "Cover with clear polythene; leave small air openings"),
+    dryerTest: scene("#e9f5fd", `${ground}${sun(64, 54)}${frame(true, true)}
+      ${thermometer(226, 128, 40, 30)}
+      ${thermometer(428, 140, 56, 22)}
+      ${label(252, 196, "inside: about 45 °C")}${label(434, 128, "outside: 28 °C")}`,
+      "In full sun, the inside gets warmer than outside"),
+    dryerVeg: scene("#f7faf6", `${table}
+      <rect x="40" y="166" width="170" height="40" rx="8" fill="#c8a272" stroke="#9b7444" stroke-width="3"/>
+      ${Array.from({ length: 6 }, (_, i) => `<path d="M${60 + i * 24} 186 q10 -22 22 0 q-10 10 -22 0z" fill="#3f8f3a"/>`).join("")}
+      <path d="M200 150 l40 -30" stroke="#9aa7b0" stroke-width="6" stroke-linecap="round"/>${label(125, 236, "washed, sliced kale")}
+      <rect x="270" y="150" width="180" height="40" fill="#cfd8dc" stroke="#78909c" stroke-width="2"/>
+      ${Array.from({ length: 6 }, (_, i) => `<ellipse cx="${292 + i * 28}" cy="168" rx="12" ry="6" fill="#3f8f3a"/>`).join("")}${label(360, 236, "one even layer on the tray")}`,
+      "Prepare clean vegetables and spread them out"),
+    dryerTurn: scene("#e9f5fd", `${ground}${sun(64, 54)}${frame(true, true, true)}
+      <path d="M430 168 a24 24 0 1 1 -8 -28" fill="none" stroke="#2b3a32" stroke-width="3" class="anim-spin-slow" style="transform-origin:412px 156px"/><polygon points="420,136 432,132 428,144" fill="#2b3a32"/>
+      ${label(414, 200, "turn every")}${label(414, 216, "few hours")}
+      <path d="M432 30 a18 18 0 1 0 14 30 a14 14 0 1 1 -14 -30z" fill="#6c7a89"/>${label(470, 84, "indoors at night", "end")}`,
+      "Close the door, turn the leaves and dry for a few days"),
+    dryerStore: scene("#f7faf6", `${table}
+      <rect x="180" y="86" width="120" height="124" rx="18" fill="rgba(220,235,240,0.75)" stroke="#78909c" stroke-width="3"/><rect x="186" y="70" width="108" height="22" rx="6" fill="#c0392b"/>
+      ${Array.from({ length: 16 }, (_, i) => `<ellipse cx="${200 + (i * 23) % 84}" cy="${190 - Math.floor(i / 4) * 18}" rx="9" ry="4" fill="#5d6b2f" transform="rotate(${(i * 37) % 60 - 30} ${200 + (i * 23) % 84} ${190 - Math.floor(i / 4) * 18})"/>`).join("")}
+      <rect x="208" y="104" width="64" height="26" fill="#fff8e1" stroke="#c9a77c"/>${label(240, 122, "dried kale")}`,
+      "Store dried vegetables in a clean, tightly closed container"),
+  };
+})();
+
+const LESSON_DEMOS = {
+  flour: {
+    title: "Demonstration: making a smooth, pourable batter",
+    intro: "Watch how flour, liquid and fat are mixed into a smooth batter that pours easily. It follows the batter recipe in Activity 2 on page 48.",
+    steps: [
+      { title: "Gather the ingredients and equipment", text: "You need 2 cups of flour, a pinch of salt, 1 egg, 2 cups of milk or water, 1 tablespoon of cooking oil or melted margarine, a sieve, a bowl, a cup and a whisk or spoon.", art: demoArt.flourGather },
+      { title: "Sieve the flour and salt", text: "Sieve the flour and salt into a clean, dry bowl. Sieving removes lumps and adds air.", art: demoArt.flourSieve },
+      { title: "Make a well in the centre", text: "Use a spoon to push the flour to the sides of the bowl, making a hollow, called a well, in the centre.", art: demoArt.flourWell },
+      { title: "Add the egg and some liquid", text: "Break the egg into a cup and beat it lightly. Pour the egg and about half of the milk or water into the well.", art: demoArt.flourLiquid },
+      { title: "Add the fat", text: "Add one tablespoon of cooking oil or melted margarine. The fat makes the batter smooth and the pancakes soft.", art: demoArt.flourFat },
+      { title: "Whisk until smooth", text: "Whisk from the centre, slowly drawing in flour from the sides. Add the rest of the liquid a little at a time and keep whisking until there are no lumps.", art: demoArt.flourWhisk },
+      { title: "Check the consistency", text: "Lift the spoon. Thin batter flows off in a smooth, pourable stream and is used for pancakes. Thick batter coats the spoon and is used for coating foods such as fish or viazi karai.", art: demoArt.flourCheck },
+      { title: "Rest, then cook", text: "Cover the batter and let it stand. Pour a thin layer into a hot, lightly oiled pan. Flip the pancake when bubbles form, then cook the other side until brown.", art: demoArt.flourCook },
+    ],
+  },
+  sunDryer: {
+    title: "Demonstration: building and using a homemade sun dryer",
+    intro: "Follow each stage of making a sun dryer from local materials and drying leafy vegetables in it, as described on pages 76 to 78.",
+    steps: [
+      { title: "Gather the materials", text: "Collect timber off-cuts or strong wire for the frame, wire mesh for the tray, a clear polythene sheet for the cover, nails, a hammer, strong tape and a thermometer.", art: demoArt.dryerGather },
+      { title: "Build the frame", text: "Sketch your design first. Then join the timber into a strong frame with legs that keep it off the ground, and a sloping top so that rain runs off.", art: demoArt.dryerFrame },
+      { title: "Fit the tray", text: "Make a tray from wire mesh and fit it inside the frame. The mesh lets warm air pass under and around the vegetables.", art: demoArt.dryerTray },
+      { title: "Cover the frame", text: "Cover the frame with clear polythene so that sunlight enters and heat is trapped, like a small greenhouse. Leave small openings low down and high up so that moist air can escape.", art: demoArt.dryerCover },
+      { title: "Place it in the sun and test it", text: "Put the dryer where it gets sunlight all day. After about one hour, compare the thermometer inside the dryer with the temperature outside. The inside should be clearly warmer.", art: demoArt.dryerTest },
+      { title: "Prepare the vegetables", text: "Clean the dryer and the tray. Wash fresh leafy vegetables such as kale, slice them, and spread them on the tray in a single, even layer.", art: demoArt.dryerVeg },
+      { title: "Dry and turn", text: "Close the dryer door. Check the vegetables every few hours and turn them so they dry evenly. Drying takes a few days to a week. Bring the dryer indoors at night or when it is very cold.", art: demoArt.dryerTurn },
+      { title: "Store the dried vegetables", text: "When the vegetables are completely dry and crisp, store them in a clean, tightly closed container in a cool, dry place.", art: demoArt.dryerStore },
+    ],
+  },
+};
+
+function formatClock(seconds) {
+  const s = Math.max(0, Math.floor(seconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+/* A step player shared by the demonstrations and the animated mini lesson.
+   Steps advance only after the narration of the current step has finished
+   (or after a reading-time pause when narration is off), so the picture,
+   the written text and the voice always stay together. */
+function createStepPlayer(host, { steps, label, accent, narrate = false, stageClass = "" }) {
+  let index = 0;
+  let playing = false;
+  let timer = 0;
+  const cleanText = (step) => String(step.text).replace(/\s+/g, " ").trim();
+  host.innerHTML = `
+    <div class="step-player" style="--module-accent:${escapeHTML(accent || "var(--leaf)")}" tabindex="-1">
+      <div class="step-stage ${stageClass}" aria-hidden="true"></div>
+      <div class="step-caption">
+        <p class="step-count"></p>
+        <h4 class="step-title"></h4>
+        <p class="step-text"></p>
+      </div>
+      <div class="step-progress" aria-hidden="true"><span></span></div>
+      <div class="step-controls">
+        <button type="button" class="secondary-button" data-step-action="prev">&#9664; Back</button>
+        <button type="button" class="primary-button step-play" data-step-action="play">&#9654; Play</button>
+        <button type="button" class="secondary-button" data-step-action="next">Next &#9654;</button>
+        <label class="step-narrate"><input type="checkbox" data-step-action="narrate" ${narrate ? "checked" : ""}> Read each step aloud</label>
+      </div>
+      <div class="step-dots" role="group" aria-label="${escapeHTML(label)}: choose a step">
+        ${steps.map((step, i) => `<button type="button" data-step-index="${i}" aria-label="Step ${i + 1}: ${escapeHTML(step.title)}"></button>`).join("")}
+      </div>
+    </div>
+  `;
+  const root = host.querySelector(".step-player");
+  const stage = root.querySelector(".step-stage");
+  const count = root.querySelector(".step-count");
+  const title = root.querySelector(".step-title");
+  const textEl = root.querySelector(".step-text");
+  const bar = root.querySelector(".step-progress span");
+  const playButton = root.querySelector(".step-play");
+  const narrateBox = root.querySelector("[data-step-action='narrate']");
+  const dots = [...root.querySelectorAll("[data-step-index]")];
+
+  const readingTime = (step) => clamp((`${step.title} ${step.text}`.split(/\s+/).length * 430) + 1800, 5000, 16000);
+
+  function render() {
+    const step = steps[index];
+    stage.innerHTML = step.art;
+    stage.classList.toggle("is-playing", playing);
+    count.textContent = `${step.eyebrow || `Step ${index + 1} of ${steps.length}`}`;
+    title.textContent = step.title;
+    // Words are wrapped so the word being spoken can be highlighted.
+    const text = cleanText(step);
+    let offset = 0;
+    textEl.innerHTML = text.split(" ").map((word) => {
+      const span = `<span data-at="${offset}">${escapeHTML(word)}</span>`;
+      offset += word.length + 1;
+      return span;
+    }).join(" ");
+    dots.forEach((dot, i) => {
+      dot.classList.toggle("active", i === index);
+      dot.setAttribute("aria-current", i === index ? "step" : "false");
+    });
+    playButton.innerHTML = playing ? "&#10074;&#10074; Pause" : index === steps.length - 1 && root.dataset.finished ? "&#8635; Replay" : "&#9654; Play";
+    playButton.setAttribute("aria-label", playing ? `Pause ${label}` : `Play ${label}`);
+    bar.style.transition = "none";
+    bar.style.width = "0%";
+  }
+
+  function highlightWord(at) {
+    const spans = textEl.querySelectorAll("span[data-at]");
+    let match = null;
+    spans.forEach((span) => {
+      const start = Number(span.dataset.at);
+      if (start <= at) match = span;
+      span.classList.remove("spoken");
+    });
+    match?.classList.add("spoken");
+  }
+
+  function readCurrent(onDone, onUnavailable) {
+    const step = steps[index];
+    const intro = `${step.title}. `;
+    const started = studyAudio.speak(`${intro}${cleanText(step)}`, {
+      captions: false, // the step text on screen is the caption
+      label: step.title,
+      onBoundary: (at) => highlightWord(at - intro.length),
+      onEnd: (event) => {
+        textEl.querySelectorAll(".spoken").forEach((span) => span.classList.remove("spoken"));
+        if (event?.type === "unavailable") onUnavailable?.();
+        else if (event?.type !== "cancel") onDone?.();
+      },
+    });
+    if (!started) onUnavailable?.();
+  }
+
+  function scheduleAdvance() {
+    clearTimeout(timer);
+    if (narrateBox.checked) {
+      readCurrent(() => { if (playing) timer = setTimeout(advance, 700); }, () => {
+        // No voice on this device: carry on with timed steps and on-screen text.
+        narrateBox.checked = false;
+        if (playing) scheduleAdvance();
+      });
+    } else {
+      const ms = readingTime(steps[index]);
+      requestAnimationFrame(() => {
+        bar.style.transition = `width ${ms}ms linear`;
+        bar.style.width = "100%";
+      });
+      timer = setTimeout(advance, ms);
+    }
+  }
+
+  function advance() {
+    if (!playing) return;
+    if (index >= steps.length - 1) {
+      playing = false;
+      root.dataset.finished = "1";
+      render();
+      return;
+    }
+    index += 1;
+    render();
+    scheduleAdvance();
+  }
+
+  function play() {
+    if (index === steps.length - 1 && root.dataset.finished) index = 0;
+    delete root.dataset.finished;
+    window.dispatchEvent(new CustomEvent("mtp-pause-players", { detail: { except: root } }));
+    playing = true;
+    render();
+    scheduleAdvance();
+  }
+
+  function pause() {
+    const wasNarrating = playing && narrateBox.checked;
+    playing = false;
+    clearTimeout(timer);
+    if (wasNarrating || studyAudio.narrationActive) studyAudio.stopNarration();
+    render();
+  }
+
+  function goTo(next) {
+    clearTimeout(timer);
+    if (studyAudio.narrationActive) studyAudio.stopNarration();
+    index = clamp(next, 0, steps.length - 1);
+    delete root.dataset.finished;
+    render();
+    if (playing) scheduleAdvance();
+    else if (narrateBox.checked) readCurrent();
+  }
+
+  root.addEventListener("click", (event) => {
+    const action = event.target.closest("[data-step-action]")?.dataset.stepAction;
+    const dot = event.target.closest("[data-step-index]");
+    if (action === "play") playing ? pause() : play();
+    if (action === "prev") goTo(index - 1);
+    if (action === "next") goTo(index + 1);
+    if (dot) goTo(Number(dot.dataset.stepIndex));
+  });
+  narrateBox.addEventListener("change", () => {
+    if (!narrateBox.checked && studyAudio.narrationActive) studyAudio.stopNarration();
+    if (playing) scheduleAdvance();
+  });
+  root.addEventListener("keydown", (event) => {
+    if (event.target.matches("input")) return;
+    if (event.key === "ArrowRight") { event.preventDefault(); goTo(index + 1); }
+    if (event.key === "ArrowLeft") { event.preventDefault(); goTo(index - 1); }
+  });
+  const onPauseAll = (event) => { if (event.detail?.except !== root && playing) pause(); };
+  window.addEventListener("mtp-pause-players", onPauseAll);
+  render();
+
+  return {
+    destroy() {
+      window.removeEventListener("mtp-pause-players", onPauseAll);
+      if (playing) pause();
+      clearTimeout(timer);
+    },
+  };
+}
+
+function lessonVideoCard(video, index) {
+  const transcriptId = `videoText${index}`;
+  return `
+    <article class="tool-card lesson-video-card">
+      <p class="eyebrow">Lesson video</p>
+      <h3>${escapeHTML(video.title)}</h3>
+      <p class="video-instructions">${escapeHTML(video.about)}</p>
+      <p class="video-how">Press <strong>Play</strong> on the video below to start it. ${video.burnedIn ? "Subtitles are shown in the video" : "English captions are switched on; use the <strong>CC</strong> button on the player to hide or show them"}. The written text is under the video; select any line to jump to that part.</p>
+      <div class="lesson-video-frame">
+        <video controls playsinline preload="metadata" ${video.loop ? "loop" : ""} src="${escapeHTML(video.src)}" aria-describedby="${transcriptId}" data-video-index="${index}"></video>
+      </div>
+      <p class="video-meta">${video.sound ? `${escapeHTML(video.sound)} ` : ""}<span>${escapeHTML(video.credit)}</span></p>
+      <details class="video-transcript" open>
+        <summary>Video text (captions and description)</summary>
+        <ol id="${transcriptId}">
+          ${video.cues.map(([start, , text], i) => `<li><button type="button" data-seek="${start}" data-cue="${i}"><span class="cue-time">${formatClock(start)}</span><span>${escapeHTML(text)}</span></button></li>`).join("")}
+        </ol>
+      </details>
+    </article>
+  `;
+}
+
+function wireLessonVideo(card, video) {
+  const player = card.querySelector("video");
+  if (!player) return () => {};
+  if (!video.burnedIn && "addTextTrack" in player && window.VTTCue) {
+    const track = player.addTextTrack("captions", "English", "en");
+    video.cues.forEach(([start, end, text]) => track.addCue(new VTTCue(start, end, text)));
+    track.mode = "showing";
+  }
+  const items = [...card.querySelectorAll("[data-cue]")];
+  const onTime = () => {
+    const t = player.currentTime;
+    items.forEach((button) => {
+      const [start, end] = video.cues[Number(button.dataset.cue)];
+      const active = t >= start && t < end;
+      button.classList.toggle("active", active);
+      if (active) button.setAttribute("aria-current", "true");
+      else button.removeAttribute("aria-current");
+    });
+  };
+  player.addEventListener("timeupdate", onTime);
+  player.addEventListener("play", () => {
+    studyAudio.stopNarration();
+    window.dispatchEvent(new CustomEvent("mtp-pause-players"));
+  });
+  card.addEventListener("click", (event) => {
+    const seek = event.target.closest("[data-seek]");
+    if (!seek) return;
+    player.currentTime = Number(seek.dataset.seek) + 0.05;
+    player.play().catch(() => {});
+  });
+  return () => { player.pause(); };
+}
+
 function renderMedia(module) {
   if (window._motionLessonCleanup) window._motionLessonCleanup();
-
+  const videos = LESSON_VIDEOS[module.id] || [];
+  const demo = LESSON_DEMOS[module.id];
   const slides = [
-    {
-      eyebrow: "Lesson preview",
-      title: ml(module, "title"),
-      body: ml(module, "summary"),
-    },
-    ...(ml(module, "goals") || []).map((goal, index) => ({
-      eyebrow: `Learning goal ${index + 1}`,
-      title: "What you will master",
-      body: goal,
-    })),
-    ...(ml(module, "ideas") || []).map((idea, index) => ({
-      eyebrow: `Core idea ${index + 1}`,
-      title: "Remember this",
-      body: idea,
-    })),
-  ];
-  const slideDuration = 4500;
-  const totalDuration = slides.length * slideDuration;
-  let elapsed = 0;
-  let lastTime = 0;
-  let frameIndex = -1;
-  let playing = false;
-  let animationFrame = 0;
-  let localVideoUrl = null;
+    { eyebrow: "Lesson preview", title: ml(module, "title"), text: ml(module, "summary") },
+    ...(ml(module, "goals") || []).map((goal, i) => ({ eyebrow: `Learning goal ${i + 1}`, title: "What you will master", text: goal })),
+    ...(ml(module, "ideas") || []).map((idea, i) => ({ eyebrow: `Core idea ${i + 1}`, title: "Remember this", text: idea })),
+  ].map((slide) => ({ ...slide, art: `<div class="motion-scene-art">${sceneSvg(module)}</div>` }));
 
   els.viewHost.innerHTML = `
-    <div class="media-view-layout">
-      <article class="tool-card motion-lesson-card" style="--module-accent:${escapeHTML(module.color)}">
-        <div class="motion-lesson-heading">
-          <div>
-            <p class="eyebrow">Animated mini lesson</p>
-            <h3>${escapeHTML(ml(module, "title"))}</h3>
-          </div>
-          <span class="pill">${slides.length} scenes</span>
-        </div>
-        <div class="motion-lesson-stage" id="motionLessonStage" aria-live="polite"></div>
-        <div class="motion-player-controls">
-          <button class="primary-button motion-play-button" id="motionPlayButton" type="button" aria-label="Play animated lesson">Play lesson</button>
-          <button class="secondary-button" id="motionRestartButton" type="button">Restart</button>
-          <label class="motion-narration-toggle"><input id="motionNarrationToggle" type="checkbox"> Narrate scenes</label>
-          <span class="motion-time" id="motionTime">0:00</span>
-        </div>
-        <label class="sr-only" for="motionTimeline">Lesson position</label>
-        <input class="motion-timeline" id="motionTimeline" type="range" min="0" max="${totalDuration}" value="0" step="100" aria-label="Lesson position">
-        <div class="motion-slide-dots" id="motionSlideDots" aria-label="Lesson scenes">
-          ${slides.map((_, index) => `<button type="button" data-motion-frame="${index}" aria-label="Go to scene ${index + 1}"></button>`).join("")}
-        </div>
+    <p class="media-intro">Every video and demonstration below has written text, and narration shows captions as it plays, so you can follow along with or without sound.</p>
+    ${demo ? `
+      <article class="tool-card demo-card">
+        <p class="eyebrow">Step-by-step demonstration</p>
+        <h3>${escapeHTML(demo.title)}</h3>
+        <p>${escapeHTML(demo.intro)} Press <strong>Play</strong> to watch it step by step, or use <strong>Back</strong> and <strong>Next</strong> to go at your own pace.</p>
+        <div id="demoPlayerHost"></div>
+      </article>` : ""}
+    ${videos.map((video, i) => lessonVideoCard(video, i)).join("")}
+    <article class="tool-card motion-lesson-card">
+      <p class="eyebrow">Animated mini lesson</p>
+      <h3>${escapeHTML(ml(module, "title"))}</h3>
+      <p>The key points of this sub-strand. Turn on <strong>Read each step aloud</strong> to hear each scene; the next scene starts only when the reading has finished.</p>
+      <div id="motionPlayerHost"></div>
+    </article>
+    <div class="media-tool-row">
+      <article class="tool-card media-feature-card">
+        <p class="eyebrow">Audio</p>
+        <h3>Listen to the whole lesson</h3>
+        <p>Hear the summary, learning goals and core ideas read aloud. The words appear as captions at the bottom of the screen.</p>
+        <button class="secondary-button" type="button" data-lesson-audio-control>Listen to lesson</button>
       </article>
-
-      <aside class="media-tool-stack">
-        <article class="tool-card media-feature-card">
-          <p class="eyebrow">Music</p>
-          <h3>Calm study soundtrack</h3>
-          <p>A gentle instrumental loop generated in your browser. It works offline and never starts by itself.</p>
-          <button class="secondary-button" type="button" data-music-control>Play study music</button>
-        </article>
-        <article class="tool-card media-feature-card">
-          <p class="eyebrow">Audio</p>
-          <h3>Listen to the whole lesson</h3>
-          <p>Hear the summary, learning goals, and core ideas read aloud in sequence.</p>
-          <button class="secondary-button" type="button" data-lesson-audio-control>Listen to lesson</button>
-        </article>
-      </aside>
+      <article class="tool-card media-feature-card">
+        <p class="eyebrow">Music</p>
+        <h3>Calm study soundtrack</h3>
+        <p>A gentle instrumental loop generated in your browser. It works offline and never starts by itself.</p>
+        <button class="secondary-button" type="button" data-music-control>Play study music</button>
+      </article>
     </div>
-
     <article class="tool-card local-video-card">
-      <div class="local-video-copy">
-        <p class="eyebrow">Video player</p>
-        <h3>Play a teacher-provided lesson video</h3>
-        <p>Choose an MP4, WebM, or Ogg video from this device. The file stays on the device and is not uploaded.</p>
-        <label class="primary-button video-file-button" for="localLessonVideo">Choose video</label>
-        <input id="localLessonVideo" class="sr-only" type="file" accept="video/mp4,video/webm,video/ogg">
-      </div>
+      <p class="eyebrow">Video player</p>
+      <h3>Play a teacher-provided lesson video</h3>
+      <p>Choose an MP4, WebM or Ogg video saved on this device. It plays in the space below and is not uploaded anywhere.</p>
+      <label class="primary-button video-file-button" for="localLessonVideo">Choose video</label>
+      <input id="localLessonVideo" class="sr-only" type="file" accept="video/mp4,video/webm,video/ogg">
       <div class="local-video-stage" id="localVideoStage">
-        ${module.video
-          ? `<iframe src="${escapeHTML(module.video)}" title="${escapeHTML(ml(module, "title"))} lesson video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
-          : `<div class="video-empty-state" aria-label="No lesson video selected"><span aria-hidden="true">&#9654;</span><strong>Your lesson video appears here</strong><small>MP4, WebM, or Ogg</small></div>`}
+        <div class="video-empty-state" aria-label="No lesson video selected"><span aria-hidden="true">&#9654;</span><strong>Your lesson video appears here</strong><small>MP4, WebM, or Ogg</small></div>
       </div>
     </article>
   `;
 
-  const stage = document.getElementById("motionLessonStage");
-  const playButton = document.getElementById("motionPlayButton");
-  const timeline = document.getElementById("motionTimeline");
-  const timeLabel = document.getElementById("motionTime");
-  const narrationToggle = document.getElementById("motionNarrationToggle");
-  const dots = [...document.querySelectorAll("[data-motion-frame]")];
-
-  function formatTime(milliseconds) {
-    const seconds = Math.floor(milliseconds / 1000);
-    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-  }
-
-  function drawFrame(index, announce = false) {
-    const safeIndex = clamp(index, 0, slides.length - 1);
-    if (safeIndex === frameIndex && stage?.hasChildNodes()) return;
-    frameIndex = safeIndex;
-    const slide = slides[safeIndex];
-    if (stage) {
-      stage.innerHTML = `
-        <div class="motion-scene-art" aria-hidden="true">${sceneSvg(module)}</div>
-        <div class="motion-scene-shade"></div>
-        <div class="motion-scene-copy">
-          <span>${escapeHTML(slide.eyebrow)}</span>
-          <h4>${escapeHTML(slide.title)}</h4>
-          <p>${escapeHTML(slide.body)}</p>
-        </div>
-      `;
-      stage.classList.toggle("is-playing", playing);
-    }
-    dots.forEach((dot, dotIndex) => {
-      dot.classList.toggle("active", dotIndex === safeIndex);
-      dot.setAttribute("aria-current", dotIndex === safeIndex ? "step" : "false");
+  const cleanups = [];
+  if (demo) {
+    const player = createStepPlayer(document.getElementById("demoPlayerHost"), {
+      steps: demo.steps, label: demo.title, accent: module.color, narrate: true, stageClass: "demo-stage",
     });
-    if (announce && narrationToggle?.checked) {
-      studyAudio.speak(`${slide.title}. ${slide.body}`, { rate: 0.92 });
-    }
+    cleanups.push(() => player.destroy());
   }
-
-  function updatePlayerUI() {
-    if (timeline) timeline.value = String(Math.min(elapsed, totalDuration));
-    if (timeLabel) timeLabel.textContent = `${formatTime(elapsed)} / ${formatTime(totalDuration)}`;
-    if (playButton) {
-      playButton.textContent = playing ? "Pause" : elapsed >= totalDuration ? "Replay" : "Play lesson";
-      playButton.setAttribute("aria-label", playing ? "Pause animated lesson" : "Play animated lesson");
-    }
-    stage?.classList.toggle("is-playing", playing);
-  }
-
-  function tick(now) {
-    if (!playing) return;
-    if (!lastTime) lastTime = now;
-    elapsed += now - lastTime;
-    lastTime = now;
-    if (elapsed >= totalDuration) {
-      elapsed = totalDuration;
-      playing = false;
-      drawFrame(slides.length - 1);
-      updatePlayerUI();
-      return;
-    }
-    drawFrame(Math.floor(elapsed / slideDuration), true);
-    updatePlayerUI();
-    animationFrame = requestAnimationFrame(tick);
-  }
-
-  function play() {
-    if (elapsed >= totalDuration) elapsed = 0;
-    playing = true;
-    lastTime = 0;
-    if (narrationToggle?.checked) frameIndex = -1;
-    drawFrame(Math.floor(elapsed / slideDuration), true);
-    updatePlayerUI();
-    cancelAnimationFrame(animationFrame);
-    animationFrame = requestAnimationFrame(tick);
-  }
-
-  function pause(stopVoice = true) {
-    playing = false;
-    lastTime = 0;
-    cancelAnimationFrame(animationFrame);
-    if (stopVoice && narrationToggle?.checked) studyAudio.stopNarration();
-    updatePlayerUI();
-  }
-
-  function seek(milliseconds) {
-    elapsed = clamp(Number(milliseconds), 0, Math.max(0, totalDuration - 1));
-    frameIndex = -1;
-    drawFrame(Math.floor(elapsed / slideDuration), playing && narrationToggle?.checked);
-    updatePlayerUI();
-  }
-
-  playButton?.addEventListener("click", () => playing ? pause() : play());
-  document.getElementById("motionRestartButton")?.addEventListener("click", () => {
-    pause();
-    seek(0);
+  const motion = createStepPlayer(document.getElementById("motionPlayerHost"), {
+    steps: slides, label: "Animated mini lesson", accent: module.color, stageClass: "motion-lesson-stage",
   });
-  timeline?.addEventListener("input", (event) => seek(event.target.value));
-  dots.forEach((dot) => dot.addEventListener("click", () => seek(Number(dot.dataset.motionFrame) * slideDuration)));
-  narrationToggle?.addEventListener("change", () => {
-    if (!narrationToggle.checked) studyAudio.stopNarration();
-  });
+  cleanups.push(() => motion.destroy());
+  els.viewHost.querySelectorAll(".lesson-video-card").forEach((card, i) => cleanups.push(wireLessonVideo(card, videos[i])));
+
   document.querySelector("[data-music-control]")?.addEventListener("click", () => studyAudio.toggleMusic());
   document.querySelector("[data-lesson-audio-control]")?.addEventListener("click", () => studyAudio.toggleLessonNarration());
+  let localVideoUrl = null;
   document.getElementById("localLessonVideo")?.addEventListener("change", (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -5663,19 +6374,13 @@ function renderMedia(module) {
     if (localVideoUrl) URL.revokeObjectURL(localVideoUrl);
     localVideoUrl = URL.createObjectURL(file);
     const host = document.getElementById("localVideoStage");
-    if (host) {
-      host.innerHTML = `<video controls playsinline preload="metadata" src="${escapeHTML(localVideoUrl)}" aria-label="${escapeHTML(file.name)}"></video>`;
-    }
-    pause();
+    if (host) host.innerHTML = `<video controls playsinline preload="metadata" src="${escapeHTML(localVideoUrl)}" aria-label="${escapeHTML(file.name)}"></video>`;
     showToast(`Video ready: ${file.name}`, "success");
   });
-
-  drawFrame(0);
-  updatePlayerUI();
   updateMediaControls();
 
   window._motionLessonCleanup = () => {
-    pause(Boolean(narrationToggle?.checked));
+    cleanups.forEach((fn) => fn());
     if (localVideoUrl) URL.revokeObjectURL(localVideoUrl);
     localVideoUrl = null;
   };
@@ -5757,13 +6462,13 @@ const GAME_HINTS = {
   },
   gardenPlanner: {
     title: "Organic Garden",
-    goal: "Guide an organic crop from bed preparation to harvest while day and night pass automatically.",
+    goal: "Guide an organic crop from bed preparation to harvest, one day at a time.",
     steps: [
       "Prepare the bed, choose a crop, then plant it.",
-      "As the automatic day/night timer runs, respond to drought, rain, pests, low fertility, or market demand.",
+      "Care for the beds, then press Next day. Respond to drought, rain, pests, low fertility, or market demand.",
       "When a crop reaches stage 4, harvest it and save once the garden score reaches 75 points.",
     ],
-    tip: "You cannot control time; watch the clock and respond like a real gardener.",
+    tip: "Use the tool on all suitable beds to save time. Tick Days pass automatically only if you want a timed challenge.",
   },
   pestBlaster: {
     title: "Pest Blaster",
@@ -5882,7 +6587,7 @@ function gameHintFor(module, altGame) {
       tip: "Words may run forward or backward, so try the reverse direction if a word does not mark correctly.",
     };
   }
-  return GAME_HINTS[module.game] || {
+  return GAME_HINTS[altGame === "challenge" && module.challengeGame ? module.challengeGame : module.game] || {
     title: "Game Help",
     goal: "Play through the activity and use the on-screen feedback to improve your score.",
     steps: [
@@ -5920,13 +6625,15 @@ function renderGameHelp(module, altGame) {
 function renderPlay(module) {
   if (window._activeGameCleanup) { window._activeGameCleanup(); window._activeGameCleanup = null; }
   if (window.MTPThreeSim?.disposeAll) window.MTPThreeSim.disposeAll();
-  const altGame = state.altGame || "main";
+  const altGame = state.altGame === "challenge" && !module.challengeGame ? "main" : state.altGame || "main";
   els.viewHost.innerHTML = `
-    <div class="game-tab-row">
-      <button class="game-tab-btn ${altGame === "main" ? "active" : ""}" data-alt-game="main">⚙️ Main Game</button>
-      <button class="game-tab-btn ${altGame === "match" ? "active" : ""}" data-alt-game="match">🃏 Term Match</button>
-      <button class="game-tab-btn ${altGame === "wordsearch" ? "active" : ""}" data-alt-game="wordsearch">🔤 Word Search</button>
+    <div class="game-tab-row" role="group" aria-label="Choose a game">
+      <button class="game-tab-btn ${altGame === "main" ? "active" : ""}" data-alt-game="main" aria-pressed="${altGame === "main"}">⚙️ Main Game</button>
+      ${module.challengeGame ? `<button class="game-tab-btn ${altGame === "challenge" ? "active" : ""}" data-alt-game="challenge" aria-pressed="${altGame === "challenge"}" title="Optional fast-action version">🎯 Challenge (fast action)</button>` : ""}
+      <button class="game-tab-btn ${altGame === "match" ? "active" : ""}" data-alt-game="match" aria-pressed="${altGame === "match"}">🃏 Term Match</button>
+      <button class="game-tab-btn ${altGame === "wordsearch" ? "active" : ""}" data-alt-game="wordsearch" aria-pressed="${altGame === "wordsearch"}">🔤 Word Search</button>
     </div>
+    ${module.challengeGame && altGame === "main" ? `<p class="game-mode-note">This game works with a mouse, touch or keyboard and has no time limit. The Challenge tab has an optional fast-action version.</p>` : ""}
     ${renderGameHelp(module, altGame)}
     <div id="gameMount" style="position:relative"></div>
   `;
@@ -5952,7 +6659,7 @@ function renderPlay(module) {
     sunDryer: renderSunDryer,
     wordSearch: renderWordSearch,
   };
-  const gameFn = games[module.game];
+  const gameFn = games[altGame === "challenge" ? module.challengeGame : module.game];
   if (!gameFn) { mount.innerHTML = `<div class="empty-state">Game not available for this module.</div>`; return; }
   gameFn(mount, module);
   setupGameTutor(module, altGame, mount);
@@ -6018,6 +6725,7 @@ function renderQuiz(module) {
         </div>
         <button class="primary-button" id="submitQuizButton" style="margin-top:4px" ${canEditProgress() ? "" : "disabled"}>${canEditProgress() ? t("submitQuiz") : "Read-only view"}</button>
         <button class="secondary-button" id="clearQuizButton">${t("clearAnswers")}</button>
+        <button type="button" class="secondary-button" data-open-learning-tool="revision">Practise my mistakes</button>
         <button class="secondary-button ${state.timedMode ? "active" : ""}" id="toggleTimedMode" style="margin-top:4px">⏱ ${t("timedMode")}</button>
         <button class="secondary-button" id="startAssessmentButton" style="margin-top:4px">📋 ${t("startAssessment")}</button>
       </aside>
@@ -6044,43 +6752,369 @@ function startTimedQuiz(_module) {
   }, 1000);
 }
 
-function renderReader(module) {
-  const query = state.globalSearch.trim();
-  const pages = query ? (window.BOOK_DATA?.pages || []) : bookPagesFor(module);
-  const matches = query
-    ? pages.filter((page) => compactText(page.text).toLowerCase().includes(query.toLowerCase()))
-    : pages;
-  const selected = matches[0] || null;
-  els.viewHost.innerHTML = `
-    <div class="reader-toolbar">
-      <input id="readerSearch" type="search" placeholder="Search within ${escapeHTML(module.title)}" value="${escapeHTML(query)}">
-      <select id="pageSelect">
-        ${pages.map((page) => `<option value="${page.page}" ${selected && selected.page === page.page ? "selected" : ""}>Page ${page.page}</option>`).join("")}
-      </select>
-    </div>
-    <div class="reader-results" id="readerResults"></div>
-  `;
-  renderReaderResults(module, matches, query);
+/* ── Book reader ─────────────────────────────────────────────── */
+// Pages come from scripts/book-data.js (built from the PDF by
+// scripts/build-book-data.py) as structured blocks: headings, paragraphs,
+// numbered lists, activities, tables and the textbook's own figures.
+
+function bookPage(pageNumber) {
+  return (window.BOOK_DATA?.pages || []).find((page) => page.page === pageNumber) || null;
 }
 
-function renderReaderResults(module, matches, query) {
-  const host = document.getElementById("readerResults");
-  if (!host) return;
-  if (!matches.length) {
-    host.innerHTML = `<div class="empty-state">No matching pages found.</div>`;
-    return;
+function bookHTML(html) {
+  // The build script only emits <strong> and <em>; escape anything else.
+  return String(html || "").replace(/<(?!\/?(?:strong|em)>)/g, "&lt;");
+}
+
+function bookFigureHTML(figure, page) {
+  const alt = [figure.alt, figure.caption, figure.labels].filter(Boolean).join(". ") || `Illustration on page ${page.page}`;
+  const wordsInPicture = figure.labels && figure.labels.length > 60;
+  return `
+    <figure class="book-figure">
+      <button type="button" class="book-figure-zoom" data-zoom-src="${escapeHTML(figure.src)}" data-zoom-alt="${escapeHTML(alt)}" aria-label="Enlarge picture: ${escapeHTML(alt)}">
+        <img src="${escapeHTML(figure.src)}" width="${figure.w}" height="${figure.h}" loading="lazy" alt="${escapeHTML(alt)}">
+      </button>
+      ${wordsInPicture ? `<details class="book-figure-text"><summary>Read the words in this picture</summary><p>${escapeHTML(figure.labels)}</p></details>` : ""}
+    </figure>
+  `;
+}
+
+function bookTableHTML(rows, borrowedHeader) {
+  const cellHTML = (cell) => cell.length > 1
+    ? `<ul>${cell.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}</ul>`
+    : escapeHTML(cell[0] || "");
+  let body = rows.slice();
+  let caption = "";
+  if (body[0] && body[0].filter((cell) => cell.join("").trim()).length === 1 && body[0].length > 1) {
+    caption = body.shift()[0].join(" ");
   }
-  const list = query ? matches.slice(0, 12) : matches.slice(0, 3);
-  host.innerHTML = list.map((page) => {
-    const text = compactText(page.text);
-    const display = query ? createSnippet(text, query) : text;
-    return `
-      <article class="reader-result">
-        <h3><span>Page ${page.page}</span><span class="pill">${escapeHTML(moduleForPage(page.page)?.title || module.title)}</span></h3>
-        <p class="page-text">${highlight(display, query)}</p>
-      </article>
-    `;
-  }).join("");
+  let header = null;
+  if (body[0] && body[0].every((cell) => cell.join(" ").trim() && cell.join(" ").length <= 70)) header = body.shift();
+  header = header || borrowedHeader || null;
+  return `
+    <div class="book-table-wrap" tabindex="0" role="region" aria-label="${escapeHTML(caption || "Table")}">
+      <table class="book-table">
+        ${caption ? `<caption>${escapeHTML(caption)}</caption>` : ""}
+        ${header ? `<thead><tr>${header.map((cell) => `<th scope="col">${cellHTML(cell)}</th>`).join("")}</tr></thead>` : ""}
+        <tbody>${body.map((row) => `<tr>${row.map((cell) => `<td>${cellHTML(cell)}</td>`).join("")}</tr>`).join("")}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function tableHeaderBefore(page) {
+  const previous = bookPage(page.page - 1);
+  const table = previous?.blocks.filter((block) => block.t === "table").pop();
+  return table?.rows?.[0]?.every((cell) => cell.join(" ").trim() && cell.join(" ").length <= 70) ? table.rows[0] : null;
+}
+
+function bookBlockHTML(block, page) {
+  switch (block.t) {
+    case "strand":
+      return `<p class="book-strand"><span>${t("strandLabel")} ${escapeHTML(block.code)}</span>${escapeHTML(block.text)}</p>`;
+    case "substrand":
+      return `<h3 class="book-substrand"><span>${t("substrandLabel")} ${escapeHTML(block.code)}</span>${escapeHTML(block.text)}</h3>`;
+    case "h3":
+      return `<h4 class="book-h3">${escapeHTML(block.text)}</h4>`;
+    case "h4":
+      return `<h5 class="book-h4">${escapeHTML(block.text)}</h5>`;
+    case "h5":
+      return `<p class="book-h5">${escapeHTML(block.text)}</p>`;
+    case "activity":
+      return `<p class="book-activity"><strong>${escapeHTML(block.num)}</strong><span>${escapeHTML(block.label)}</span></p>`;
+    case "learn":
+      return `<p class="book-learn">Let us learn</p>`;
+    case "p":
+      return `<p class="book-p${block.indent ? " indented" : ""}">${bookHTML(block.html)}</p>`;
+    case "list":
+      return `<ol class="book-list">${block.items.map((item) => `
+        <li class="book-item level-${item.level}"><span class="book-marker" aria-hidden="true">${escapeHTML(item.n)}</span><div>${item.html ? `<span class="sr-only">${escapeHTML(item.n)} </span>${bookHTML(item.html)}` : ""}${(item.figures || []).map((figure) => bookFigureHTML(figure, page)).join("")}</div></li>`).join("")}
+      </ol>`;
+    case "figure":
+      return bookFigureHTML(block, page);
+    case "table":
+      return bookTableHTML(block.rows, tableHeaderBefore(page));
+    default:
+      return "";
+  }
+}
+
+function bookPageHTML(page) {
+  return `
+    <article class="reader-page book-page" id="readerPageArticle" tabindex="-1" aria-labelledby="readerPageHeading">
+      <header class="book-page-head">
+        <h3 id="readerPageHeading">Page ${page.page}</h3>
+        <span class="pill">${t("strandLabel")} ${escapeHTML(page.strand)} · ${t("substrandLabel")} ${escapeHTML(page.substrand)} ${escapeHTML(page.substrandTitle)}</span>
+      </header>
+      ${page.blocks.map((block) => bookBlockHTML(block, page)).join("")}
+    </article>
+  `;
+}
+
+/* Glossary words in the book text become buttons that show their meaning. */
+function linkGlossaryTerms(container) {
+  const entries = MODULES.flatMap((module) => (module.glossary || []).map((item) => ({ ...item, module })))
+    .sort((a, b) => b.term.length - a.term.length);
+  if (!entries.length || !container) return;
+  const pattern = new RegExp(`\\b(${entries.map((e) => e.term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})s?\\b`, "i");
+  const used = new Set();
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!parent || parent.closest(".book-page-head, h3, h4, h5, .book-strand, .book-activity, .book-learn, .book-h5, button, figure, table, .sr-only, .book-marker, mark")) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach((node) => {
+    let current = node;
+    let guard = 0;
+    while (current && guard++ < 6) {
+      const match = pattern.exec(current.nodeValue);
+      if (!match) break;
+      const entry = entries.find((e) => e.term.toLowerCase() === match[1].toLowerCase());
+      if (!entry || used.has(entry.term)) {
+        // skip this occurrence and keep looking further along the node
+        const rest = current.splitText(match.index + match[0].length);
+        current = rest;
+        continue;
+      }
+      used.add(entry.term);
+      const after = current.splitText(match.index);
+      const rest = after.splitText(match[0].length);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "term-link";
+      button.textContent = after.nodeValue;
+      button.dataset.term = entry.term;
+      button.setAttribute("aria-haspopup", "dialog");
+      button.setAttribute("aria-label", `${after.nodeValue}: show meaning`);
+      after.replaceWith(button);
+      current = rest;
+    }
+  });
+}
+
+function showTermPopover(button) {
+  closeTermPopover();
+  const entry = MODULES.flatMap((module) => (module.glossary || []).map((item) => ({ ...item, module })))
+    .find((item) => item.term === button.dataset.term);
+  if (!entry) return;
+  const pop = document.createElement("div");
+  pop.className = "term-popover";
+  pop.id = "termPopover";
+  pop.setAttribute("role", "dialog");
+  pop.setAttribute("aria-label", `Meaning of ${entry.term}`);
+  pop.innerHTML = `
+    <p class="term-popover-term">${escapeHTML(entry.term)}</p>
+    <p>${escapeHTML(entry.def)}</p>
+    <p class="term-popover-source">${t("substrandLabel")} ${escapeHTML(entry.module.code)} ${escapeHTML(entry.module.title)}</p>
+    <div class="term-popover-actions">
+      ${window.speechSynthesis ? `<button type="button" class="secondary-button" data-term-speak>🔊 Listen</button>` : ""}
+      <button type="button" class="secondary-button" data-term-close>Close</button>
+    </div>
+  `;
+  document.body.appendChild(pop);
+  const rect = button.getBoundingClientRect();
+  const width = Math.min(320, window.innerWidth - 24);
+  pop.style.width = `${width}px`;
+  pop.style.left = `${clamp(rect.left + window.scrollX, 12 + window.scrollX, window.scrollX + window.innerWidth - width - 12)}px`;
+  pop.style.top = `${rect.bottom + window.scrollY + 8}px`;
+  button.setAttribute("aria-expanded", "true");
+  pop._origin = button;
+  pop.querySelector("[data-term-speak]")?.addEventListener("click", () => studyAudio.speak(`${entry.term}. ${entry.def}`, { label: entry.term }));
+  pop.querySelector("[data-term-close]")?.addEventListener("click", () => closeTermPopover(true));
+  pop.querySelector("button")?.focus();
+}
+
+function closeTermPopover(returnFocus = false) {
+  const pop = document.getElementById("termPopover");
+  if (!pop) return;
+  pop._origin?.setAttribute("aria-expanded", "false");
+  if (returnFocus) pop._origin?.focus();
+  pop.remove();
+}
+
+function showImageZoom(src, alt) {
+  const overlay = document.createElement("div");
+  overlay.className = "image-zoom-overlay";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Enlarged picture");
+  overlay.innerHTML = `
+    <figure>
+      <img src="${escapeHTML(src)}" alt="${escapeHTML(alt)}">
+      <figcaption>${escapeHTML(alt)}</figcaption>
+    </figure>
+    <button type="button" class="primary-button image-zoom-close">Close</button>
+  `;
+  const previousFocus = document.activeElement;
+  const close = () => {
+    overlay.remove();
+    document.removeEventListener("keydown", onKey);
+    previousFocus?.focus?.();
+  };
+  const onKey = (event) => { if (event.key === "Escape") close(); };
+  overlay.addEventListener("click", (event) => { if (event.target === overlay || event.target.closest(".image-zoom-close")) close(); });
+  document.addEventListener("keydown", onKey);
+  document.body.appendChild(overlay);
+  overlay.querySelector(".image-zoom-close").focus();
+}
+
+/* Bookmarks and the last reading position are kept per account so every
+   learner, teacher or parent returns to their own place. */
+function positionKey() {
+  return `${STORAGE_KEY}:position:${currentProfile?.id || "guest"}`;
+}
+
+function bookmarksKey() {
+  return `${STORAGE_KEY}:bookmarks:${currentProfile?.id || "guest"}`;
+}
+
+function loadBookmarks() {
+  const list = parseStoredJSON(bookmarksKey(), []);
+  return Array.isArray(list) ? list.filter((item) => bookPage(item.page)) : [];
+}
+
+function toggleBookmark(pageNumber) {
+  const list = loadBookmarks();
+  const exists = list.some((item) => item.page === pageNumber);
+  const next = exists ? list.filter((item) => item.page !== pageNumber) : [...list, { page: pageNumber, at: Date.now() }].sort((a, b) => a.page - b.page);
+  store.setItem(bookmarksKey(), JSON.stringify(next));
+  showToast(exists ? `Bookmark removed from page ${pageNumber}.` : `Page ${pageNumber} bookmarked.`, exists ? "info" : "success");
+  return !exists;
+}
+
+function savePosition() {
+  if (!currentProfile) return;
+  store.setItem(positionKey(), JSON.stringify({ moduleId: state.moduleId, view: state.view, page: state.readerPage, at: Date.now() }));
+}
+
+function restorePosition(announce = true) {
+  const saved = parseStoredJSON(positionKey(), null);
+  if (!saved || !MODULES.some((module) => module.id === saved.moduleId)) return false;
+  state.moduleId = saved.moduleId;
+  if (VIEWS.includes(saved.view)) state.view = saved.view;
+  if (bookPage(saved.page)) state.readerPage = saved.page;
+  if (announce) {
+    const module = currentModule();
+    const where = state.view === "reader" ? `the Book, page ${state.readerPage}` : `the ${state.view === "play" ? "Games" : state.view.charAt(0).toUpperCase() + state.view.slice(1)} tab`;
+    setTimeout(() => showToast(`Welcome back! Continuing at ${module.code} ${ml(module, "title")}, ${where}.`, "info"), 900);
+  }
+  return true;
+}
+
+function openBookPage(pageNumber, { focus = true } = {}) {
+  const page = bookPage(pageNumber);
+  if (!page) return;
+  state.readerPage = pageNumber;
+  state.globalSearch = "";
+  els.globalSearch.value = "";
+  const owner = moduleForPage(pageNumber);
+  const moduleChanged = owner && owner.id !== state.moduleId;
+  if (moduleChanged) {
+    state.moduleId = owner.id;
+    state.altGame = "main";
+    renderModuleList();
+    renderHero();
+  }
+  if (state.view !== "reader" || moduleChanged || !document.getElementById("readerBody")) {
+    state.view = "reader";
+    renderTabs();
+    renderReader(currentModule());
+  } else {
+    const input = document.getElementById("readerSearch");
+    if (input) input.value = "";
+    renderReaderBody();
+  }
+  savePosition();
+  if (focus) document.getElementById("readerPageArticle")?.focus({ preventScroll: false });
+}
+
+function renderReader(module) {
+  if (!bookPage(state.readerPage) || !moduleForPage(state.readerPage) || moduleForPage(state.readerPage).id !== module.id) {
+    state.readerPage = module.pages[0];
+  }
+  const pages = window.BOOK_DATA?.pages || [];
+  const groups = MODULES.map((m) => `
+    <optgroup label="${escapeHTML(`${m.code} ${m.title}`)}">
+      ${pages.filter((p) => p.page >= m.pages[0] && p.page <= m.pages[1]).map((p) => `<option value="${p.page}">Page ${p.page}</option>`).join("")}
+    </optgroup>`).join("");
+  els.viewHost.innerHTML = `
+    <div class="reader-toolbar">
+      <label class="sr-only" for="readerSearch">Search the textbook</label>
+      <input id="readerSearch" type="search" placeholder="Search the whole textbook" value="${escapeHTML(state.globalSearch)}" autocomplete="off">
+      <div class="reader-nav" role="group" aria-label="Page navigation">
+        <button type="button" class="secondary-button" id="readerPrev" aria-label="Previous page">&#9664; Back</button>
+        <label class="sr-only" for="pageSelect">Go to page</label>
+        <select id="pageSelect">${groups}</select>
+        <button type="button" class="secondary-button" id="readerNext" aria-label="Next page">Next &#9654;</button>
+      </div>
+      <button type="button" class="secondary-button" id="bookmarkPageButton" aria-pressed="false">🔖 Bookmark this page</button>
+      <a class="secondary-button reader-pdf-link" id="readerPdfLink" href="assets/book.pdf" target="_blank" rel="noopener">📄 Printed page<span class="sr-only"> (opens the PDF in a new tab)</span></a>
+    </div>
+    <div class="reader-bookmarks" id="readerBookmarks"></div>
+    <div id="readerBody"></div>
+  `;
+  document.getElementById("readerPrev").addEventListener("click", () => openBookPage(state.readerPage - 1));
+  document.getElementById("readerNext").addEventListener("click", () => openBookPage(state.readerPage + 1));
+  document.getElementById("pageSelect").addEventListener("change", (event) => openBookPage(Number(event.target.value)));
+  document.getElementById("bookmarkPageButton").addEventListener("click", () => {
+    toggleBookmark(state.readerPage);
+    renderReaderBody();
+  });
+  renderReaderBody();
+}
+
+function renderReaderBody() {
+  const body = document.getElementById("readerBody");
+  if (!body) return;
+  closeTermPopover();
+  const query = state.globalSearch.trim();
+  const page = bookPage(state.readerPage);
+  const select = document.getElementById("pageSelect");
+  if (select) select.value = String(state.readerPage);
+  const prev = document.getElementById("readerPrev");
+  const next = document.getElementById("readerNext");
+  if (prev) prev.disabled = !bookPage(state.readerPage - 1);
+  if (next) next.disabled = !bookPage(state.readerPage + 1);
+  const marks = loadBookmarks();
+  const marked = marks.some((item) => item.page === state.readerPage);
+  const markButton = document.getElementById("bookmarkPageButton");
+  if (markButton) {
+    markButton.setAttribute("aria-pressed", String(marked));
+    markButton.classList.toggle("active", marked);
+    markButton.textContent = marked ? "🔖 Bookmarked" : "🔖 Bookmark this page";
+  }
+  const pdf = document.getElementById("readerPdfLink");
+  if (pdf && page) pdf.href = `assets/book.pdf#page=${page.pdfPage}`;
+  const markHost = document.getElementById("readerBookmarks");
+  if (markHost) {
+    markHost.innerHTML = marks.length
+      ? `<span class="small-label">Your bookmarks</span>${marks.map((item) => {
+        const owner = moduleForPage(item.page);
+        return `<span class="bookmark-chip"><button type="button" data-open-page="${item.page}">p. ${item.page}${owner ? ` · ${escapeHTML(owner.code)}` : ""}</button><button type="button" data-remove-bookmark="${item.page}" aria-label="Remove bookmark for page ${item.page}">&times;</button></span>`;
+      }).join("")}`
+      : `<span class="small-label">Tip: bookmark pages you want to come back to. The app also remembers where you stopped.</span>`;
+  }
+
+  if (query) {
+    const matches = (window.BOOK_DATA?.pages || []).filter((p) => compactText(p.text).toLowerCase().includes(query.toLowerCase()));
+    body.innerHTML = matches.length
+      ? `<p class="reader-count" role="status">${matches.length} page${matches.length === 1 ? "" : "s"} contain "${escapeHTML(query)}".</p>${matches.slice(0, 20).map((p) => `
+        <article class="reader-result">
+          <h3><span>Page ${p.page}</span><span class="pill">${escapeHTML(`${p.substrand} ${p.substrandTitle}`)}</span></h3>
+          <p class="page-text">${highlight(createSnippet(compactText(p.text), query), query)}</p>
+          <button type="button" class="secondary-button" data-open-page="${p.page}">Open page ${p.page}</button>
+        </article>`).join("")}`
+      : `<div class="empty-state" role="status">No pages contain "${escapeHTML(query)}". Check the spelling or try a shorter word.</div>`;
+  } else if (page) {
+    body.innerHTML = bookPageHTML(page);
+    linkGlossaryTerms(body.querySelector(".book-page"));
+  } else {
+    body.innerHTML = `<div class="empty-state">This page is not available.</div>`;
+  }
 }
 
 function moduleForPage(pageNumber) {
@@ -6095,8 +7129,43 @@ function createSnippet(text, query) {
   return `${start > 0 ? "... " : ""}${text.slice(start, end)}${end < text.length ? " ..." : ""}`;
 }
 
+/* Journal notes. Students write into their own progress; teachers and
+   parents keep separate notes of their own, so the journal can always be
+   edited whichever account is signed in. Notes save automatically. */
+function viewerNotesKey() {
+  return `${STORAGE_KEY}:viewer-notes:${currentProfile?.id || "guest"}`;
+}
+
+function loadViewerNotes() {
+  const notes = parseStoredJSON(viewerNotesKey(), {});
+  return notes && typeof notes === "object" ? notes : {};
+}
+
+function persistJournal(moduleId, text, { announce = false } = {}) {
+  if (canEditProgress()) {
+    const hadNote = Boolean(progress.notes[moduleId]?.trim());
+    progress.notes[moduleId] = text;
+    saveProgress();
+    if (!hadNote && text.trim()) {
+      checkBadges();
+      awardXP(5);
+    }
+  } else {
+    const notes = loadViewerNotes();
+    notes[moduleId] = text;
+    store.setItem(viewerNotesKey(), JSON.stringify(notes));
+  }
+  const status = document.getElementById("journalStatus");
+  if (status) status.textContent = `Saved at ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`;
+  if (announce) showToast("💾 " + t("noteSaved"), "info");
+}
+
 function renderJournal(module) {
   const note = progress.notes[module.id] || "";
+  const canEdit = canEditProgress();
+  const learner = currentLearnerProfile();
+  const roleLabel = ACCOUNT_ROLES[currentProfile?.role]?.label || "Viewer";
+  const myNote = canEdit ? note : (loadViewerNotes()[module.id] || "");
   const completed = MODULES.filter((item) => moduleCompletion(item) === 3).length;
   const allDone = completed === MODULES.length;
   const certCard = allDone ? `
@@ -6112,13 +7181,25 @@ function renderJournal(module) {
         <p class="eyebrow">Portfolio prompt</p>
         <h3>${escapeHTML(ml(module, "title"))}</h3>
         <p>${escapeHTML(ml(module, "journal"))}</p>
-        <textarea id="journalText" placeholder="Write your notes here" ${canEditProgress() ? "" : "readonly"}>${escapeHTML(note)}</textarea>
+        <div class="lt-shortcuts">
+          <button type="button" class="secondary-button" data-open-learning-tool="portfolio">Practical portfolio</button>
+          <button type="button" class="secondary-button" data-open-learning-tool="rubrics">Practical feedback</button>
+          <button type="button" class="secondary-button" data-open-learning-tool="garden">Garden experiments</button>
+        </div>
+        ${canEdit ? "" : `
+          <div class="journal-learner-note">
+            <p class="small-label">${escapeHTML(learner?.name || "Student")}'s notes (read-only)</p>
+            <p>${note.trim() ? escapeHTML(note) : "No notes written yet for this sub-strand."}</p>
+          </div>`}
+        <label class="small-label journal-label" for="journalText">${canEdit ? "Your notes" : `Your own notes (${escapeHTML(roleLabel)})`}</label>
+        <textarea id="journalText" placeholder="Write your notes here">${escapeHTML(myNote)}</textarea>
+        <p class="journal-status" id="journalStatus" role="status">${store.persistent ? "Your notes save automatically as you type." : "This browser is not saving data permanently. Use Export progress to keep a copy of your notes."}</p>
         <div id="journalPromptStrip" class="prompt-strip" style="display:none">
           <p class="eyebrow">💬 ${t("promptsHeading")}</p>
           ${(ml(module, "prompts") || []).map((p) => `<button class="activity-chip prompt-chip" data-prompt="${escapeHTML(p)}">${escapeHTML(p)}</button>`).join("")}
         </div>
         <div class="journal-actions">
-          <button class="primary-button" id="saveJournalButton" ${canEditProgress() ? "" : "disabled"}>${canEditProgress() ? t("saveNote") : "Read-only view"}</button>
+          <button class="primary-button" id="saveJournalButton">${t("saveNote")}</button>
           <button class="secondary-button" id="exportProgressButton">${t("exportProgress")}</button>
           <button class="secondary-button" id="shareProgressButton">${t("shareProgress")}</button>
         </div>
@@ -6147,11 +7228,18 @@ function renderJournal(module) {
   `;
   const textarea = document.getElementById("journalText");
   const promptStrip = document.getElementById("journalPromptStrip");
+  let saveTimer = 0;
+  textarea?.addEventListener("input", () => {
+    const status = document.getElementById("journalStatus");
+    if (status) status.textContent = "Saving…";
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => persistJournal(module.id, textarea.value), 700);
+  });
   if (textarea && promptStrip && module.prompts?.length) {
     textarea.addEventListener("input", () => {
       promptStrip.style.display = textarea.value.length >= 50 ? "block" : "none";
     });
-    if (note.length >= 50) promptStrip.style.display = "block";
+    if (myNote.length >= 50) promptStrip.style.display = "block";
   }
   renderBadgesInline();
 }
@@ -6166,6 +7254,44 @@ function renderFlashcard(module) {
   let idx = 0;
   let flipped = false;
   let known = new Set();
+  let autoRead = false;
+  const hasSpeech = Boolean(window.speechSynthesis);
+  const frontText = (card) => card.type === "glossary" ? card.front : `Can you recall this ${card.front.toLowerCase()}?`;
+
+  // Audio always reads the side that is showing, and stops as soon as the
+  // card is flipped or changed, so sound and text never drift apart.
+  const readVisibleSide = () => {
+    const card = cards[idx];
+    const side = document.querySelector(flipped ? ".flashcard-back .flashcard-text" : ".flashcard-front .flashcard-text");
+    const words = flipped ? `${card.front}. ${card.back}` : frontText(card);
+    studyAudio.speak(words, {
+      captions: false, // the card itself shows the words being read
+      onStart: () => side?.classList.add("speaking"),
+      onEnd: () => side?.classList.remove("speaking"),
+    });
+  };
+
+  const flip = () => {
+    studyAudio.stopNarration();
+    flipped = !flipped;
+    const inner = document.getElementById("flashcardInner");
+    inner?.classList.toggle("flipped", flipped);
+    inner?.setAttribute("aria-pressed", String(flipped));
+    inner?.setAttribute("aria-label", `Card ${idx + 1} of ${cards.length}, ${flipped ? "answer side" : "question side"}. Press Enter to flip.`);
+    document.querySelector(".flashcard-front")?.setAttribute("aria-hidden", String(flipped));
+    document.querySelector(".flashcard-back")?.setAttribute("aria-hidden", String(!flipped));
+    for (const id of ["fcDifficult", "fcEasy"]) { const button = document.getElementById(id); if (button) button.disabled = !flipped; }
+    if (autoRead) readVisibleSide();
+  };
+
+  const goTo = (next) => {
+    studyAudio.stopNarration();
+    idx = clamp(next, 0, cards.length - 1);
+    flipped = false;
+    draw();
+    document.getElementById("flashcardInner")?.focus();
+    if (autoRead) readVisibleSide();
+  };
 
   const draw = () => {
     const card = cards[idx];
@@ -6173,19 +7299,24 @@ function renderFlashcard(module) {
     if (!host) return;
     host.innerHTML = `
       <div class="flashcard-scene" id="flashcardScene">
-        <div class="flashcard-card ${flipped ? "flipped" : ""}" id="flashcardInner">
-          <div class="flashcard-front">
+        <div class="flashcard-card ${flipped ? "flipped" : ""}" id="flashcardInner" role="button" tabindex="0" aria-pressed="${flipped}"
+          aria-label="Card ${idx + 1} of ${cards.length}, ${flipped ? "answer side" : "question side"}. Press Enter to flip.">
+          <div class="flashcard-front" aria-hidden="${flipped}">
             <p class="eyebrow">${escapeHTML(card.front)}</p>
-            <p class="flashcard-text">${card.type === "glossary" ? escapeHTML(card.front) : "Can you recall this " + escapeHTML(card.front.toLowerCase()) + "?"}</p>
+            <p class="flashcard-text">${escapeHTML(frontText(card))}</p>
             <p class="flip-hint">${t("flipHint")}</p>
           </div>
-          <div class="flashcard-back">
+          <div class="flashcard-back" aria-hidden="${!flipped}">
             <p class="eyebrow">${escapeHTML(card.front)}</p>
             <p class="flashcard-text">${escapeHTML(card.back)}</p>
-            ${window.speechSynthesis ? `<button class="speak-btn ghost-button" data-speak="${escapeHTML(card.back)}" title="Listen" style="margin-top:6px;font-size:0.85rem">🔊 Listen</button>` : ""}
           </div>
         </div>
       </div>
+      ${hasSpeech ? `
+        <div class="flashcard-tools">
+          <button class="secondary-button" id="fcListen" type="button">🔊 Listen to this side</button>
+          <label class="flashcard-autoread"><input type="checkbox" id="fcAutoRead" ${autoRead ? "checked" : ""}> Read each card aloud automatically</label>
+        </div>` : ""}
       <div class="flashcard-nav">
         <button class="secondary-button" id="fcPrev" ${idx === 0 ? "disabled" : ""}>← Prev</button>
         <span style="font-weight:700;font-size:0.9rem;color:var(--muted)">${idx + 1} / ${cards.length}${known.size === cards.length ? " — " + t("allKnown") : ""}</span>
@@ -6194,14 +7325,28 @@ function renderFlashcard(module) {
       <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
         <button class="primary-button ${known.has(idx) ? "active" : ""}" id="fcKnown">${known.has(idx) ? "✅ " + t("knownBtn") : t("knownBtn")}</button>
       </div>
+      <div class="lt-card-rating">
+        <p>${progress.tools?.reviews?.[AgriTools.cards(module)[idx].key] ? `Next review: ${escapeHTML(progress.tools.reviews[AgriTools.cards(module)[idx].key].due)}` : "New card — reveal the answer, then rate your recall."}</p>
+        ${canEditProgress() ? `<div class="lt-actions"><button class="secondary-button" id="fcDifficult" ${flipped ? "" : "disabled"}>Difficult · tomorrow</button><button class="secondary-button" id="fcEasy" ${flipped ? "" : "disabled"}>Easy · later</button></div>` : ""}
+        <button class="secondary-button" type="button" data-open-learning-tool="review">Open scheduled reviews</button>
+      </div>
     `;
-    document.getElementById("flashcardScene")?.addEventListener("click", () => {
-      flipped = !flipped;
-      document.getElementById("flashcardInner")?.classList.toggle("flipped", flipped);
+    const inner = document.getElementById("flashcardInner");
+    inner?.addEventListener("click", flip);
+    inner?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); flip(); }
+      if (event.key === "ArrowRight" && idx < cards.length - 1) { event.preventDefault(); document.getElementById("fcNext")?.click(); }
+      if (event.key === "ArrowLeft" && idx > 0) { event.preventDefault(); goTo(idx - 1); }
     });
-    document.getElementById("fcPrev")?.addEventListener("click", () => { idx = Math.max(0, idx - 1); flipped = false; draw(); });
+    document.getElementById("fcListen")?.addEventListener("click", readVisibleSide);
+    document.getElementById("fcAutoRead")?.addEventListener("change", (event) => {
+      autoRead = event.target.checked;
+      if (autoRead) readVisibleSide();
+      else studyAudio.stopNarration();
+    });
+    document.getElementById("fcPrev")?.addEventListener("click", () => goTo(idx - 1));
     document.getElementById("fcNext")?.addEventListener("click", () => {
-      idx = Math.min(cards.length - 1, idx + 1); flipped = false; draw();
+      goTo(idx + 1);
       if (idx === cards.length - 1) {
         if (canEditProgress() && !(progress.flashcardsDone || []).includes(module.id)) {
           progress.flashcardsDone = progress.flashcardsDone || [];
@@ -6214,6 +7359,12 @@ function renderFlashcard(module) {
       }
     });
     document.getElementById("fcKnown")?.addEventListener("click", () => { known.has(idx) ? known.delete(idx) : known.add(idx); draw(); });
+    for (const [id, rating] of [["fcDifficult", "difficult"], ["fcEasy", "easy"]]) {
+      document.getElementById(id)?.addEventListener("click", () => {
+        const review = AgriTools.rateCard(AgriTools.cards(module)[idx].key, rating);
+        if (review) { showToast(`Next review: ${review.due}`, "info"); if (idx < cards.length - 1) goTo(idx + 1); else draw(); }
+      });
+    }
   };
 
   els.viewHost.innerHTML = `
@@ -6329,7 +7480,7 @@ function generateCertificate() {
 
   ctx.fillStyle = "rgba(255,215,0,0.8)";
   ctx.font = "18px 'Nunito Sans', sans-serif";
-  ctx.fillText("MTP Digital — Agriculture & Nutrition Grade 9", 600, 730);
+  ctx.fillText("MTP Digital — Agriculture Grade 9", 600, 730);
 
   const link = document.createElement("a");
   link.href = canvas.toDataURL("image/png");
@@ -6451,7 +7602,7 @@ function decodeAnyCode(raw) {
 }
 
 function saveClassBoard(entries) {
-  try { localStorage.setItem(CLASS_BOARD_KEY, JSON.stringify(entries)); } catch {}
+  try { store.setItem(CLASS_BOARD_KEY, JSON.stringify(entries)); } catch {}
 }
 
 function loadClassBoard() {
@@ -6666,12 +7817,16 @@ function showAssessmentOverlay(module) {
     clearInterval(state.assessmentTimer);
     state.assessmentActive = false;
     overlay.style.display = "none";
+    if (!guardProgressWrite("save assessment results")) return;
     const correct = module.quiz.filter((item, i) => assessAnswers[i] === item.a).length;
     const score = Math.round((correct / module.quiz.length) * 100);
     const oldBest = progress.quizScores[module.id] || 0;
     progress.quizScores[module.id] = Math.max(oldBest, score);
     progress.quizHistory[module.id] = progress.quizHistory[module.id] || [];
     progress.quizHistory[module.id].push(score);
+    AgriTools.recordQuiz(module, assessAnswers);
+    progress.quizMisses[module.id] = progress.quizMisses[module.id] || {};
+    module.quiz.forEach((q, i) => { if (assessAnswers[i] !== q.a) progress.quizMisses[module.id][i] = (progress.quizMisses[module.id][i] || 0) + 1; });
     saveProgress();
     awardXP(Math.max(1, Math.round((score || 0) / 10)));
     showToast(`📋 Assessment complete — ${score}%`, score >= 70 ? "success" : "info");
@@ -6732,7 +7887,7 @@ const WORDSEARCH_TUT = [
   {
     art: `<div class='vt-scene'><div style='position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:110px'>${['H','A','Y','F','O','D','D','E','R','B','M','U','L','C','H','P','A','S','T','U','R','E','S','O','I'].map((l,i)=>`<div style="background:rgba(255,255,255,${i===0||i===1||i===2?'0.3':'0.1'});border-radius:3px;height:18px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:white;font-weight:${i<3?'800':'400'}">${l}</div>`).join('')}</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Vocabulary hidden in the letter grid</div></div>`,
     title: "Word Search",
-    desc: "Find agriculture and nutrition vocabulary words hidden in the letter grid. Words can run across (left–right), down, or diagonally."
+    desc: "Find agriculture vocabulary words hidden in the letter grid. Words can run across (left–right), down, or diagonally."
   },
   {
     art: `<div class='vt-scene'><div style='position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(4,1fr);gap:3px;width:90px'>${['H','A','Y','X','F','O','D','D','E','R','Z','B'].map((l,i)=>`<div style="background:rgba(255,255,255,${i===0?'0.5':i===2?'0.5':'0.1'});border:${i===0||i===2?'1.5px solid rgba(255,215,0,0.8)':'none'};border-radius:3px;height:18px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:white;font-weight:${i===0||i===2?'800':'400'}">${l}</div>`).join('')}</div><div style='position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:0.67rem;color:rgba(100,200,255,0.9)'>Click the FIRST letter of a word<br>then click the LAST letter</div></div>`,
@@ -7416,17 +8571,17 @@ const GARDEN_TUT = [
   {
     art: `<div class='vt-scene'><div style='position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:120px'>${Array(12).fill('<div style="background:rgba(100,180,80,0.22);border:1px solid rgba(100,200,80,0.35);border-radius:4px;height:22px"></div>').join('')}</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,150,0.9)'>12 organic garden beds to manage</div></div>`,
     title: "Organic Garden",
-    desc: "You manage 12 growing beds from bed preparation to planting, daily care, pest control, and harvest. Time moves by itself, so watch the clock and respond."
+    desc: "You manage 12 growing beds from bed preparation to planting, daily care, pest control, and harvest. You decide when each day ends by pressing Next day."
   },
   {
     art: `<div class='vt-scene'><div style='position:absolute;left:8%;top:14%;display:flex;flex-wrap:wrap;gap:5px;width:84%'><span style='background:rgba(100,200,80,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(150,255,150,0.9)'>🌱 Plant</span><span style='background:rgba(100,150,255,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(150,200,255,0.9)'>💧 Water</span><span style='background:rgba(180,130,50,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(220,190,100,0.9)'>🌿 Compost</span><span style='background:rgba(140,100,50,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(200,170,100,0.9)'>🪨 Mulch</span><span style='background:rgba(200,200,50,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(230,230,100,0.9)'>🌾 Weed</span><span style='background:rgba(200,80,80,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(255,150,150,0.9)'>🐛 Spray</span><span style='background:rgba(255,165,0,0.2);border-radius:5px;padding:3px 7px;font-size:0.65rem;color:rgba(255,210,100,0.9)'>✂️ Harvest</span></div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(255,200,60,0.9)'>Select a tool first, then click a bed</div></div>`,
     title: "Choose a tool, click a bed",
-    desc: "First select your crop from the dropdown. Then pick a tool — Water, Compost, Mulch, Weed, Spray, or Harvest. Finally click any bed in the grid to apply it."
+    desc: "First select your crop from the dropdown. Then pick a tool — Water, Compost, Mulch, Weed, Spray, or Harvest. Click one bed, or use the tool on all suitable beds at once."
   },
   {
-    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:2.2rem'>📅</span><div style='position:absolute;top:50%;left:8%;right:8%;font-size:0.68rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>💧 Water daily — mulch reduces water loss<br>🌿 Compost boosts soil fertility<br>🌾 Weed before pests spread<br>✂️ Harvest at stage 4 when ready</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Day and night advance automatically</div></div>`,
-    title: "Time moves automatically",
-    desc: "The day and night timer keeps running. Each new day, crops may grow but also lose water and gain weeds. Harvest mature crops (stage 4+) to earn points. Reach 75 to save."
+    art: `<div class='vt-scene'><span style='position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:2.2rem'>📅</span><div style='position:absolute;top:50%;left:8%;right:8%;font-size:0.68rem;color:rgba(255,200,60,0.9);text-align:center;line-height:1.65'>💧 Water daily — mulch reduces water loss<br>🌿 Compost boosts soil fertility<br>🌾 Weed before pests spread<br>✂️ Harvest at stage 4 when ready</div><div style='position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.64rem;color:rgba(100,255,160,0.9)'>Press Next day when you are ready</div></div>`,
+    title: "You control the days",
+    desc: "Press Next day when your beds are cared for. Each new day, crops may grow but also lose water and gain weeds. Harvest mature crops (stage 4+) to earn points. Reach 75 to save. You can switch on automatic days if you want a challenge."
   },
   {
     art: `<div class='vt-scene' style='padding:6px;display:flex;flex-direction:column;gap:5px'>
@@ -7439,7 +8594,7 @@ const GARDEN_TUT = [
   <div style='text-align:center;font-size:0.62rem;min-height:14px;color:rgba(255,200,60,0.9)' id='_vtGPFB'>Click any bed above to water it</div>
 </div>`,
     title: "Try it!",
-    desc: "In the real game the grid has 12 beds. Select your crop, pick a tool, click a bed, then let the automatic days pass. Harvest at stage 4+ to score."
+    desc: "In the real game the grid has 12 beds. Select your crop, pick a tool, click a bed (or use it on all beds), then press Next day. Harvest at stage 4+ to score."
   }
 ];
 function renderGardenPlanner(mount, _module) {
@@ -7504,9 +8659,11 @@ function renderGardenPlanner(mount, _module) {
             ${Object.entries(crops).map(([id, crop]) => `<option value="${id}">${escapeHTML(crop.name)}</option>`).join("")}
           </select>
         </div>
-        <div class="tool-rack">
-          ${tools.map(([id, label]) => `<button class="secondary-button sim-tool ${id === garden.tool ? "active" : ""}" data-garden-tool="${id}">${escapeHTML(label)}</button>`).join("")}
+        <div class="tool-rack" role="group" aria-label="Garden tools">
+          ${tools.map(([id, label]) => `<button class="secondary-button sim-tool ${id === garden.tool ? "active" : ""}" data-garden-tool="${id}" aria-pressed="${id === garden.tool}">${escapeHTML(label)}</button>`).join("")}
         </div>
+        <button class="primary-button garden-apply-all" id="gardenApplyAll" type="button">Use tool on all suitable beds</button>
+        <p class="garden-help-note">Pick a tool, then select one bed, or use the button above to apply it to every bed that needs it.</p>
       </article>
       <article class="tool-card garden-field-card">
         <div class="sim-header">
@@ -7515,10 +8672,12 @@ function renderGardenPlanner(mount, _module) {
             <h3>Day <span id="gardenDay">1</span> <span class="garden-phase-chip" id="gardenPhaseLabel">Morning</span></h3>
           </div>
           <div class="sim-actions">
+            <button class="primary-button" id="gardenNextDay" type="button">Next day &#9654;</button>
+            <label class="garden-pace"><input type="checkbox" id="gardenAutoDays"> Days pass automatically</label>
             <button class="secondary-button" id="resetGardenSim">Reset</button>
           </div>
         </div>
-        <div class="garden-time-panel" id="gardenTimePanel" aria-label="Automatic day and night timer">
+        <div class="garden-time-panel" id="gardenTimePanel" aria-label="Day and night timer">
           <div class="garden-time-meta">
             <span id="gardenClockText">06:00</span>
             <span id="gardenCycleText">Automatic day/night cycle</span>
@@ -7708,7 +8867,11 @@ function renderGardenPlanner(mount, _module) {
     const panelEl = document.getElementById("gardenTimePanel");
     if (clockEl) clockEl.textContent = info.time;
     if (phaseEl) phaseEl.textContent = info.phase;
-    if (cycleEl) cycleEl.textContent = info.isNight ? "Night is passing automatically; plan the next care step" : `Day ${garden.day} is passing automatically`;
+    if (cycleEl) {
+      cycleEl.textContent = !clockTimer
+        ? "Self-paced: care for your beds, then press Next day"
+        : info.isNight ? "Night is passing automatically; plan the next care step" : `Day ${garden.day} is passing automatically`;
+    }
     if (fillEl) fillEl.style.width = `${garden.dayProgress * 100}%`;
     if (panelEl) panelEl.classList.toggle("is-night", info.isNight);
     if (threeController?.setDayTime) threeController.setDayTime(garden.clock);
@@ -7912,10 +9075,47 @@ function renderGardenPlanner(mount, _module) {
     syncThree();
   };
 
+  // One action for every bed that needs the selected tool, so learners who
+  // find repeated pointing difficult do not have to visit all twelve beds.
+  const needsTool = (plot, tool) => ({
+    prepare: !plot.crop && !plot.prepared,
+    plant: !plot.crop && plot.prepared,
+    water: plot.crop && plot.water < 70,
+    compost: (plot.crop || plot.prepared) && plot.fertility < 70,
+    mulch: plot.crop && !plot.mulch,
+    weed: plot.weeds > 20,
+    spray: plot.crop && plot.pests > 15,
+    harvest: plot.crop && plot.stage >= 4,
+  }[tool]);
+  const applyToAll = () => {
+    const targets = garden.plots.filter((plot) => needsTool(plot, garden.tool));
+    const label = (tools.find(([id]) => id === garden.tool) || [])[1] || "Tool";
+    if (!targets.length) {
+      garden.message = `No beds need "${label}" right now.`;
+      return;
+    }
+    let done = 0;
+    targets.forEach((plot) => {
+      const before = JSON.stringify(plot);
+      applyTool(plot);
+      if (JSON.stringify(plot) !== before) done += 1;
+    });
+    garden.message = done
+      ? `${label}: done on ${done} bed${done === 1 ? "" : "s"}. ${garden.message}`
+      : garden.message;
+  };
+
+  const advanceDay = () => {
+    garden.dayProgress = 0;
+    garden.clock = DAY_START;
+    nextDay();
+  };
+
   mount.addEventListener("click", (event) => {
     const tool = event.target.closest("[data-garden-tool]");
     if (tool) {
       garden.tool = tool.dataset.gardenTool;
+      document.querySelectorAll(".sim-tool").forEach((button) => button.setAttribute("aria-pressed", String(button === tool)));
       draw();
       return;
     }
@@ -7925,12 +9125,26 @@ function renderGardenPlanner(mount, _module) {
       draw();
       return;
     }
+    if (event.target.id === "gardenApplyAll") {
+      applyToAll();
+      draw();
+      return;
+    }
+    if (event.target.id === "gardenNextDay") {
+      advanceDay();
+      return;
+    }
     if (event.target.id === "resetGardenSim") reset();
   });
 
   mount.addEventListener("change", (event) => {
     if (event.target.id === "cropSelect") {
       garden.crop = event.target.value;
+    }
+    if (event.target.id === "gardenAutoDays") {
+      if (event.target.checked) startGardenClock();
+      else stopGardenClock();
+      updateClockUI();
     }
   });
 
@@ -7956,11 +9170,11 @@ function renderGardenPlanner(mount, _module) {
     }
     if (garden.event?.id === "garden-drought") return "Drought is active. Water planted beds and add Mulch to reduce future water loss.";
     if (garden.event?.id === "garden-rain") return "Rain helped water, but check weeds and pests next.";
-    return "Keep watching the automatic day/night timer. Water, compost, weed, or spray whenever a bed warning appears.";
+    return "Check the bed warnings, care for the beds, then press Next day. Water, compost, weed, or spray whenever a bed warning appears.";
   };
 
   draw();
-  startGardenClock();
+  // Self-paced by default; learners can switch on automatic days.
   window._activeGameCleanup = () => {
     stopGardenClock();
     if (mount._gameAC) mount._gameAC.abort();
@@ -9420,7 +10634,7 @@ document.addEventListener("click", (event) => {
   const themeButton = event.target.closest("[data-theme-choice]");
   if (themeButton) {
     state.theme = themeButton.dataset.themeChoice;
-    localStorage.setItem(THEME_KEY, state.theme);
+    store.setItem(THEME_KEY, state.theme);
     applyTheme();
     return;
   }
@@ -9435,6 +10649,7 @@ document.addEventListener("click", (event) => {
     state.moduleId = moduleButton.dataset.module;
     state.globalSearch = "";
     state.altGame = "main";
+    state.readerPage = currentModule().pages[0];
     els.globalSearch.value = "";
     render();
     return;
@@ -9471,6 +10686,7 @@ document.addEventListener("click", (event) => {
     const ideas = ml(module, "ideas") || [];
     if (!progress.quizMisses) progress.quizMisses = {};
     if (!progress.quizMisses[module.id]) progress.quizMisses[module.id] = {};
+    AgriTools.recordQuiz(module, answers);
     document.querySelectorAll(".quiz-block").forEach((block) => {
       const index = Number(block.dataset.question);
       const isWrong = answers[index] !== module.quiz[index].a;
@@ -9481,7 +10697,7 @@ document.addEventListener("click", (event) => {
       if (isWrong) {
         progress.quizMisses[module.id][index] = (progress.quizMisses[module.id][index] || 0) + 1;
         if (!block.querySelector(".quiz-hint")) {
-          const hint = ideas[index % ideas.length];
+          const hint = AgriTools.explanation(module, index);
           if (hint) {
             const el = document.createElement("p");
             el.className = "quiz-hint";
@@ -9519,20 +10735,14 @@ document.addEventListener("click", (event) => {
     showAssessmentOverlay(currentModule());
   }
   if (event.target.id === "saveJournalButton") {
-    if (!guardProgressWrite("save notes")) return;
-    const hadNote = !!progress.notes[state.moduleId];
-    progress.notes[state.moduleId] = document.getElementById("journalText")?.value || "";
-    saveProgress();
-    checkBadges();
-    if (!hadNote) awardXP(5);
-    showToast("💾 " + t("noteSaved"), "info");
+    persistJournal(state.moduleId, document.getElementById("journalText")?.value || "", { announce: true });
   }
   if (event.target.id === "exportProgressButton") {
     const blob = new Blob([JSON.stringify(progress, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "agriculture-nutrition-progress.json";
+    link.download = "agriculture-grade9-progress.json";
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -9585,31 +10795,62 @@ els.globalSearch.addEventListener("input", (event) => {
     window._motionLessonCleanup = null;
   }
   state.globalSearch = event.target.value;
-  state.view = "reader";
-  renderTabs();
-  renderReader(currentModule());
+  if (state.view !== "reader" || !document.getElementById("readerBody")) {
+    state.view = "reader";
+    renderTabs();
+    renderReader(currentModule());
+  } else {
+    const input = document.getElementById("readerSearch");
+    if (input) input.value = state.globalSearch;
+    renderReaderBody();
+  }
+  savePosition();
 });
 
 document.addEventListener("input", (event) => {
   if (event.target.id === "readerSearch") {
+    // Only the results area is redrawn, so the search box keeps focus while typing.
     state.globalSearch = event.target.value;
     els.globalSearch.value = event.target.value;
-    renderReader(currentModule());
+    renderReaderBody();
   }
 });
 
-document.addEventListener("change", (event) => {
-  if (event.target.id === "pageSelect" && !state.globalSearch.trim()) {
-    const pageNumber = Number(event.target.value);
-    const page = (window.BOOK_DATA?.pages || []).find((item) => item.page === pageNumber);
-    if (page) {
-      document.getElementById("readerResults").innerHTML = `
-        <article class="reader-result">
-          <h3><span>Page ${page.page}</span><span class="pill">${escapeHTML(moduleForPage(page.page)?.title || currentModule().title)}</span></h3>
-          <p class="page-text">${escapeHTML(compactText(page.text))}</p>
-        </article>
-      `;
-    }
+document.addEventListener("click", (event) => {
+  const openPage = event.target.closest("[data-open-page]");
+  if (openPage) {
+    openBookPage(Number(openPage.dataset.openPage));
+    return;
+  }
+  const removeMark = event.target.closest("[data-remove-bookmark]");
+  if (removeMark) {
+    toggleBookmark(Number(removeMark.dataset.removeBookmark));
+    renderReaderBody();
+    return;
+  }
+  const term = event.target.closest(".term-link");
+  if (term) {
+    if (document.getElementById("termPopover")?._origin === term) closeTermPopover();
+    else showTermPopover(term);
+    return;
+  }
+  const zoom = event.target.closest("[data-zoom-src]");
+  if (zoom) {
+    showImageZoom(zoom.dataset.zoomSrc, zoom.dataset.zoomAlt || "");
+    return;
+  }
+  if (!event.target.closest("#termPopover")) closeTermPopover();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && document.getElementById("termPopover")) closeTermPopover(true);
+});
+
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("a[data-external-link]");
+  if (link && !navigator.onLine) {
+    event.preventDefault();
+    showToast("You are offline. This website needs an internet connection; try again when you are connected.", "warn");
   }
 });
 
@@ -9644,6 +10885,7 @@ document.addEventListener("keydown", (event) => {
 els.resetProgressButton.addEventListener("click", () => {
   if (!guardProgressWrite("reset progress")) return;
   if (!confirm(t("progressReset"))) return;
+  void AgriTools.removePhotos(progress.tools?.portfolio);
   progress = defaultProgress();
   state.quizAnswers = {};
   saveProgress();
@@ -9714,6 +10956,9 @@ if (canEditProgress()) {
 initOfflineIndicator();
 initNotifications();
 initMediaControls();
+// Resume where this account stopped last time, unless a link asked for a
+// specific module or view.
+if (!SHOULD_PROMPT_LOGIN && !params.has("module") && !params.has("view") && !params.has("lock")) restorePosition(true);
 render();
 refreshTutorCustomizationUI();
 if (SHOULD_PROMPT_LOGIN) setTimeout(() => showWelcomeSplash(), 650);

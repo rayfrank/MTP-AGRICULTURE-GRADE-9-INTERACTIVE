@@ -1,7 +1,7 @@
 {
-  "name": "Agriculture & Nutrition Grade 9 — MTP Digital",
-  "short_name": "Agri-Nutrition",
-  "description": "Interactive Agriculture and Nutrition Grade 9 learning platform by Mountain Publishers.",
+  "name": "Agriculture Grade 9 — MTP Digital",
+  "short_name": "Agriculture 9",
+  "description": "Interactive Agriculture Grade 9 learning platform by Mountain Publishers.",
   "start_url": "../index.html",
   "scope": "../",
   "display": "standalone",
@@ -26,10 +26,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Hay Module",
+      "name": "1.1 Conserving Animal Feed: Hay",
       "short_name": "Hay",
       "url": "../index.html?module=hay&view=learn",
-      "description": "Open the Conserving Animal Feed module"
+      "description": "Open sub-strand 1.1 Conserving Animal Feed: Hay"
     },
     {
       "name": "Quiz",
